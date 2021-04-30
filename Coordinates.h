@@ -2,7 +2,7 @@
 #define UNTITLED_COORDINATES_H
 
 
-#include "Vec2.h"
+#include "Vec3.h"
 
 struct CoordinateSpace {
     double minX;

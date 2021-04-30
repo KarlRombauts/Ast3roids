@@ -2,13 +2,13 @@
 #define UNTITLED_LINE_H
 
 
-#include "../Vec2.h"
+#include "../Vec3.h"
 #include "../ecs/Component.h"
 
 struct Line : public Component {
-    Line(Vec2 start, Vec2 end): start(start), end(end) {};
-    Vec2 start;
-    Vec2 end;
+    Line(Vec3 start, Vec3 end): start(start), end(end) {};
+    Vec3 start;
+    Vec3 end;
 };
 
 

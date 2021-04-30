@@ -1,7 +1,6 @@
 #include "CollisionSystem.h"
 #include "../Components/Transform.h"
 #include "../Globals.h"
-#include "../Events/AsteroidHitEvent.h"
 #include "../Components/Collision.h"
 #include "../Components/Asteroid.h"
 #include "../Components/SpaceShip.h"
@@ -15,7 +14,6 @@
 
 void CollisionSystem::update(EntityManager &entities, double dt) {
     std::vector<Entity *> rigidBodyEntities = entities.getEntitiesWith<Transform, Collision>();
-
 
     for (int i = 0; i < rigidBodyEntities.size(); i++) {
         Entity *entity1 = rigidBodyEntities.at(i);
@@ -39,7 +37,7 @@ void CollisionSystem::update(EntityManager &entities, double dt) {
             if (entity1->has<CircleCollision>() &&
                 entity2->has<LineCollision>()) {
                 if (entity1->has<OutsideArena, CircleCollision>()) {
-                    Vec2 p = entity1->get<Transform>()->position;
+                    Vec3 p = entity1->get<Transform>()->position;
                     double r = entity1->get<CircleCollision>()->radius;
                     if (gameModel.isCircleInArena(p, r)) {
                         entity1->remove<OutsideArena>();
@@ -74,13 +72,13 @@ void CollisionSystem::createImpacts(Entity *entity1, Entity *entity2) const {
 const bool
 CollisionSystem::areCircleAndLineIntersecting(Entity *circle,
                                               Entity *line) const {
-    Vec2 q = circle->get<Transform>()->position;
+    Vec3 q = circle->get<Transform>()->position;
     double r = circle->get<CircleCollision>()->radius;
 
 
-    Vec2 p1 = line->get<LineCollision>()->line->start;
-    Vec2 p2 = line->get<LineCollision>()->line->end;
-    Vec2 v = p2 - p1;
+    Vec3 p1 = line->get<LineCollision>()->line->start;
+    Vec3 p2 = line->get<LineCollision>()->line->end;
+    Vec3 v = p2 - p1;
 
     // Solve the quadratic equation for solutions of circle intersection
     double a = v.dot(v);
@@ -101,25 +99,25 @@ CollisionSystem::areCircleAndLineIntersecting(Entity *circle,
 
 void CollisionSystem::resolveCircleLineCollision(Entity *circle,
                                                  Entity *line) const {
-    Vec2 q = circle->get<Transform>()->position;
+    Vec3 q = circle->get<Transform>()->position;
     double r = circle->get<CircleCollision>()->radius;
 
-    Vec2 p1 = line->get<LineCollision>()->line->start;
-    Vec2 p2 = line->get<LineCollision>()->line->end;
-    Vec2 v = p2 - p1;
+    Vec3 p1 = line->get<LineCollision>()->line->start;
+    Vec3 p2 = line->get<LineCollision>()->line->end;
+    Vec3 v = p2 - p1;
 
     double t = fmax(0, fmin(1, -v.dot(p1 - q) / v.dot(v)));
-    Vec2 closestPoint = p1 + v * t;
+    Vec3 closestPoint = p1 + v * t;
 
-    Vec2 distance = q - closestPoint;
+    Vec3 distance = q - closestPoint;
 
     if (circle->has<Kinematics, Transform>() && circle->get<Collision>()->type == CollisionType::DYNAMIC) {
         // Static resolution
-        Vec2 normal = distance.normalize();
+        Vec3 normal = distance.normalize();
         circle->get<Transform>()->position += normal * r - distance;
 
         // Dynamic resolution
-        Vec2 velocity = circle->get<Kinematics>()->velocity;
+        Vec3 velocity = circle->get<Kinematics>()->velocity;
         circle->get<Kinematics>()->velocity =
                 velocity - normal * 2 * (velocity.dot(normal));
     }
@@ -128,7 +126,7 @@ void CollisionSystem::resolveCircleLineCollision(Entity *circle,
 
 bool CollisionSystem::areCirclesIntersecting(Entity *entity1,
                                              Entity *entity2) const {
-    Vec2 diff = (
+    Vec3 diff = (
             entity1->get<Transform>()->position -
             entity2->get<Transform>()->position
     );
@@ -150,20 +148,20 @@ void CollisionSystem::resolveCircleCircleCollision(
         Kinematics *kinematics2 = entity2->get<Kinematics>();
 
 
-        Vec2 diff = transform1->position - transform2->position;
+        Vec3 diff = transform1->position - transform2->position;
         double overlap = diff.magnitude() - (r1 + r2);
 
         std::cout << "Asteroid collision: " << overlap << std::endl;
 
-        Vec2 offset = (diff / diff.magnitude()) * overlap;
+        Vec3 offset = (diff / diff.magnitude()) * overlap;
 
         double m1 = kinematics1->mass;
         double m2 = kinematics2->mass;
 
-        Vec2 p1 = transform1->position;
-        Vec2 p2 = transform2->position;
-        Vec2 v1 = kinematics1->velocity;
-        Vec2 v2 = kinematics2->velocity;
+        Vec3 p1 = transform1->position;
+        Vec3 p2 = transform2->position;
+        Vec3 v1 = kinematics1->velocity;
+        Vec3 v2 = kinematics2->velocity;
 
         // STATIC COLLISION RESOLUTION
         // both entities are moved so that they no longer overlap. The amount

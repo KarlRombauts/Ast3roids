@@ -9,7 +9,7 @@
 #include <unordered_map>
 #include <vector>
 #include "Entity.h"
-#include "../Vec2.h"
+#include "../Vec3.h"
 #include "../enum/TextAlignment.h"
 
 class EntityManager {
@@ -29,17 +29,17 @@ public:
     template<typename ... Components>
     std::vector<Entity*> getEntitiesWith();
 
-    Entity *createFixedLine(Vec2 start, Vec2 end);
+    Entity *createFixedLine(Vec3 start, Vec3 end);
 
     void createArena();
 
-    Entity *createSpaceShip(Vec2 position);
+    Entity *createSpaceShip(Vec3 position);
 
-    Entity *createBullet(Vec2 position, Vec2 velocity);
+    Entity *createBullet(Vec3 position, Vec3 velocity);
 
     Entity *createBoundingCircle(double radius);
 
-    Entity *createBlackHole(double radius, Vec2 position);
+    Entity *createBlackHole(double radius, Vec3 position);
 
     void destroyAll();
 

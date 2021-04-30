@@ -22,12 +22,12 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
         }
 
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
-            kinematics->acceleration = Vec2::polar(transform->rotation, spaceShip->thrust);
+            kinematics->acceleration = Vec3::polar(transform->rotation, spaceShip->thrust);
 
             // Create exhaust particle system
             Entity* particles = entities.create();
 
-            Vec2 initialVelocity = kinematics->acceleration.scale(-1) * dt / 1000;
+            Vec3 initialVelocity = kinematics->acceleration.scale(-1) * dt / 1000;
             particles->assign<ParticleSource>(
                     initialVelocity,
                     5,

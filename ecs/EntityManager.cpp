@@ -31,22 +31,22 @@ Entity *EntityManager::create() {
     return entities.at(id);
 }
 
-Entity *EntityManager::createBlackHole(double radius, Vec2 position) {
-    std::vector<Vec2> circle;
+
+Entity *EntityManager::createBlackHole(double radius, Vec3 position) {
+    std::vector<Vec3> circle;
     int num_segments = 16;
     for (int i = 0; i < num_segments; i++) {
-        double theta = 2.0 * M_PI * float(i) / float(num_segments); // get the current angle
-
+        double theta = 2.0 * M_PI * float(i) /
+                       float(num_segments); // get the current angle
         double x = radius * cos(theta); // calculate the x component
         double y = radius * sin(theta); // calculate the y component
-
-        Vec2 vertex = {x, y};
-
+        Vec3 vertex = {x, y};
         circle.push_back(vertex);
     }
 
-    Entity* blackHole = create();
-    blackHole->assign<Transform>(position, 0, Vec2(1, 1));
+
+    Entity *blackHole = create();
+    blackHole->assign<Transform>(position, 0, Vec3(1, 1));
     blackHole->assign<Shape>(circle);
     blackHole->assign<BlackHole>();
     blackHole->assign<Collision>(CollisionType::TRIGGER);
@@ -56,25 +56,27 @@ Entity *EntityManager::createBlackHole(double radius, Vec2 position) {
     return blackHole;
 }
 
+
 Entity *EntityManager::createAsteroid(double radius) {
     Entity *asteroid = this->create();
     const CoordinateSpace &world = gameModel.worldCoordinates;
 
     asteroid->assign<Transform>(
-            Vec2(randf(world.minX, world.maxX), randf(world.minY, world.maxY)),
-            0, Vec2(1, 1));
+            Vec3(randf(world.minX, world.maxX), randf(world.minY, world.maxY)),
+            0, Vec3(1, 1));
 
-    std::vector<Vec2> asteroidModel;
+    std::vector<Vec3> asteroidModel;
     int num_segments = 12;
     double roughness = 0.2;
     for (int i = 0; i < num_segments; i++) {
-        double theta = 2.0 * M_PI * float(i) / float(num_segments); // get the current angle
+        double theta = 2.0 * M_PI * float(i) /
+                       float(num_segments); // get the current angle
         double x = radius * cos(theta); // calculate the x component
         double y = radius * sin(theta); // calculate the y component
 
-        Vec2 vertex = {
-            x + radius * randf(-roughness, roughness),
-            y + radius * randf(-roughness, roughness)
+        Vec3 vertex = {
+                x + radius * randf(-roughness, roughness),
+                y + radius * randf(-roughness, roughness)
         };
 
         asteroidModel.push_back(vertex);
@@ -87,8 +89,10 @@ Entity *EntityManager::createAsteroid(double radius) {
     asteroid->assign<Texture>(gameConfig.ASTEROID_COLOR);
     asteroid->assign<Health>(radius * 10);
 
-    Kinematics kinematics(Vec2::polar(randf(0, 360), randf(10, 20)), Vec2(0, 0), pow(radius, 2));
-    kinematics.angularVelocity = randf(gameConfig.ASTEROID_MIN_ROTATION, gameConfig.ASTEROID_MAX_ROTATION);
+    Kinematics kinematics(Vec3::polar(randf(0, 360), randf(10, 20)), Vec3(0, 0),
+                          pow(radius, 2));
+    kinematics.angularVelocity = randf(gameConfig.ASTEROID_MIN_ROTATION,
+                                       gameConfig.ASTEROID_MAX_ROTATION);
 
     asteroid->assign<Kinematics>(kinematics);
 
@@ -100,7 +104,7 @@ Entity *EntityManager::createAsteroid(double radius) {
     return asteroid;
 }
 
-Entity *EntityManager::createFixedLine(Vec2 start, Vec2 end) {
+Entity *EntityManager::createFixedLine(Vec3 start, Vec3 end) {
     Entity *line = create();
     line->assign<Line>(start, end);
     line->assign<Collision>(CollisionType::STATIC);
@@ -112,39 +116,36 @@ Entity *EntityManager::createFixedLine(Vec2 start, Vec2 end) {
 
 void EntityManager::createArena() {
     int l = gameModel.arenaSize;
-    Entity *leftWall = createFixedLine(Vec2(-l, -l), Vec2(-l, l));
+    Entity *leftWall = createFixedLine(Vec3(-l, -l), Vec3(-l, l));
     leftWall->assign<Wall>();
 
-    Entity *topWall = createFixedLine(Vec2(-l, l), Vec2(l, l));
+    Entity *topWall = createFixedLine(Vec3(-l, l), Vec3(l, l));
     topWall->assign<Wall>();
 
-    Entity *rightWall = createFixedLine(Vec2(l, -l), Vec2(l, l));
+    Entity *rightWall = createFixedLine(Vec3(l, -l), Vec3(l, l));
     rightWall->assign<Wall>();
 
-    Entity *bottomWall = createFixedLine(Vec2(-l, -l), Vec2(l, -l));
+    Entity *bottomWall = createFixedLine(Vec3(-l, -l), Vec3(l, -l));
     bottomWall->assign<Wall>();
 }
 
-Entity *EntityManager::createSpaceShip(Vec2 position) {
+Entity *EntityManager::createSpaceShip(Vec3 position) {
     Entity *spaceShip = create();
 
-    std::vector<Vec2> spaceShipModel = {
-            {4,  0},
-            {-3, 0},
-            {-4, 2},
-            {4,  0},
-            {-3, 0},
-            {-4, -2}
+    std::vector<Vec3> spaceShipModel = {
+            {-1, -1, -1},
+            {-1, -1, 1}
     };
 
     spaceShip->assign<Shape>(spaceShipModel);
-    spaceShip->assign<SpaceShip>(gameConfig.PLAYER_FIRING_RATE, gameConfig.PLAYER_SPEED);
+    spaceShip->assign<SpaceShip>(gameConfig.PLAYER_FIRING_RATE,
+                                 gameConfig.PLAYER_SPEED);
     spaceShip->assign<Collision>(CollisionType::DYNAMIC);
     spaceShip->assign<CircleCollision>(5);
 
     spaceShip->assign<Texture>(1, 0, 0);
-    spaceShip->assign<Transform>(position, 90, Vec2(1, 1));
-    spaceShip->assign<Kinematics>(Vec2(0, 0), Vec2(0, 0), 1);
+    spaceShip->assign<Transform>(position, 90, Vec3(20, 20, 20));
+    spaceShip->assign<Kinematics>(Vec3(0, 0), Vec3(0, 0), 1);
     spaceShip->get<Kinematics>()->drag = 1;
 
     spaceShip->assign<PlayerInput>();
@@ -159,7 +160,7 @@ Entity *EntityManager::createBoundingCircle(double radius) {
     boundingCircle->assign<BoundingCircle>();
     boundingCircle->assign<Collision>(CollisionType::TRIGGER);
     boundingCircle->assign<CircleCollision>(radius);
-    boundingCircle->assign<Transform>(Vec2(0, 0), 90, Vec2(1, 1));
+    boundingCircle->assign<Transform>(Vec3(0, 0), 90, Vec3(1, 1));
     return boundingCircle;
 }
 
@@ -170,17 +171,19 @@ void EntityManager::destroy(Entity *entity) {
 
 void EntityManager::createWorld() {
     createArena();
-    const Vec2 shipPosition = Vec2(gameModel.arenaSize * -0.7, gameModel.arenaSize * -0.7);
+    const Vec3 shipPosition = Vec3(gameModel.arenaSize * -0.7,
+                                   gameModel.arenaSize * -0.7);
     createSpaceShip(shipPosition);
 
     if (gameModel.difficulty == Difficulty::HARD) {
         // Never create a black hole that is too close to the ship
         int range = gameModel.arenaSize * 0.8;
-        Vec2 blackHolePosition = Vec2(0,0);
+        Vec3 blackHolePosition = Vec3(0, 0);
         do {
-            blackHolePosition = Vec2(randInt(-range, range),
+            blackHolePosition = Vec3(randInt(-range, range),
                                      randInt(-range, range));
-        } while((blackHolePosition - shipPosition).magnitude() < gameModel.arenaSize * 0.4);
+        } while ((blackHolePosition - shipPosition).magnitude() <
+                 gameModel.arenaSize * 0.4);
 
         createBlackHole(10, blackHolePosition);
     }
@@ -193,10 +196,10 @@ void EntityManager::destroyAll() {
     entities.clear();
 }
 
-Entity *EntityManager::createBullet(Vec2 position, Vec2 velocity) {
+Entity *EntityManager::createBullet(Vec3 position, Vec3 velocity) {
     Entity *bullet = create();
-    bullet->assign<Transform>(position, 0, Vec2(1, 1));
-    bullet->assign<Kinematics>(velocity, Vec2(0, 0), 1);
+    bullet->assign<Transform>(position, 0, Vec3(1, 1));
+    bullet->assign<Kinematics>(velocity, Vec3(0, 0), 1);
     bullet->assign<Particle>();
     bullet->assign<Bullet>();
     bullet->assign<Damage>(gameConfig.BULLET_DAMAGE);

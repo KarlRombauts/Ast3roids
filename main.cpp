@@ -90,18 +90,18 @@ void handleGamePlay() {
     }
 
     playerInputSystem.update(entities, dt);
-    firingSystem.update(entities, dt);
-    collisionSystem.update(entities, dt);
-    particleSystem.update(entities, dt);
-    physicsSystem.update(entities, dt);
-    warningSystem.update(entities);
-    damageSystem.update(entities);
-    bulletCleanupSystem.update(entities, dt);
-    shipImpactSystem.update(entities);
-    blackHoleSystem.update(entities, dt);
-    outOfBoundsSystem.update(entities);
-    impactCleanupSystem.update(entities, dt);
-    destroySystem.update(entities);
+//    firingSystem.update(entities, dt);
+//    collisionSystem.update(entities, dt);
+//    particleSystem.update(entities, dt);
+//    physicsSystem.update(entities, dt);
+//    warningSystem.update(entities);
+//    damageSystem.update(entities);
+//    bulletCleanupSystem.update(entities, dt);
+//    shipImpactSystem.update(entities);
+//    blackHoleSystem.update(entities, dt);
+//    outOfBoundsSystem.update(entities);
+//    impactCleanupSystem.update(entities, dt);
+//    destroySystem.update(entities);
 
     gameModel.elapsedTime = thisTime;
 

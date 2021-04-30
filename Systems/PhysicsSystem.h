@@ -1,13 +1,8 @@
-//
-// Created by Karl Rombauts on 14/3/21.
-//
-
 #ifndef UNTITLED_PHYSICSSYSTEM_H
 #define UNTITLED_PHYSICSSYSTEM_H
 
 
 #include "System.h"
-#include "../Events/CollisionEvent.h"
 
 class PhysicsSystem: public System {
 

@@ -32,11 +32,11 @@ void DamageSystem::handleDeath(EntityManager &entities, Entity *entity, Entity *
     if (entity->has<SplitOnDeath>()) {
         if (entity->has<Asteroid, Transform>()) {
             double size = entity->get<Asteroid>()->size;
-            Vec2 p1 = entity->get<Transform>()->position;
-            Vec2 p2 = otherEntity->get<Transform>()->position;
-            Vec2 v = entity->get<Kinematics>()->velocity;
+            Vec3 p1 = entity->get<Transform>()->position;
+            Vec3 p2 = otherEntity->get<Transform>()->position;
+            Vec3 v = entity->get<Kinematics>()->velocity;
 
-            Vec2 splitDir = (p2 - p1).perpendicular() * size / 2;
+            Vec3 splitDir = (p2 - p1).perpendicular() * size / 2;
 
             if (size >= 2) {
                 Entity *asteroid1 = entities.createAsteroid(size / 2);
@@ -55,7 +55,7 @@ void DamageSystem::handleDeath(EntityManager &entities, Entity *entity, Entity *
         // Create particle emitter
         double size = entity->get<Asteroid>()->size;
         Entity* particles = entities.create();
-        particles->assign<ParticleSource>(Vec2(0, 0), 20, size * 5, gameConfig.EXPLOSION_DECAY_RATE);
+        particles->assign<ParticleSource>(Vec3(0, 0), 20, size * 5, gameConfig.EXPLOSION_DECAY_RATE);
         particles->assign<Transform>(*entity->get<Transform>());
 
         // Increment Score

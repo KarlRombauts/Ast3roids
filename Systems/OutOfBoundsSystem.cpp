@@ -6,7 +6,7 @@
 
 void OutOfBoundsSystem::update(EntityManager &entities) {
     for (Entity *asteroid: entities.getEntitiesWith<Transform, Asteroid>()) {
-        Vec2 position = asteroid->get<Transform>()->position;
+        Vec3 position = asteroid->get<Transform>()->position;
         if (position.magnitude() > gameModel.worldCoordinates.distanceToCorner() + 30) {
             asteroid->assign<Destroy>();
         }

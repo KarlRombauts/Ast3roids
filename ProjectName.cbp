@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="ProjectName"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/Users/karlrombauts/CLionProjects/APT-test2/untitled"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/Users/karlrombauts/CLionProjects/APT-test2/untitled"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/Users/karlrombauts/CLionProjects/APT-test2/untitled"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ProjectName">
+				<Option output="/Users/karlrombauts/CLionProjects/APT-test2/untitled/ProjectName" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/karlrombauts/CLionProjects/APT-test2/untitled"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 ProjectName"/>
+					<CompileFile command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="ProjectName/fast">
+				<Option output="/Users/karlrombauts/CLionProjects/APT-test2/untitled/ProjectName" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/Users/karlrombauts/CLionProjects/APT-test2/untitled"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 ProjectName/fast"/>
+					<CompileFile command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -f &quot;/Users/karlrombauts/CLionProjects/APT-test2/untitled/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Asteroid.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/BlackHole.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/BoundingCircle.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Bullet.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Child.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Collision.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Damage.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Destroy.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/FiringBullet.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/GravityForce.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Health.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/HealthBar.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Impact.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Kinematics.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Line.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/OutsideArena.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Particle.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/ParticleSource.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/PlayerInput.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Shape.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/SpaceShip.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/SplitOnDeath.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Texture.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Transform.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Components/Wall.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Coordinates.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Coordinates.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/GameConfig.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/GameConfig.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/GameModel.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/GameModel.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Globals.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Helpers.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Helpers.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/KeyboardState.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/KeyboardState.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/OpenGL.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/AsteroidSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/AsteroidSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/BlackHoleSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/BlackHoleSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/BulletCleanupSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/BulletCleanupSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/CollisionSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/CollisionSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/DamageSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/DamageSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/DestroySystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/DestroySystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/FiringSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/FiringSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/ImpactCleanupSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/ImpactCleanupSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/OutOfBoundsSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/OutOfBoundsSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/ParticleSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/ParticleSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/PhysicsSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/PhysicsSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/PlayerInputSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/PlayerInputSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/RenderSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/RenderSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/ShipImpactSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/ShipImpactSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/System.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/WarningSystem.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/WarningSystem.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Vec3.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Vec3.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/ecs/Component.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/ecs/Entity.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/ecs/Entity.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/ecs/EntityManager.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/ecs/EntityManager.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/ecs/Service.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/ecs/Service.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/enum/TextAlignment.h">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/main.cpp">
+			<Option target="ProjectName"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>

@@ -38,7 +38,6 @@ struct GameConfig {
 
     double BLACK_HOLE_PULSE_RATE = 0.5; // times per second;
     int BLACK_HOLE_STRENGTH = 40000;
-    bool BLACK_HOLE_ACTIVE = false; // Turns on/off the black hole
     Texture BLACK_HOLE_COLOR = {0.5, 0.5, 0.5};
 };
 

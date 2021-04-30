@@ -1,4 +1,5 @@
 #include <string>
+#include <iostream>
 #include "RenderSystem.h"
 #include "../OpenGL.h"
 #include "../Components/Shape.h"
@@ -8,6 +9,7 @@
 #include "../Components/Particle.h"
 #include "../GameModel.h"
 #include "../Helpers.h"
+#include "../Quaternion.h"
 
 void RenderSystem::update(EntityManager &entities, double dt) {
     drawDifficulty();
@@ -40,17 +42,70 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 
         glPushMatrix();
             glTranslatef(transform->position.x, transform->position.y, 0);
-            glRotatef(transform->rotation, 0, 0, 1);
-            glScalef(transform->scale.x, transform->scale.y, 1);
+//            glRotatef(2 * transform->rotation, 0, 0, 1);
+            glScalef(transform->scale.x, transform->scale.y, transform->scale.z);
+
+            Quaternion rotation = Quaternion::angleAxis(transform->rotation /2, Vec3(0, 0, 1));
+            std::cout << transform->rotation << " degrees : " << rotation.toString() << std::endl;
+
+            glMultMatrixd(rotation.toRotationMatrix());
+
             glColor3f(texture->red, texture->green, texture->blue);
 
-            if (entity->has<Shape>()) {
-                drawShape(entity);
-            } else if (entity->has<Line>()) {
-                drawLine(entity);
-            } else if (entity->has<Particle>()) {
-                drawParticle(entity);
-            }
+//            if (entity->has<Shape>()) {
+//                drawShape(entity);
+//            } else if (entity->has<Line>()) {
+//                drawLine(entity);
+//            } else if (entity->has<Particle>()) {
+//                drawParticle(entity);
+//            }
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        glBegin(GL_POLYGON);                // Begin drawing the color cube with 6 quads
+        // Top face (y = 1.0f)
+        // Define vertices in counter-clockwise (CCW) order with normal pointing out
+        glColor3f(0.0f, 1.0f, 0.0f);     // Green
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+        glVertex3f(1.0f, 1.0f, 1.0f);
+
+// Bottom face (y = -1.0f)
+        glColor3f(1.0f, 0.5f, 0.0f);     // Orange
+        glVertex3f(1.0f, -1.0f, 1.0f);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+
+// Front face  (z = 1.0f)
+        glColor3f(1.0f, 0.0f, 0.0f);     // Red
+        glVertex3f(1.0f, 1.0f, 1.0f);
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+
+// Back face (z = -1.0f)
+        glColor3f(1.0f, 1.0f, 0.0f);     // Yellow
+        glVertex3f(1.0f, -1.0f, -1.0f);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        glVertex3f(1.0f, 1.0f, -1.0f);
+
+// Left face (x = -1.0f)
+        glColor3f(0.0f, 0.0f, 1.0f);     // Blue
+        glVertex3f(-1.0f, 1.0f, 1.0f);
+        glVertex3f(-1.0f, 1.0f, -1.0f);
+        glVertex3f(-1.0f, -1.0f, -1.0f);
+        glVertex3f(-1.0f, -1.0f, 1.0f);
+
+// Right face (x = 1.0f)
+        glColor3f(1.0f, 0.0f, 1.0f);     // Magenta
+        glVertex3f(1.0f, 1.0f, -1.0f);
+        glVertex3f(1.0f, 1.0f, 1.0f);
+        glVertex3f(1.0f, -1.0f, 1.0f);
+        glVertex3f(1.0f, -1.0f, -1.0f);
+        glEnd();  // End of drawing color-cube
+
+        glFlush();
         glPopMatrix();
     }
 }
@@ -120,7 +175,7 @@ void RenderSystem::drawShape(Entity *entity) const {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBegin(GL_POLYGON);
     {
-        for(Vec2 vertex: shape->vertices) {
+        for(Vec3 vertex: shape->vertices) {
             glVertex3f(vertex.x, vertex.y, 0);
         }
     }

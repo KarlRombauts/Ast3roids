@@ -1,7 +1,7 @@
 #include "Coordinates.h"
-#include "Vec2.h"
+#include "Vec3.h"
 
 double CoordinateSpace::distanceToCorner() {
-    return Vec2(maxX, maxY).magnitude();
+    return Vec3(maxX, maxY).magnitude();
 }
 

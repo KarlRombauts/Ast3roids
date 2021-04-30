@@ -9,13 +9,13 @@
 void PhysicsSystem::update(EntityManager &entities, double dt) {
     for (Entity *entity: entities.getEntitiesWith<Kinematics, Transform>()) {
         for (Entity *gravityEntity: entities.getEntitiesWith<GravityForce, Transform>()) {
-            Vec2 diff = gravityEntity->get<Transform>()->position - entity->get<Transform>()->position;
+            Vec3 diff = gravityEntity->get<Transform>()->position - entity->get<Transform>()->position;
             double distance = diff.magnitude();
 
             double forceMagnitude =
                     gravityEntity->get<GravityForce>()->mass / pow(distance, 2);
 
-            Vec2 force = diff.normalize().scale(forceMagnitude);
+            Vec3 force = diff.normalize().scale(forceMagnitude);
             entity->get<Kinematics>()->acceleration += force;
         }
 
@@ -28,7 +28,7 @@ void PhysicsSystem::update(EntityManager &entities, double dt) {
         transform->position += kinematics->velocity * dt / 1000;
         transform->rotation += kinematics->angularVelocity * dt / 1000;
 
-        kinematics->acceleration = Vec2(0, 0);
+        kinematics->acceleration = Vec3(0, 0);
 
         if(entity->has<Child>()) {
             Entity *child = entity->get<Child>()->child;

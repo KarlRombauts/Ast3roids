@@ -3,11 +3,11 @@
 
 
 struct ParticleSource: public Component {
-    ParticleSource(Vec2 velocity, double dispersion, int initialParticles, double decayRate)
+    ParticleSource(Vec3 velocity, double dispersion, int initialParticles, double decayRate)
                    : velocity(velocity), dispersion(dispersion), initialParticles(initialParticles), decayRate(decayRate) {}
 
     double dispersion;
-    Vec2 velocity;
+    Vec3 velocity;
     int initialParticles;
     double decayRate;
 };

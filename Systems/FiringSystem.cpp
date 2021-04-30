@@ -19,7 +19,7 @@ void FiringSystem::update(EntityManager &entities, double dt) {
             entity->remove<FiringBullet>();
 
             Transform *transform = entity->get<Transform>();
-            Vec2 bulletVelocity = entity->get<Kinematics>()->velocity + Vec2::polar(transform->rotation, gameConfig.BULLET_SPEED);
+            Vec3 bulletVelocity = entity->get<Kinematics>()->velocity + Vec3::polar(transform->rotation, gameConfig.BULLET_SPEED);
 
             entities.createBullet(transform->position, bulletVelocity);
         }

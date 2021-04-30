@@ -49,8 +49,8 @@ void ParticleSystem::emitParticle(EntityManager &entities, Entity *emitterEntity
     particleEntity->assign<CircleCollision>(3);
 
     double d = particleSource->dispersion;
-    Vec2 velocity = Vec2::polar(randf(0, 360), d + randf(-d / 3, d / 3)) +
+    Vec3 velocity = Vec3::polar(randf(0, 360), d + randf(-d / 3, d / 3)) +
                     particleSource->velocity;
-    particleEntity->assign<Kinematics>(velocity, Vec2(0, 0), 0);
+    particleEntity->assign<Kinematics>(velocity, Vec3(0, 0), 0);
     particleEntity->assign<Texture>(1, 1, 1);
 }
