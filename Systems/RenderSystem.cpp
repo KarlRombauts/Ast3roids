@@ -42,13 +42,9 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 
         glPushMatrix();
             glTranslatef(transform->position.x, transform->position.y, 0);
-//            glRotatef(2 * transform->rotation, 0, 0, 1);
             glScalef(transform->scale.x, transform->scale.y, transform->scale.z);
 
-            Quaternion rotation = Quaternion::angleAxis(transform->rotation /2, Vec3(0, 0, 1));
-            std::cout << transform->rotation << " degrees : " << rotation.toString() << std::endl;
-
-            glMultMatrixd(rotation.toRotationMatrix());
+            glRotateQuaternion(Quaternion::angleAxis(transform->rotation, Vec3(, 0, 1)));
 
             glColor3f(texture->red, texture->green, texture->blue);
 
@@ -221,5 +217,36 @@ void RenderSystem::drawDifficulty() {
             glColor3f(1, 1, 1);
             return renderString(0, -(arenaSize + 6), "Difficulty: EASY", TextAlignment::CENTER);
     }
+}
+
+void RenderSystem::glRotateQuaternion(const Quaternion &q) {
+    // Row 1
+    double  w = q.w;
+    double  x = q.x;
+    double  y = q.y;
+    double  z = q.z;
+
+    double m00 = 2 * (w * w + x * x) - 1;
+    double m01 = 2 * (x * y - w * z);
+    double m02 = 2 * (x * z + w * y);
+
+    // Row 2
+    double m10 = 2 * (x * y + w * z);
+    double m11 = 2 * (w * w + y * y) - 1;
+    double m12 = 2 * (y * z - w * x);
+
+    // Row 3
+    double m20 = 2 * (x * z - w * y);
+    double m21 = 2 * (y * z + w * x);
+    double m22 = 2 * (w * w + z * z) - 1;
+
+    double matrix[16] = {
+            m00, m01, m02, 0,
+            m10, m11, m12, 0,
+            m20, m21, m22, 0,
+            0, 0, 0, 1
+    };
+
+    glMultMatrixd(matrix);
 }
 

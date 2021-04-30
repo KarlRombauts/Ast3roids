@@ -11,12 +11,12 @@
 #include "Vec3.h"
 
 class Quaternion {
+public:
     double x;
     double y;
     double z;
     double w;
 
-public:
     Quaternion(double x, double y, double z, double w): x(x), y(y), z(z), w(w) {}
 
     static Quaternion angleAxis(double angle, Vec3 vector) {

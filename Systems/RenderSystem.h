@@ -10,7 +10,7 @@
 #include "System.h"
 #include "../Components/Transform.h"
 #include "../Components/Texture.h"
-
+#include "../Quaternion.h"
 
 
 class RenderSystem: public System {
@@ -34,6 +34,8 @@ public:
     void drawEntities(EntityManager &entities);
 
     void drawDifficulty();
+
+    void glRotateQuaternion(const Quaternion &q);
 };
 
 
