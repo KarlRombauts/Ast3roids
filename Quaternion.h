@@ -8,7 +8,7 @@
 
 #include <cmath>
 #include <iostream>
-#include "Vec3.h"
+#include "Vector3.h"
 
 class Quaternion {
 public:
@@ -19,11 +19,11 @@ public:
 
     Quaternion(double x, double y, double z, double w): x(x), y(y), z(z), w(w) {}
 
-    static Quaternion angleAxis(double angle, Vec3 vector) {
+    static Quaternion angleAxis(double angle, Vector3 vector) {
         double radians = angle * (M_PI / 180);
         double w = cos(-radians / 2);
 
-        Vec3 normVector = vector.normalize() * sin(-radians / 2);
+        Vector3 normVector = vector.normalize() * sin(-radians / 2);
         double x = normVector.x;
         double y = normVector.y;
         double z = normVector.z;
@@ -31,31 +31,32 @@ public:
         return Quaternion(x, y, z, w);
     }
 
+    static Quaternion identity();
+
     static Quaternion fromEuler(double yaw, double pitch, double roll);
 
-    static Quaternion fromTo(Vec3 from, Vec3 to);
+    static Quaternion fromTo(Vector3 from, Vector3 to);
 
-    static Quaternion lookRotation(Vec3 direction, Vec3 up);
+    static Quaternion lookRotation(Vector3 direction, Vector3 up);
 
     Quaternion slerp(Quaternion q, double t);
 
     Quaternion inverse();
 
-    Quaternion mult(const Quaternion &q);
+    Quaternion multiply(const Quaternion &q) const;
 
-    Quaternion operator*(const Quaternion &q);
+    Quaternion operator*(const Quaternion &q) const;
 
-    Quaternion operator*=(const Quaternion &q);
+    void operator*=(const Quaternion &q);
 
-    Quaternion mult(const Vec3 &v);
 
-    Quaternion operator*(const Vec3 &q);
+    Quaternion operator*(const Vector3 &q);
 
-    Quaternion operator*=(const Vec3 &q);
+    Quaternion operator*=(const Vector3 &q);
 
     double * toRotationMatrix();
 
-    std::string toString();
+    std::string toString() const;
 };
 
 

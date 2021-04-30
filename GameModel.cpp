@@ -26,7 +26,7 @@ void GameModel::resizeWorld(double minX, double maxX, double minY, double maxY) 
     glutPostRedisplay();
 }
 
-bool GameModel::isCircleInArena(Vec3 pos, double radius) {
+bool GameModel::isCircleInArena(Vector3 pos, double radius) {
     return (pos.x - radius) > -arenaSize &&
            (pos.x + radius) < arenaSize &&
            (pos.y - radius > -arenaSize) &&

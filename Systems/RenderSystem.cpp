@@ -10,18 +10,23 @@
 #include "../GameModel.h"
 #include "../Helpers.h"
 #include "../Quaternion.h"
+#include "../Components/Rotation.h"
 
 void RenderSystem::update(EntityManager &entities, double dt) {
     drawDifficulty();
     switch (gameModel.state) {
         case GameState::START:
-            renderString(0, 0, "Press SPACE BAR to start...", TextAlignment::CENTER);
-            renderString(0, -10, "(Press 1 or 2 to switch difficulty modes)", TextAlignment::CENTER);
+            renderString(0, 0, "Press SPACE BAR to start...",
+                         TextAlignment::CENTER);
+            renderString(0, -10, "(Press 1 or 2 to switch difficulty modes)",
+                         TextAlignment::CENTER);
             break;
         case GameState::GAME_OVER:
         case GameState::PLAY_AGAIN:
-            renderString(0, 0, "Game Over. Press SPACE BAR to play again...", TextAlignment::CENTER);
-            renderString(0, -10, "(Press 1 or 2 to switch difficulty modes)", TextAlignment::CENTER);
+            renderString(0, 0, "Game Over. Press SPACE BAR to play again...",
+                         TextAlignment::CENTER);
+            renderString(0, -10, "(Press 1 or 2 to switch difficulty modes)",
+                         TextAlignment::CENTER);
             break;
         case GameState::WAVE_OVER:
         case GameState::PLAYING:
@@ -32,21 +37,27 @@ void RenderSystem::update(EntityManager &entities, double dt) {
 }
 
 void RenderSystem::drawEntities(EntityManager &entities) {
-    for (Entity* entity: entities.getEntitiesWith<Transform, Texture>()) {
+    for (Entity *entity: entities.getEntitiesWith<Transform, Rotation, Texture>()) {
         Transform *transform = entity->get<Transform>();
         Texture *texture = entity->get<Texture>();
+        Quaternion &rotation = entity->get<Rotation>()->rotation;
 
         if (entity->has<Health, HealthBar>()) {
             drawHealthBars(entity);
         }
 
         glPushMatrix();
-            glTranslatef(transform->position.x, transform->position.y, 0);
-            glScalef(transform->scale.x, transform->scale.y, transform->scale.z);
+        glTranslatef(transform->position.x, transform->position.y, 0);
+        glScalef(transform->scale.x, transform->scale.y, transform->scale.z);
 
-            glRotateQuaternion(Quaternion::angleAxis(transform->rotation, Vec3(, 0, 1)));
+//        Quaternion rotation =
+//                Quaternion::angleAxis(transform->rotation/3, Vector3(0, 0, 1))
+//                * Quaternion::angleAxis(transform->rotation/3, Vector3(0, 1, 0))
+//                * Quaternion::angleAxis(transform->rotation/3, Vector3(-1, 0, 0));
 
-            glColor3f(texture->red, texture->green, texture->blue);
+        glRotateQuaternion(rotation);
+
+        glColor3f(texture->red, texture->green, texture->blue);
 
 //            if (entity->has<Shape>()) {
 //                drawShape(entity);
@@ -109,20 +120,22 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 void RenderSystem::drawScore() {
     glColor3f(1, 1, 1);
     int arenaSize = gameModel.arenaSize;
-    renderString(-arenaSize, arenaSize + 2, "Score: " + std::to_string(gameModel.score),
+    renderString(-arenaSize, arenaSize + 2,
+                 "Score: " + std::to_string(gameModel.score),
                  TextAlignment::LEFT);
 
-    renderString(0, arenaSize + 2, "Wave: " + std::to_string(gameModel.waveCount),
+    renderString(0, arenaSize + 2,
+                 "Wave: " + std::to_string(gameModel.waveCount),
                  TextAlignment::CENTER);
 
-    renderString(arenaSize, arenaSize + 2, "Time: " + formatTime(gameModel.elapsedTime - gameModel.resetTime),
+    renderString(arenaSize, arenaSize + 2, "Time: " + formatTime(
+            gameModel.elapsedTime - gameModel.resetTime),
                  TextAlignment::RIGHT);
 }
 
 void
 RenderSystem::renderString(GLdouble x, GLdouble y, const std::string &string,
-                           TextAlignment alignment)
-{
+                           TextAlignment alignment) {
     double width = 0;
     for (int n = 0; n < string.size(); ++n) {
         width += glutBitmapWidth(GLUT_BITMAP_HELVETICA_18, string[n]);
@@ -142,7 +155,6 @@ RenderSystem::renderString(GLdouble x, GLdouble y, const std::string &string,
         glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, string[n]);
     }
 }
-
 
 
 void RenderSystem::drawParticle(Entity *entity) const {
@@ -171,7 +183,7 @@ void RenderSystem::drawShape(Entity *entity) const {
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     glBegin(GL_POLYGON);
     {
-        for(Vec3 vertex: shape->vertices) {
+        for (Vector3 vertex: shape->vertices) {
             glVertex3f(vertex.x, vertex.y, 0);
         }
     }
@@ -187,7 +199,8 @@ void RenderSystem::drawHealthBars(Entity *entity) const {
 
     int width = 10;
     Health *health = entity->get<Health>();
-    double healthWidth = width * ((double) health->health / (double) health->maxHealth);
+    double healthWidth =
+            width * ((double) health->health / (double) health->maxHealth);
 
     glBegin(GL_POLYGON);
     {
@@ -212,19 +225,21 @@ void RenderSystem::drawDifficulty() {
     switch (gameModel.difficulty) {
         case Difficulty::HARD:
             glColor3f(1, 0, 0);
-            return renderString(0, -(arenaSize + 6), "Difficulty: HARD", TextAlignment::CENTER);
+            return renderString(0, -(arenaSize + 6), "Difficulty: HARD",
+                                TextAlignment::CENTER);
         case Difficulty::EASY:
             glColor3f(1, 1, 1);
-            return renderString(0, -(arenaSize + 6), "Difficulty: EASY", TextAlignment::CENTER);
+            return renderString(0, -(arenaSize + 6), "Difficulty: EASY",
+                                TextAlignment::CENTER);
     }
 }
 
 void RenderSystem::glRotateQuaternion(const Quaternion &q) {
     // Row 1
-    double  w = q.w;
-    double  x = q.x;
-    double  y = q.y;
-    double  z = q.z;
+    double w = q.w;
+    double x = q.x;
+    double y = q.y;
+    double z = q.z;
 
     double m00 = 2 * (w * w + x * x) - 1;
     double m01 = 2 * (x * y - w * z);

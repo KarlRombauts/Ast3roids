@@ -2,14 +2,14 @@
 #define UNTITLED_KINEMATICS_H
 
 
-#include "../Vec3.h"
+#include "../Vector3.h"
 
 struct Kinematics : public Component {
-    Kinematics(const Vec3 &velocity, const Vec3 &acceleration, double mass) : velocity(
+    Kinematics(const Vector3 &velocity, const Vector3 &acceleration, double mass) : velocity(
             velocity), acceleration(acceleration), mass(mass), angularVelocity(0), drag(0) {}
 
-    Vec3 velocity;
-    Vec3 acceleration;
+    Vector3 velocity;
+    Vector3 acceleration;
     double angularVelocity;
     double drag;
     double mass;

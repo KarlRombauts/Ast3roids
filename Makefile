@@ -690,32 +690,59 @@ Systems/WarningSystem.cpp.s:
 	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/Systems/WarningSystem.cpp.s
 .PHONY : Systems/WarningSystem.cpp.s
 
-Vec3.o: Vec3.cpp.o
+Vector3.o: Vector3.cpp.o
 
-.PHONY : Vec3.o
+.PHONY : Vector3.o
 
 # target to build an object file
-Vec3.cpp.o:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/Vec3.cpp.o
-.PHONY : Vec3.cpp.o
+Vector3.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/Vector3.cpp.o
+.PHONY : Vector3.cpp.o
 
-Vec3.i: Vec3.cpp.i
+Vector3.i: Vector3.cpp.i
 
-.PHONY : Vec3.i
+.PHONY : Vector3.i
 
 # target to preprocess a source file
-Vec3.cpp.i:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/Vec3.cpp.i
-.PHONY : Vec3.cpp.i
+Vector3.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/Vector3.cpp.i
+.PHONY : Vector3.cpp.i
 
-Vec3.s: Vec3.cpp.s
+Vector3.s: Vector3.cpp.s
 
-.PHONY : Vec3.s
+.PHONY : Vector3.s
 
 # target to generate assembly for a file
-Vec3.cpp.s:
-	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/Vec3.cpp.s
-.PHONY : Vec3.cpp.s
+Vector3.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/Vector3.cpp.s
+.PHONY : Vector3.cpp.s
+
+World.o: World.cpp.o
+
+.PHONY : World.o
+
+# target to build an object file
+World.cpp.o:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/World.cpp.o
+.PHONY : World.cpp.o
+
+World.i: World.cpp.i
+
+.PHONY : World.i
+
+# target to preprocess a source file
+World.cpp.i:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/World.cpp.i
+.PHONY : World.cpp.i
+
+World.s: World.cpp.s
+
+.PHONY : World.s
+
+# target to generate assembly for a file
+World.cpp.s:
+	$(MAKE) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/World.cpp.s
+.PHONY : World.cpp.s
 
 ecs/Entity.o: ecs/Entity.cpp.o
 
@@ -897,9 +924,12 @@ help:
 	@echo "... Systems/WarningSystem.o"
 	@echo "... Systems/WarningSystem.i"
 	@echo "... Systems/WarningSystem.s"
-	@echo "... Vec3.o"
-	@echo "... Vec3.i"
-	@echo "... Vec3.s"
+	@echo "... Vector3.o"
+	@echo "... Vector3.i"
+	@echo "... Vector3.s"
+	@echo "... World.o"
+	@echo "... World.i"
+	@echo "... World.s"
 	@echo "... ecs/Entity.o"
 	@echo "... ecs/Entity.i"
 	@echo "... ecs/Entity.s"

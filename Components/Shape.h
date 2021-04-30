@@ -5,12 +5,12 @@
 #include <utility>
 #include <vector>
 #include "../ecs/Component.h"
-#include "../Vec3.h"
+#include "../Vector3.h"
 
 struct Shape: public Component {
-    Shape(std::vector<Vec3> vertices) : vertices(std::move(vertices)){}
+    Shape(std::vector<Vector3> vertices) : vertices(std::move(vertices)){}
 
-    std::vector<Vec3> vertices;
+    std::vector<Vector3> vertices;
 };
 
 

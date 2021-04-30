@@ -25,8 +25,28 @@ double *Quaternion::toRotationMatrix() {
     };
 }
 
-std::string Quaternion::toString() {
+std::string Quaternion::toString() const {
     std::stringstream stringstream;
     stringstream << w << ", " << x << "i, " << y << "j, " << z << "k";
     return stringstream.str();
+}
+
+Quaternion Quaternion::multiply(const Quaternion &q) const {
+    double newX = w*q.x + x*q.w + y*q.z - z*q.y;
+    double newY = w*q.y - x*q.z + y*q.w + z*q.x;
+    double newZ = w*q.z + x*q.y - y*q.x + z*q.w;
+    double newW = w*q.w - x*q.x - y*q.y - z*q.z;
+    return Quaternion(newX, newY, newZ, newW);
+}
+
+Quaternion Quaternion::operator*(const Quaternion &q) const {
+    return multiply(q);
+}
+
+void Quaternion::operator*=(const Quaternion &q) {
+    *this = multiply(q);
+}
+
+Quaternion Quaternion::identity() {
+    return Quaternion(0, 0, 0, 1);
 }

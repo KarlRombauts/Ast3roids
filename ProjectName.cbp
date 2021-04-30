@@ -270,10 +270,10 @@
 		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Systems/WarningSystem.h">
 			<Option target="ProjectName"/>
 		</Unit>
-		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Vec3.cpp">
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Vector3.cpp">
 			<Option target="ProjectName"/>
 		</Unit>
-		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Vec3.h">
+		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/Vector3.h">
 			<Option target="ProjectName"/>
 		</Unit>
 		<Unit filename="/Users/karlrombauts/CLionProjects/APT-test2/untitled/ecs/Component.h">

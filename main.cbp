@@ -137,6 +137,9 @@
 		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/Components/PlayerInput.h">
 			<Option target="main"/>
 		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/Components/Rotation.h">
+			<Option target="main"/>
+		</Unit>
 		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/Components/Shape.h">
 			<Option target="main"/>
 		</Unit>
@@ -293,10 +296,16 @@
 		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/Types.h">
 			<Option target="main"/>
 		</Unit>
-		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/Vec3.cpp">
+		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/Vector3.cpp">
 			<Option target="main"/>
 		</Unit>
-		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/Vec3.h">
+		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/Vector3.h">
+			<Option target="main"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/World.cpp">
+			<Option target="main"/>
+		</Unit>
+		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/World.h">
 			<Option target="main"/>
 		</Unit>
 		<Unit filename="/Users/karlrombauts/CLionProjects/asteroids-3d/ecs/Component.h">

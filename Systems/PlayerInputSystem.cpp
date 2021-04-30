@@ -6,28 +6,32 @@
 #include "../Components/SpaceShip.h"
 #include "../Components/FiringBullet.h"
 #include "../Components/ParticleSource.h"
+#include "../Components/Rotation.h"
 
 void PlayerInputSystem::update(EntityManager &entities, double dt) {
-    for(Entity* entity: entities.getEntitiesWith<Transform, Kinematics, PlayerInput, SpaceShip>()) {
+    for(Entity* entity: entities.getEntitiesWith<Transform, Rotation, Kinematics, PlayerInput, SpaceShip>()) {
         Transform *transform = entity->get<Transform>();
         Kinematics *kinematics = entity->get<Kinematics>();
         SpaceShip *spaceShip = entity->get<SpaceShip>();
+        Quaternion &rotation = entity->get<Rotation>()->rotation;
 
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_LEFT)) {
-            transform->rotation += (float) gameConfig.PLAYER_TURN_SPEED * dt / 1000;
+            double angle = (float) gameConfig.PLAYER_TURN_SPEED * dt / 1000;
+            rotation = Quaternion::angleAxis(angle, Vector3::forward()) * rotation;
         }
 
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_RIGHT)) {
-            transform->rotation -= (float) gameConfig.PLAYER_TURN_SPEED * dt / 1000;
+            double angle = (float) gameConfig.PLAYER_TURN_SPEED * dt / 1000;
+            rotation = Quaternion::angleAxis(-angle, Vector3::forward()) * rotation;
         }
 
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
-            kinematics->acceleration = Vec3::polar(transform->rotation, spaceShip->thrust);
+            kinematics->acceleration = Vector3::polar(transform->rotation, spaceShip->thrust);
 
             // Create exhaust particle system
             Entity* particles = entities.create();
 
-            Vec3 initialVelocity = kinematics->acceleration.scale(-1) * dt / 1000;
+            Vector3 initialVelocity = kinematics->acceleration.scale(-1) * dt / 1000;
             particles->assign<ParticleSource>(
                     initialVelocity,
                     5,
