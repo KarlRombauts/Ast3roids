@@ -12,7 +12,7 @@ Vector3 Vector3::add(Vector3 vector) {
     return Vector3(newX, newY, newZ);
 }
 
-double Vector3::magnitude() {
+double Vector3::magnitude() const {
     return sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
 }
 
@@ -61,17 +61,21 @@ void Vector3::operator-=(const Vector3 &vector) {
     setXYZ(newVector);
 }
 
-double Vector3::dot(Vector3 vector) {
-    return x * vector.x
-           + y * vector.y
-           + z * vector.z;
+double Vector3::dot(const Vector3 &a, const Vector3 &b) {
+    return a.x * b.x
+           + a.y * b.y
+           + a.z * b.z;
+}
+
+double Vector3::dot(const Vector3 &vector) const {
+    return dot(*this, vector);
 }
 
 Vector3 Vector3::normalize() {
     return *this / magnitude();
 }
 
-Vector3 Vector3::perpendicular() {
+Vector3 Vector3::perpendicular() const {
     return Vector3(y, x * -1).normalize();
 }
 
@@ -98,3 +102,36 @@ void Vector3::operator/=(const double &scalar) {
     setXYZ(newVec);
 }
 
+/**
+ * Crosses this vector with the provided vector and returns the result
+ * @param v the vector to cross with
+ * @return the cross product (this × v)
+ */
+Vector3 Vector3::cross(const Vector3 &v) const {
+    double newX = y * v.z - v.y * z;
+    double newY = z * v.x - v.z * x;
+    double newZ = x * v.y - v.x * y;
+
+    return Vector3(newX, newY, newZ);
+}
+
+/**
+ * Calculates the angle between two vectors. Specifically this is the angle that
+ * rotates the from vector to the to vector along their cross product vector
+ * @param from the starting vector
+ * @param to the destination vector
+ * @return the angle between the two vectors
+ */
+double Vector3::angle(const Vector3 &from, const Vector3 &to) {
+    double adj = from.dot(to);
+    double opp = (from.cross(to)).magnitude();
+    return atan2(opp, adj);
+}
+
+bool Vector3::operator==(const Vector3 &other) const {
+   return x == other.x && y == other.y && z == other.z;
+}
+
+bool Vector3::operator!=(const Vector3 &other) const {
+    return x != other.x || y != other.y || z != other.z;
+}

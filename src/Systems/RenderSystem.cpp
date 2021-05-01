@@ -241,6 +241,7 @@ void RenderSystem::glRotateQuaternion(const Quaternion &q) {
     double y = q.y;
     double z = q.z;
 
+
     double m00 = 2 * (w * w + x * x) - 1;
     double m01 = 2 * (x * y - w * z);
     double m02 = 2 * (x * z + w * y);

@@ -15,14 +15,30 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
         SpaceShip *spaceShip = entity->get<SpaceShip>();
         Quaternion &rotation = entity->get<Rotation>()->rotation;
 
+        double angle = (float) gameConfig.PLAYER_TURN_SPEED * dt / 1000;
+
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_LEFT)) {
-            double angle = (float) gameConfig.PLAYER_TURN_SPEED * dt / 1000;
-            rotation = Quaternion::angleAxis(angle, Vector3::forward()) * rotation;
+            rotation *= Quaternion::angleAxis(angle, Vector3::forward());
         }
 
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_RIGHT)) {
-            double angle = (float) gameConfig.PLAYER_TURN_SPEED * dt / 1000;
-            rotation = Quaternion::angleAxis(-angle, Vector3::forward()) * rotation;
+            rotation *= Quaternion::angleAxis(-angle, Vector3::forward());
+        }
+
+        if (keyboardState.isKeyPressed('w')) {
+            rotation *= Quaternion::angleAxis(angle, Vector3::right());
+        }
+
+        if (keyboardState.isKeyPressed('s')) {
+            rotation *= Quaternion::angleAxis(-angle, Vector3::right());
+        }
+
+        if (keyboardState.isKeyPressed('h')) {
+            rotation *= Quaternion::angleAxis(angle, Vector3::up());
+        }
+
+        if (keyboardState.isKeyPressed('l')) {
+            rotation *= Quaternion::angleAxis(-angle, Vector3::up());
         }
 
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {

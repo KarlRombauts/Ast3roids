@@ -175,7 +175,7 @@ void EntityManager::createWorld() {
     createArena();
     const Vector3 shipPosition = Vector3(gameModel.arenaSize * -0.7,
                                    gameModel.arenaSize * -0.7);
-    createSpaceShip(shipPosition);
+    createSpaceShip(Vector3(0, 0, 0));
 
     if (gameModel.difficulty == Difficulty::HARD) {
         // Never create a black hole that is too close to the ship

@@ -1,7 +1,4 @@
 #include <stdlib.h>
-
-
-
 #include "OpenGL.h"
 #include "Globals.h"
 #include "GameModel.h"

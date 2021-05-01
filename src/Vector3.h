@@ -65,13 +65,17 @@ public:
 
     Vector3 add(Vector3 vector);
 
-    double dot(Vector3 vector);
+    static double dot(const Vector3 &a, const Vector3 &b);
+
+    double dot(const Vector3 &vector) const;
+
+    Vector3 cross(const Vector3 &vector3) const;
 
     Vector3 scale(double scalar);
 
     Vector3 normalize();
 
-    double magnitude();
+    double magnitude() const;
 
     Vector3 operator+(const Vector3 &vector);
 
@@ -89,13 +93,19 @@ public:
 
     void operator/=(const double &scalar);
 
+    bool operator==(const Vector3 &other) const;
+
+    bool operator!=(const Vector3 &other) const;
+
     static Vector3 polar(double rotation, double radius);
 
-    Vector3 perpendicular();
+    Vector3 perpendicular() const;
 
     Vector3 rotate(double theta);
 
     void setXYZ(const Vector3 &newVec);
+
+    static double angle(const Vector3 &from, const Vector3 &to);
 };
 
 #endif //UNTITLED_VEC2_H
