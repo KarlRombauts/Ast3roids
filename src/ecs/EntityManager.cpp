@@ -145,7 +145,7 @@ Entity *EntityManager::createSpaceShip(Vector3 position) {
     spaceShip->assign<CircleCollision>(5);
 
     spaceShip->assign<Texture>(1, 0, 0);
-    spaceShip->assign<Transform>(position, 90, Vector3(20, 20, 20));
+    spaceShip->assign<Transform>(position, 90, Vector3(2, 2, 2));
     spaceShip->assign<Rotation>();
     spaceShip->assign<Kinematics>(Vector3(0, 0), Vector3(0, 0), 1);
     spaceShip->get<Kinematics>()->drag = 1;
@@ -172,23 +172,30 @@ void EntityManager::destroy(Entity *entity) {
 }
 
 void EntityManager::createWorld() {
-    createArena();
-    const Vector3 shipPosition = Vector3(gameModel.arenaSize * -0.7,
-                                   gameModel.arenaSize * -0.7);
+//    createArena();
+//    const Vector3 shipPosition = Vector3(gameModel.arenaSize * -0.7,
+//                                   gameModel.arenaSize * -0.7);
     createSpaceShip(Vector3(0, 0, 0));
 
-    if (gameModel.difficulty == Difficulty::HARD) {
-        // Never create a black hole that is too close to the ship
-        int range = gameModel.arenaSize * 0.8;
-        Vector3 blackHolePosition = Vector3(0, 0);
-        do {
-            blackHolePosition = Vector3(randInt(-range, range),
-                                        randInt(-range, range));
-        } while ((blackHolePosition - shipPosition).magnitude() <
-                 gameModel.arenaSize * 0.4);
 
-        createBlackHole(10, blackHolePosition);
-    }
+    Entity *center = create();
+//    center->assign<Shape>(spaceShipModel);
+    center->assign<Texture>(1, 0, 0);
+    center->assign<Transform>(Vector3(0,0,0), 90, Vector3(2, 2, 2));
+    center->assign<Rotation>();
+    center->assign<Kinematics>(Vector3(0, 0), Vector3(0, 0), 1);
+//    if (gameModel.difficulty == Difficulty::HARD) {
+//        // Never create a black hole that is too close to the ship
+//        int range = gameModel.arenaSize * 0.8;
+//        Vector3 blackHolePosition = Vector3(0, 0);
+//        do {
+//            blackHolePosition = Vector3(randInt(-range, range),
+//                                        randInt(-range, range));
+//        } while ((blackHolePosition - shipPosition).magnitude() <
+//                 gameModel.arenaSize * 0.4);
+//
+//        createBlackHole(10, blackHolePosition);
+//    }
 }
 
 void EntityManager::destroyAll() {

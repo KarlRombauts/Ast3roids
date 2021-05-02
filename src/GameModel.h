@@ -34,8 +34,6 @@ struct GameModel {
 
     void resizeScreen(int w, int h);
 
-    void resizeWorld(double minX, double maxX, double minY, double maxY);
-
     bool isCircleInArena(Vector3 pos, double radius);
 
     double getWorldToPixelRatioWidth();

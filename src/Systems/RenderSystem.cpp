@@ -16,21 +16,21 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     drawDifficulty();
     switch (gameModel.state) {
         case GameState::START:
-            renderString(0, 0, "Press SPACE BAR to start...",
-                         TextAlignment::CENTER);
-            renderString(0, -10, "(Press 1 or 2 to switch difficulty modes)",
-                         TextAlignment::CENTER);
-            break;
+//            renderString(0, 0, "Press SPACE BAR to start...",
+//                         TextAlignment::CENTER);
+//            renderString(0, -10, "(Press 1 or 2 to switch difficulty modes)",
+//                         TextAlignment::CENTER);
+//            break;
         case GameState::GAME_OVER:
         case GameState::PLAY_AGAIN:
-            renderString(0, 0, "Game Over. Press SPACE BAR to play again...",
-                         TextAlignment::CENTER);
-            renderString(0, -10, "(Press 1 or 2 to switch difficulty modes)",
-                         TextAlignment::CENTER);
-            break;
+//            renderString(0, 0, "Game Over. Press SPACE BAR to play again...",
+//                         TextAlignment::CENTER);
+//            renderString(0, -10, "(Press 1 or 2 to switch difficulty modes)",
+//                         TextAlignment::CENTER);
+//            break;
         case GameState::WAVE_OVER:
         case GameState::PLAYING:
-            drawScore();
+//            drawScore();
             drawEntities(entities);
             break;
     }
@@ -47,7 +47,8 @@ void RenderSystem::drawEntities(EntityManager &entities) {
         }
 
         glPushMatrix();
-        glTranslatef(transform->position.x, transform->position.y, 0);
+        glTranslatef(transform->position.x, transform->position.y,
+                     transform->position.z);
         glScalef(transform->scale.x, transform->scale.y, transform->scale.z);
 
 //        Quaternion rotation =
@@ -57,6 +58,7 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 
         glRotateQuaternion(rotation);
 
+        drawAxis();
         glColor3f(texture->red, texture->green, texture->blue);
 
 //            if (entity->has<Shape>()) {
@@ -165,6 +167,30 @@ void RenderSystem::drawParticle(Entity *entity) const {
     glEnd();
 }
 
+void RenderSystem::drawAxis() const {
+    glBegin(GL_LINES);
+    {
+        glColor3f(1, 0, 0);
+        glVertex3f(0, 0, 0);
+        glVertex3f(1, 0, 0);
+    }
+    glEnd();
+    glBegin(GL_LINES);
+    {
+        glColor3f(0, 1, 0);
+        glVertex3f(0, 0, 0);
+        glVertex3f(0, 3, 0);
+    }
+    glEnd();
+    glBegin(GL_LINES);
+    {
+        glColor3f(0, 0, 1);
+        glVertex3f(0, 0, 0);
+        glVertex3f(0, 0, 3);
+    }
+    glEnd();
+}
+
 void RenderSystem::drawLine(Entity *entity) const {
     Line *line = entity->get<Line>();
     glLineWidth(2.0);
@@ -237,31 +263,73 @@ void RenderSystem::drawDifficulty() {
 void RenderSystem::glRotateQuaternion(const Quaternion &q) {
     // Row 1
     double w = q.w;
-    double x = q.x;
-    double y = q.y;
-    double z = q.z;
+    double x = q.v.x;
+    double y = q.v.y;
+    double z = q.v.z;
 
 
-    double m00 = 2 * (w * w + x * x) - 1;
-    double m01 = 2 * (x * y - w * z);
-    double m02 = 2 * (x * z + w * y);
+//    double m00 = 2 * (w * w + x * x) - 1;
+//    double m01 = 2 * (x * y - w * z);
+//    double m02 = 2 * (x * z + w * y);
+//
+//    // Row 2
+//    double m10 = 2 * (x * y + w * z);
+//    double m11 = 2 * (w * w + y * y) - 1;
+//    double m12 = 2 * (y * z - w * x);
+//
+//    // Row 3
+//    double m20 = 2 * (x * z - w * y);
+//    double m21 = 2 * (y * z + w * x);
+//    double m22 = 2 * (w * w + z * z) - 1;
+//
+    double matrix[16] = {1, 0, 0, 0,
+                         0, 1, 0, 0,
+                         0, 0, 1, 0,
+                         0, 0, 0, 1};
 
-    // Row 2
-    double m10 = 2 * (x * y + w * z);
-    double m11 = 2 * (w * w + y * y) - 1;
-    double m12 = 2 * (y * z - w * x);
+    double sqw = w * w;
+    double sqx = x * x;
+    double sqy = y * y;
+    double sqz = z * z;
+    double invs = 1.0f / (sqx + sqy + sqz + sqw);
 
-    // Row 3
-    double m20 = 2 * (x * z - w * y);
-    double m21 = 2 * (y * z + w * x);
-    double m22 = 2 * (w * w + z * z) - 1;
-
-    double matrix[16] = {
-            m00, m01, m02, 0,
-            m10, m11, m12, 0,
-            m20, m21, m22, 0,
-            0, 0, 0, 1
-    };
+    matrix[0] = (w*w) + (x*x) - (y*y) - (z*z);
+    matrix[1] = (2*x*y) + (2*w*z);
+    matrix[2] = (2*x*z) - (2*w*y);
+    matrix[3] = 0;
+    //Column 2
+    matrix[4] = (2*x*y) - (2*w*z);
+    matrix[5] = (w*w) - (x*x) + (y*y) - (z*z);
+    matrix[6] = (2*y*z) + (2*w*x);
+    matrix[7] = 0;
+    //Column 3
+    matrix[8] = (2*x*z) + (2*w*y);
+    matrix[9] = (2*y*z) - (2*w*x);
+    matrix[10] = (w*w) - (x*x) - (y*y) + (z*z);
+    matrix[11] = 0;
+    //Column 4
+    matrix[12] = 0;
+    matrix[13] = 0;
+    matrix[14] = 0;
+    matrix[15] = 1;
+//    matrix[0] = (sqx - sqy - sqz + sqw);
+//    matrix[4] = (-sqx + sqy - sqz + sqw);
+//    matrix[8] = (-sqx - sqy + sqz + sqw);
+//
+//    double tmp1 = x * y;
+//    double tmp2 = z * w;
+//    matrix[1] = 2.0 * (tmp1 - tmp2);
+//    matrix[3] = 2.0 * (tmp1 + tmp2);
+//
+//    tmp1 = x * z;
+//    tmp2 = y * w;
+//    matrix[2] = 2.0 * (tmp1 + tmp2);
+//    matrix[6] = 2.0 * (tmp1 - tmp2);
+//
+//    tmp1 = y * z;
+//    tmp2 = x * w;
+//    matrix[5] = 2.0 * (tmp1 - tmp2);
+//    matrix[7] = 2.0 * (tmp1 + tmp2);
 
     glMultMatrixd(matrix);
 }

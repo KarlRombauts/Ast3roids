@@ -36,6 +36,8 @@ public:
     void drawDifficulty();
 
     void glRotateQuaternion(const Quaternion &q);
+
+    void drawAxis() const;
 };
 
 

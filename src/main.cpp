@@ -50,6 +50,13 @@ void handleGamePlay();
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
+    glLoadIdentity();
+
+    gluLookAt(
+            camera.pos.x, camera.pos.y, camera.pos.z, // Position camera
+            0, 0, 0, // Look at center
+            0, 1, 0 // Point top of camera upwards
+    );
 
     renderSystem.update(entities, 0);
     glutSwapBuffers();
@@ -85,6 +92,33 @@ void handleGamePlay() {
         gameModel.elapsedTime = thisTime;
         return;
     }
+
+
+    if (keyboardState.isKeyPressed('A')) {
+        camera.pos += Vector3::left() * 50 * dt / 1000;
+    }
+    if (keyboardState.isKeyPressed('D')) {
+        camera.pos += Vector3::right() * 50 * dt / 1000;
+    }
+    if (keyboardState.isKeyPressed('W')) {
+        camera.pos += Vector3::up() * 50 * dt / 1000;
+    }
+    if (keyboardState.isKeyPressed('S')) {
+        camera.pos += Vector3::down() * 50 * dt / 1000;
+    }
+    if (keyboardState.isKeyPressed('I')) {
+        camera.pos += Vector3::forward() * 50 * dt / 1000;
+    }
+    if (keyboardState.isKeyPressed('K')) {
+        camera.pos += Vector3::back() * 50 * dt / 1000;
+    }
+
+//    if(keyboardState.isKeyPressed('I')) {
+//        camera.pos += Vector3::back() * 50 * dt / 1000;
+//    }
+//    if(keyboardState.isKeyPressed('K')) {
+//        camera.pos += Vector3::forward() * 50 * dt / 1000;
+//    }
 
     playerInputSystem.update(entities, dt);
 //    firingSystem.update(entities, dt);
@@ -140,7 +174,7 @@ void init() {
     glMatrixMode(GL_MODELVIEW);
 }
 
-void reshape (int w, int h) {
+void reshape(int w, int h) {
     glViewport(0, 0, (GLsizei) w, (GLsizei) h);
     gameModel.resizeScreen(w, h);
 }

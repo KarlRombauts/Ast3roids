@@ -5,6 +5,7 @@
 #ifndef UNTITLED_HELPERS_H
 #define UNTITLED_HELPERS_H
 
+#include <string>
 
 double randf(double min, double max);
 

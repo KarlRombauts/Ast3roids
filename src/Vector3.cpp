@@ -16,18 +16,18 @@ double Vector3::magnitude() const {
     return sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
 }
 
-Vector3 Vector3::scale(double scalar) {
+Vector3 Vector3::scale(double scalar) const {
     double newX = x * scalar;
     double newY = y * scalar;
     double newZ = z * scalar;
     return Vector3(newX, newY, newZ);
 }
 
-Vector3 Vector3::operator*(const double &scalar) {
+Vector3 Vector3::operator*(const double &scalar) const {
     return scale(scalar);
 }
 
-Vector3 Vector3::operator/(const double &scalar) {
+Vector3 Vector3::operator/(const double &scalar) const {
     return scale(1 / scalar);
 }
 
@@ -83,7 +83,7 @@ Vector3 Vector3::rotate(double theta) {
     double sinT = sin(theta);
     double cosT = cos(theta);
     return Vector3(x * cosT - y * sinT,
-                x * sinT + y * cosT);
+                   x * sinT + y * cosT);
 }
 
 void Vector3::operator*=(const double &scalar) {
@@ -129,9 +129,36 @@ double Vector3::angle(const Vector3 &from, const Vector3 &to) {
 }
 
 bool Vector3::operator==(const Vector3 &other) const {
-   return x == other.x && y == other.y && z == other.z;
+    return x == other.x && y == other.y && z == other.z;
 }
 
 bool Vector3::operator!=(const Vector3 &other) const {
     return x != other.x || y != other.y || z != other.z;
 }
+
+/**
+ * Checks if the this vector (a) is lineally dependant on v. I.e. a = b*v where
+ * b is some real number
+ * @param v the vector to check
+ * @return True if the two vectors are collinear, false otherwise.
+ */
+bool Vector3::isCollinear(Vector3 v) const {
+    return (x * v.y - v.x * y) == 0 &&
+           (x * v.z - v.x * z) == 0 &&
+           (y * v.z - v.y * z) == 0;
+}
+
+bool Vector3::isNull() const {
+    return x == 0 && y == 0 && z == 0;
+}
+
+/**
+ * Return a vector that is orthogonal (perpendicular) to the given vector
+ * @param v the supplied vector
+ * @return the orthogonal vector
+ */
+Vector3 Vector3::orthogonalize(const Vector3 &v) {
+    Vector3 right = v.cross(*this);
+    return right.cross(v).normalize();
+}
+

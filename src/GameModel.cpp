@@ -1,28 +1,20 @@
+#include <math.h>
 #include "GameModel.h"
 #include "OpenGL.h"
+#include "Globals.h"
 
 GameModel gameModel;
 
 void GameModel::resizeWorld(double aspectRatio) {
-    if (aspectRatio > 1)
-        resizeWorld(-worldSize, worldSize, -worldSize * aspectRatio, worldSize * aspectRatio);
-    else
-        resizeWorld(-worldSize / aspectRatio, worldSize / aspectRatio, -worldSize, worldSize);
-}
-
-void GameModel::resizeWorld(double minX, double maxX, double minY, double maxY) {
-    worldCoordinates.minX = minX;
-    worldCoordinates.maxX = maxX;
-    worldCoordinates.minY = minY;
-    worldCoordinates.maxY = maxY;
-
     glMatrixMode (GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(minX, maxX, minY, maxY, -60.0, 60.0);
+    glLoadIdentity();
+    gluPerspective(camera.fov, aspectRatio, 1, 10000);
 
     glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
+    glLoadIdentity();
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
     glutPostRedisplay();
 }
 
@@ -36,7 +28,7 @@ bool GameModel::isCircleInArena(Vector3 pos, double radius) {
 void GameModel::resizeScreen(int w, int h) {
     width = w;
     height = h;
-    GLdouble aspectRatio = (GLfloat) h / (GLfloat) w;
+    GLdouble aspectRatio = (GLfloat) w / (GLfloat) h;
     gameModel.resizeWorld(aspectRatio);
 }
 

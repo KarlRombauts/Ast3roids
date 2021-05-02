@@ -7,6 +7,8 @@
 
 class Vector3 {
 public:
+    Vector3(): x(0), y(0), z(0) {};
+
     double y;
     double x;
     double z;
@@ -33,18 +35,18 @@ public:
 
     /**
      * Creates a unit vector pointing left
-     * @return Vector3(-1, 0, 0)
+     * @return Vector3(1, 0, 0)
      */
     static Vector3 left() {
-        return Vector3(-1, 0, 0);
+        return Vector3(1, 0, 0);
     }
 
     /**
      * Creates a unit vector pointing right
-     * @return Vector3(1, 0, 0)
+     * @return Vector3(-1, 0, 0)
      */
     static Vector3 right() {
-        return Vector3(1, 0, 0);
+        return Vector3(-1, 0, 0);
     }
 
     /**
@@ -71,7 +73,7 @@ public:
 
     Vector3 cross(const Vector3 &vector3) const;
 
-    Vector3 scale(double scalar);
+    Vector3 scale(double scalar) const;
 
     Vector3 normalize();
 
@@ -87,9 +89,9 @@ public:
 
     void operator*=(const double &scalar);
 
-    Vector3 operator*(const double &scalar);
+    Vector3 operator*(const double &scalar) const;
 
-    Vector3 operator/(const double &scalar);
+    Vector3 operator/(const double &scalar) const;
 
     void operator/=(const double &scalar);
 
@@ -106,6 +108,12 @@ public:
     void setXYZ(const Vector3 &newVec);
 
     static double angle(const Vector3 &from, const Vector3 &to);
+
+    bool isCollinear(Vector3 v) const;
+
+    bool isNull() const;
+
+    Vector3 orthogonalize(const Vector3 &v);
 };
 
 #endif //UNTITLED_VEC2_H
