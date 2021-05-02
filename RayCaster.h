@@ -6,9 +6,14 @@
 #define STARFOX_RAYCASTER_H
 
 
+#include <ecs/Entity.h>
+#include <Vector2.h>
+
 class RayCaster {
 public:
-    void setFromCamera()
+    void setFromCamera(Vector2 mouse, Entity * cameraEntity) {
+        camera->get<Camera>()
+    }
 
 };
 

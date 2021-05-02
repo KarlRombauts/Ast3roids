@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <Systems/RayCastingSystem.h>
 #include "OpenGL.h"
 #include "Globals.h"
 #include "GameModel.h"
@@ -20,6 +21,7 @@
 #include "Systems/ParticleSystem.h"
 #include "Systems/BlackHoleSystem.h"
 #include "Systems/DestroySystem.h"
+#include "Systems/RayCastingSystem.h"
 
 EntityManager entities;
 RenderSystem renderSystem;
@@ -37,6 +39,7 @@ ShipImpactSystem shipImpactSystem;
 ParticleSystem particleSystem;
 BlackHoleSystem blackHoleSystem;
 DestroySystem destroySystem;
+RayCastingSystem rayCastingSystem;
 
 
 void handleGameOver();
@@ -50,13 +53,6 @@ void handleGamePlay();
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glDisable(GL_DEPTH_TEST);
-    glLoadIdentity();
-
-    gluLookAt(
-            camera.pos.x, camera.pos.y, camera.pos.z, // Position camera
-            0, 0, 0, // Look at center
-            0, 1, 0 // Point top of camera upwards
-    );
 
     renderSystem.update(entities, 0);
     glutSwapBuffers();
@@ -94,24 +90,24 @@ void handleGamePlay() {
     }
 
 
-    if (keyboardState.isKeyPressed('A')) {
-        camera.pos += Vector3::left() * 50 * dt / 1000;
-    }
-    if (keyboardState.isKeyPressed('D')) {
-        camera.pos += Vector3::right() * 50 * dt / 1000;
-    }
-    if (keyboardState.isKeyPressed('W')) {
-        camera.pos += Vector3::up() * 50 * dt / 1000;
-    }
-    if (keyboardState.isKeyPressed('S')) {
-        camera.pos += Vector3::down() * 50 * dt / 1000;
-    }
-    if (keyboardState.isKeyPressed('I')) {
-        camera.pos += Vector3::forward() * 50 * dt / 1000;
-    }
-    if (keyboardState.isKeyPressed('K')) {
-        camera.pos += Vector3::back() * 50 * dt / 1000;
-    }
+//    if (keyboardState.isKeyPressed('A')) {
+//        camera.pos += Vector3::left() * 50 * dt / 1000;
+//    }
+//    if (keyboardState.isKeyPressed('D')) {
+//        camera.pos += Vector3::right() * 50 * dt / 1000;
+//    }
+//    if (keyboardState.isKeyPressed('W')) {
+//        camera.pos += Vector3::up() * 50 * dt / 1000;
+//    }
+//    if (keyboardState.isKeyPressed('S')) {
+//        camera.pos += Vector3::down() * 50 * dt / 1000;
+//    }
+//    if (keyboardState.isKeyPressed('I')) {
+//        camera.pos += Vector3::forward() * 50 * dt / 1000;
+//    }
+//    if (keyboardState.isKeyPressed('K')) {
+//        camera.pos += Vector3::back() * 50 * dt / 1000;
+//    }
 
 //    if(keyboardState.isKeyPressed('I')) {
 //        camera.pos += Vector3::back() * 50 * dt / 1000;
@@ -121,6 +117,7 @@ void handleGamePlay() {
 //    }
 
     playerInputSystem.update(entities, dt);
+    rayCastingSystem.update(entities);
 //    firingSystem.update(entities, dt);
 //    collisionSystem.update(entities, dt);
 //    particleSystem.update(entities, dt);
@@ -194,6 +191,20 @@ void onKeyRelease(unsigned char key, int x, int y) {
     keyboardState.releaseKey(key);
 }
 
+void onMouseButton(int btn, int state, int x, int y) {
+    mouseState.onMouseButton(btn, state, x, y);
+}
+
+
+void onMouseMove(int x, int y) {
+    mouseState.onMouseMove(x, y);
+}
+
+
+void onMouseDrag(int x, int y) {
+    mouseState.onMouseDrag(x, y);
+}
+
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
@@ -202,13 +213,19 @@ int main(int argc, char **argv) {
     reshape(500, 600);
     init();
 
-    /* Display and keyboard callbacks */
     glutIdleFunc(idle);
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
+
+    // Keyboard Callbacks
     glutKeyboardFunc(onKeyPress);
     glutKeyboardUpFunc(onKeyRelease);
 
-    /* Let glut take over */
+    // Mouse Callbacks
+    glutMouseFunc(onMouseButton);
+    glutMotionFunc(onMouseDrag);
+    glutPassiveMotionFunc(onMouseMove);
+
+    // Let glut takeover
     glutMainLoop();
 }

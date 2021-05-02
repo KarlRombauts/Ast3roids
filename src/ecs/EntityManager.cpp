@@ -1,3 +1,5 @@
+#include <Components/Camera.h>
+#include <Components/Position.h>
 #include "EntityManager.h"
 #include "Entity.h"
 #include "../Components/Transform.h"
@@ -175,6 +177,7 @@ void EntityManager::createWorld() {
 //    createArena();
 //    const Vector3 shipPosition = Vector3(gameModel.arenaSize * -0.7,
 //                                   gameModel.arenaSize * -0.7);
+    createCamera(Vector3(0, 0, 20), Quaternion());
     createSpaceShip(Vector3(0, 0, 0));
 
 
@@ -216,5 +219,13 @@ Entity *EntityManager::createBullet(Vector3 position, Vector3 velocity) {
     bullet->assign<CircleCollision>(2);
     bullet->assign<Texture>(gameConfig.BULLET_COLOR);
     return bullet;
+}
+
+Entity *EntityManager::createCamera(Vector3 position, Quaternion rotation) {
+    Entity *camera = create();
+    double aspect = gameModel.height / gameModel.width;
+    camera->assign<Camera>(60, aspect, 1, 1000);
+    camera->assign<Position>(position);
+    camera->assign<Rotation>(rotation);
 }
 

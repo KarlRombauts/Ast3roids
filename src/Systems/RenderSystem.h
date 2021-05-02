@@ -38,6 +38,8 @@ public:
     void glRotateQuaternion(const Quaternion &q);
 
     void drawAxis() const;
+
+    void updateCamera(EntityManager &entities);
 };
 
 

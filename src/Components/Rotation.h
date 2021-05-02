@@ -5,7 +5,7 @@
 #include "../Quaternion.h"
 #include "../ecs/Component.h"
 
-struct Rotation: Component {
+struct Rotation: public Component {
     /**
      * Initialises the rotation component with an identity quaternion (no rotation)
      */

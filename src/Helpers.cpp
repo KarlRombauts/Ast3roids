@@ -27,3 +27,14 @@ std::string formatTime(int msElapsedTime) {
 
     return result;
 }
+
+
+double map(double value, std::pair<double, double> input, std::pair<double, double> output) {
+    double valueNorm = value - input.first;
+    double inputUpperNorm = input.second - input.first;
+    double normPosition = valueNorm / inputUpperNorm;
+
+    double outputUpperNorm = output.second - output.first;
+    double bValNorm = normPosition * outputUpperNorm;
+    return output.first + bValNorm;
+}

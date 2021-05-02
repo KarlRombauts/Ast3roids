@@ -8,6 +8,7 @@
 
 #include <unordered_map>
 #include <vector>
+#include <Quaternion.h>
 #include "Entity.h"
 #include "../Vector3.h"
 #include "../enum/TextAlignment.h"
@@ -45,6 +46,7 @@ public:
 
     void createWorld();
 
+    Entity *createCamera(Vector3 position, Quaternion rotation);
 };
 
 template<typename... Components>

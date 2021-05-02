@@ -15,7 +15,8 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
         SpaceShip *spaceShip = entity->get<SpaceShip>();
         Quaternion &rotation = entity->get<Rotation>()->rotation;
 
-        rotation = Quaternion::lookRotation(transform->position * -1, Vector3::forward());
+//        rotation = Quaternion::lookRotation(transform->position * -1, Vector3::forward());
+        rotation = Quaternion::slerp(rotation, Quaternion::angleAxis(180, Vector3::forward()), 0.001);
         double angle = (float) gameConfig.PLAYER_TURN_SPEED * dt / 1000;
 
         if (keyboardState.isKeyPressed('r')) {

@@ -1,5 +1,7 @@
 #include <string>
 #include <iostream>
+#include <Components/Camera.h>
+#include <Components/Position.h>
 #include "RenderSystem.h"
 #include "../OpenGL.h"
 #include "../Components/Shape.h"
@@ -13,6 +15,7 @@
 #include "../Components/Rotation.h"
 
 void RenderSystem::update(EntityManager &entities, double dt) {
+    updateCamera(entities);
     drawDifficulty();
     switch (gameModel.state) {
         case GameState::START:
@@ -334,3 +337,14 @@ void RenderSystem::glRotateQuaternion(const Quaternion &q) {
     glMultMatrixd(matrix);
 }
 
+
+void RenderSystem::updateCamera(EntityManager &entities) {
+    glLoadIdentity();
+
+    for (Entity *entity: entities.getEntitiesWith<Camera, Position, Rotation>()) {
+        Vector3 &position = entity->get<Position>()->position;
+        Quaternion &rotation = entity->get<Rotation>()->rotation;
+        glRotateQuaternion(rotation);
+        glTranslated(-position.x, -position.y, -position.z);
+    }
+}
