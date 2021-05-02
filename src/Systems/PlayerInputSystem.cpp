@@ -1,3 +1,5 @@
+#include <Components/Camera.h>
+#include <Components/Position.h>
 #include "PlayerInputSystem.h"
 #include "../Globals.h"
 #include "../Components/PlayerInput.h"
@@ -9,6 +11,31 @@
 #include "../Components/Rotation.h"
 
 void PlayerInputSystem::update(EntityManager &entities, double dt) {
+    for(Entity* entity: entities.getEntitiesWith<Camera, Rotation, Position>()) {
+        Vector3 &position = entity->get<Position>()->position;
+        Quaternion &rotation = entity->get<Rotation>()->rotation;
+
+
+        if (keyboardState.isKeyPressed('a')) {
+            Vector3 localMove = Vector3::right() * 10 * dt / 1000;
+            position += rotation * localMove;
+        }
+
+        if (keyboardState.isKeyPressed('d')) {
+            Vector3 localMove = Vector3::left() * 10 * dt / 1000;
+            position += rotation * localMove;
+        }
+
+        if (keyboardState.isKeyPressed('w')) {
+            Vector3 localMove = Vector3::back() * 10 * dt / 1000;
+            position += rotation * localMove;
+        }
+        if (keyboardState.isKeyPressed('s')) {
+            Vector3 localMove = Vector3::forward() * 10 * dt / 1000;
+            position += rotation * localMove;
+        }
+    }
+
     for(Entity* entity: entities.getEntitiesWith<Transform, Rotation, Kinematics, PlayerInput, SpaceShip>()) {
         Transform *transform = entity->get<Transform>();
         Kinematics *kinematics = entity->get<Kinematics>();
@@ -16,37 +43,9 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
         Quaternion &rotation = entity->get<Rotation>()->rotation;
 
 //        rotation = Quaternion::lookRotation(transform->position * -1, Vector3::forward());
-        rotation = Quaternion::slerp(rotation, Quaternion::angleAxis(180, Vector3::forward()), 0.001);
+//        rotation = Quaternion::slerp(rotation, Quaternion::angleAxis(180, Vector3::forward()), 0.001);
         double angle = (float) gameConfig.PLAYER_TURN_SPEED * dt / 1000;
 
-        if (keyboardState.isKeyPressed('r')) {
-//            rotation *= Quaternion::angleAxis(angle, Vector3::forward());
-            transform->position = Vector3(0,0,0);
-        }
-        if (keyboardState.isKeyPressed(gameConfig.PLAYER_LEFT)) {
-//            rotation *= Quaternion::angleAxis(angle, Vector3::forward());
-            transform->position += Vector3::right() * 10 * dt / 1000;
-        }
-
-        if (keyboardState.isKeyPressed(gameConfig.PLAYER_RIGHT)) {
-//            rotation *= Quaternion::angleAxis(-angle, Vector3::forward());
-            transform->position += Vector3::left() * 10 * dt / 1000;
-        }
-
-        if (keyboardState.isKeyPressed('w')) {
-//            rotation *= Quaternion::angleAxis(angle, Vector3::right());
-            transform->position += Vector3::up() * 10 * dt / 1000;
-        }
-
-        if (keyboardState.isKeyPressed('s')) {
-//            rotation *= Quaternion::angleAxis(-angle, Vector3::right());
-            transform->position += Vector3::down() * 10 * dt / 1000;
-        }
-
-        if (keyboardState.isKeyPressed('i')) {
-//            rotation *= Quaternion::angleAxis(angle, Vector3::up());
-            transform->position += Vector3::forward() * 10 * dt / 1000;
-        }
 
         if (keyboardState.isKeyPressed('k')) {
 //            rotation *= Quaternion::angleAxis(-angle, Vector3::up());

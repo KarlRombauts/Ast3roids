@@ -29,8 +29,7 @@ void RayCastingSystem::update(EntityManager &entities) {
 
         mouseOnClipPlane.y = map(mouse.y, {0, gameModel.height}, {-1, 1});
 
-
-//        Quaternion mouseLookTilt = Quaternion::lookRotation(mouseOnClipPlane, Vector3::up());
+        // Todo: Add a tilt speed based on dt
         rotation *= Quaternion::angleAxis(1 * mouseOnClipPlane.y, Vector3::left());
         rotation *= Quaternion::angleAxis(1 * mouseOnClipPlane.x, Vector3::up());
     }
