@@ -1,9 +1,14 @@
 #include <cmath>
 #include "Vector3.h"
+#include "Helpers.h"
 
 Vector3::Vector3(double x, double y) : x(x), y(y), z(1) {}
 
 Vector3::Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
+
+Vector3 Vector3::random(double magnitude) {
+    return Vector3(randf(-1, 1), randf(-1, 1), randf(-1, 1)).normalize() * magnitude;
+}
 
 Vector3 Vector3::add(Vector3 vector) {
     double newX = x + vector.x;

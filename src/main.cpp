@@ -122,7 +122,7 @@ void handleGamePlay() {
 //    firingSystem.update(entities, dt);
 //    collisionSystem.update(entities, dt);
 //    particleSystem.update(entities, dt);
-//    physicsSystem.update(entities, dt);
+    physicsSystem.update(entities, dt);
 //    warningSystem.update(entities);
 //    damageSystem.update(entities);
 //    bulletCleanupSystem.update(entities, dt);
@@ -170,6 +170,8 @@ void init() {
     glMatrixMode(GL_PROJECTION);
     glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
+
+    glEnable(GL_DEPTH_TEST);
 }
 
 void reshape(int w, int h) {

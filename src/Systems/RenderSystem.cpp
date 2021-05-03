@@ -20,6 +20,25 @@
 void RenderSystem::update(EntityManager &entities, double dt) {
     updateCamera(entities);
 //    drawDifficulty();
+
+    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+    GLfloat mat_shininess[] = { 50.0 };
+    GLfloat light_position[] = { 0, 0, 1.0, 0.0 };
+    GLfloat light_ambient[] = { 0.3, 0.3, 0.3, 1.0 };
+
+    glClearColor (0.0, 0.0, 0.0, 0.0);
+    glShadeModel (GL_SMOOTH);
+
+    glutSolidSphere (1.0, 20, 16);
+
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+
     switch (gameModel.state) {
         case GameState::START:
 //            renderString(0, 0, "Press SPACE BAR to start...",
@@ -76,7 +95,7 @@ void RenderSystem::drawEntities(EntityManager &entities) {
         if (entity->has<Plane, Wall>()) {
            drawGridPlane(entity);
         } else if (entity->has<Asteroid>()) {
-
+            glutSolidSphere(1.0, 20, 16);
         } else {
             drawTestCube();
         }

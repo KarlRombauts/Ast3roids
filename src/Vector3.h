@@ -116,6 +116,8 @@ public:
     Vector3 orthogonalize(const Vector3 &v);
 
     static Vector3 lerp(const Vector3 &start, const Vector3 &end, double t);
+
+    static Vector3 random(double magnitude);
 };
 
 #endif //UNTITLED_VEC2_H

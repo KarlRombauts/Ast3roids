@@ -26,7 +26,9 @@ void PhysicsSystem::update(EntityManager &entities, double dt) {
 
         kinematics->velocity += kinematics->acceleration * dt / 1000;
         transform->position += kinematics->velocity * dt / 1000;
-        transform->rotation += kinematics->angularVelocity * dt / 1000;
+
+//        transform->rotation += kinematics->angularVelocity * dt / 1000;
+
 
         kinematics->acceleration = Vector3(0, 0);
 

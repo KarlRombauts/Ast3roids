@@ -64,46 +64,35 @@ Entity *EntityManager::createBlackHole(double radius, Vector3 position) {
 
 
 Entity *EntityManager::createAsteroid(double radius) {
-    Entity *asteroid = this->create();
+    Entity *asteroid = create();
     const CoordinateSpace &world = gameModel.worldCoordinates;
 
-    asteroid->assign<Transform>(
-            Vector3(randf(world.minX, world.maxX),
-                    randf(world.minY, world.maxY)),
-            0, Vector3(1, 1));
+    double l = gameModel.arenaSize;
+    asteroid->assign<Transform>(Vector3(randf(-l, l), randf(-l, l), randf(-l, l)),
+            0, Vector3(radius, radius, radius));
 
-    std::vector<Vector3> asteroidModel;
-    int num_segments = 12;
-    double roughness = 0.2;
-    for (int i = 0; i < num_segments; i++) {
-        double theta = 2.0 * M_PI * float(i) /
-                       float(num_segments); // get the current angle
-        double x = radius * cos(theta); // calculate the x component
-        double y = radius * sin(theta); // calculate the y component
-
-        Vector3 vertex = {
-                x + radius * randf(-roughness, roughness),
-                y + radius * randf(-roughness, roughness)
-        };
-
-        asteroidModel.push_back(vertex);
-    }
+    asteroid->assign<Rotation>();
 
     asteroid->assign<Asteroid>(radius);
-    asteroid->assign<Shape>(asteroidModel);
     asteroid->assign<Collision>(CollisionType::DYNAMIC);
     asteroid->assign<CircleCollision>(radius);
     asteroid->assign<Texture>(gameConfig.ASTEROID_COLOR);
     asteroid->assign<Health>(radius * 10);
 
-    Kinematics kinematics(Vector3::polar(randf(0, 360), randf(10, 20)),
-                          Vector3(0, 0),
-                          pow(radius, 2));
-    kinematics.angularVelocity = randf(gameConfig.ASTEROID_MIN_ROTATION,
-                                       gameConfig.ASTEROID_MAX_ROTATION);
+
+    // Kinematics
+    const Vector3 &velocity = Vector3::random(randf(10, 20));
+    Kinematics kinematics(velocity, Vector3(0, 0, 0), pow(radius, 2));
+
+    double rotationMagnitude = randf(gameConfig.ASTEROID_MIN_ROTATION,
+                                     gameConfig.ASTEROID_MAX_ROTATION);
+
+    kinematics.angularVelocity = Vector3::random(rotationMagnitude);
 
     asteroid->assign<Kinematics>(kinematics);
 
+
+    // Assign Split Component to large asteroids
     if (radius > 2) {
         asteroid->assign<SplitOnDeath>();
         asteroid->assign<HealthBar>();
@@ -213,8 +202,12 @@ void EntityManager::createWorld() {
     camera->assign<SmoothFollow>(spaceShip, Vector3(0, 3, 20));
 
 
+    createAsteroid(16);
+    createAsteroid(8);
+    createAsteroid(4);
+    createAsteroid(4);
 //    Entity *center = create();
-////    center->assign<Shape>(spaceShipModel);
+//    center->assign<Shape>(spaceShipModel);
 //    center->assign<Texture>(1, 0, 0);
 //    center->assign<Transform>(Vector3(0, 0, 0), 90, Vector3(2, 2, 2));
 //    center->assign<Rotation>();
