@@ -18,11 +18,12 @@ void GameModel::resizeWorld(double aspectRatio) {
     glutPostRedisplay();
 }
 
-bool GameModel::isCircleInArena(Vector3 pos, double radius) {
-    return (pos.x - radius) > -arenaSize &&
-           (pos.x + radius) < arenaSize &&
-           (pos.y - radius > -arenaSize) &&
-           (pos.y + radius) < arenaSize;
+bool GameModel::isSphereFullyInsideArena(Vector3 pos, double radius) {
+    return pos.absMaxComponent() + radius < arenaSize;
+}
+
+bool GameModel::isSphereFullyOutsideArena(Vector3 pos, double radius) {
+    return pos.absMaxComponent() - radius > arenaSize;
 }
 
 void GameModel::resizeScreen(int w, int h) {

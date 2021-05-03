@@ -190,7 +190,7 @@ void EntityManager::createWorld() {
     camera->assign<SmoothFollow>(spaceShip, Vector3(0, 3, 20));
 
 
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
         createAsteroid(randf(3, 10));
     }
 //    Entity *center = create();

@@ -120,7 +120,7 @@ void handleGamePlay() {
     rayCastingSystem.update(entities);
     smoothFollowSystem.update(entities, dt);
 //    firingSystem.update(entities, dt);
-//    collisionSystem.update(entities, dt);
+    collisionSystem.update(entities, dt);
 //    particleSystem.update(entities, dt);
     physicsSystem.update(entities, dt);
 //    warningSystem.update(entities);

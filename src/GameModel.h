@@ -34,12 +34,13 @@ struct GameModel {
 
     void resizeScreen(int w, int h);
 
-    bool isCircleInArena(Vector3 pos, double radius);
+    bool isSphereFullyInsideArena(Vector3 pos, double radius);
 
     double getWorldToPixelRatioWidth();
 
     void reset();
 
+    bool isSphereFullyOutsideArena(Vector3 pos, double radius);
 };
 
 extern GameModel gameModel;

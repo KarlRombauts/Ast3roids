@@ -158,3 +158,23 @@ Vector3 Vector3::orthogonalize(const Vector3 &v) {
     return right.cross(v).normalize();
 }
 
+double Vector3::distanceBetween(Vector3 &from, Vector3 &to) {
+    return Vector3::toFrom(from, to).magnitude();
+}
+
+Vector3 Vector3::toFrom(Vector3 &from, Vector3 &to) {
+    return to - from;
+}
+
+double Vector3::absMaxComponent() {
+    return std::max({abs(x), abs(y), abs(z)});
+}
+
+Vector3 Vector3::clampScalar(double min, double max) {
+    Vector3 v;
+    v.x = std::max(min, std::min(max, x));
+    v.y = std::max(min, std::min(max, y));
+    v.z = std::max(min, std::min(max, z));
+    return v;
+}
+

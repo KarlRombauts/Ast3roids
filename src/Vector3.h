@@ -63,6 +63,17 @@ public:
         return Vector3(0, 0, -1);
     }
 
+    /**
+     * If any of the the x, y, z components of the vector are greater than the
+     * max value, they will be replaced with the max.
+     * If any of the the x, y, z components of the vector are less than the min
+     * value, they will be replaced with the min.
+     * @param min the minimum value that the components can be
+     * @param max the maximum value that the components can be
+     * @return The clamped version of the vector
+     */
+    Vector3 clampScalar(double min, double max);
+
     Vector3 add(Vector3 vector);
 
     static double dot(const Vector3 &a, const Vector3 &b);
@@ -110,6 +121,12 @@ public:
     static Vector3 lerp(const Vector3 &start, const Vector3 &end, double t);
 
     static Vector3 random(double magnitude);
+
+    static double distanceBetween(Vector3 &from, Vector3 &to);
+
+    static Vector3 toFrom(Vector3 &from, Vector3 &to);
+
+    double absMaxComponent();
 };
 
 #endif //UNTITLED_VEC2_H

@@ -18,6 +18,10 @@ void CollisionSystem::update(EntityManager &entities, double dt) {
     for (int i = 0; i < rigidBodyEntities.size(); i++) {
         Entity *entity1 = rigidBodyEntities.at(i);
 
+        if (entity1->has<CircleCollision>() && intersectingWithArenaWall(entity1)) {
+            handleArenaWallCollision(entity1);
+        }
+
         for (int j = i + 1; j < rigidBodyEntities.size(); j++) {
             Entity *entity2 = rigidBodyEntities.at(j);
 
@@ -28,28 +32,28 @@ void CollisionSystem::update(EntityManager &entities, double dt) {
                     continue;
                 }
 
-                if (areCirclesIntersecting(entity1, entity2)) {
+                if (areSpheresIntersecting(entity1, entity2)) {
                     createImpacts(entity1, entity2);
                     resolveCircleCircleCollision(entities, entity1, entity2);
                 }
             }
 
-            if (entity1->has<CircleCollision>() &&
-                entity2->has<LineCollision>()) {
-                if (entity1->has<OutsideArena, CircleCollision>()) {
-                    Vector3 p = entity1->get<Transform>()->position;
-                    double r = entity1->get<CircleCollision>()->radius;
-                    if (gameModel.isCircleInArena(p, r)) {
-                        entity1->remove<OutsideArena>();
-                    }
-                    continue;
-                }
-
-                if (areCircleAndLineIntersecting(entity1, entity2)) {
-                    createImpacts(entity1, entity2);
-                    resolveCircleLineCollision(entity1, entity2);
-                }
-            }
+//            if (entity1->has<CircleCollision>() &&
+//                entity2->has<LineCollision>()) {
+//                if (entity1->has<OutsideArena, CircleCollision>()) {
+//                    Vector3 p = entity1->get<Transform>()->position;
+//                    double r = entity1->get<CircleCollision>()->radius;
+//                    if (gameModel.isSphereFullyInsideArena(p, r)) {
+//                        entity1->remove<OutsideArena>();
+//                    }
+//                    continue;
+//                }
+//
+//                if (areCircleAndLineIntersecting(entity1, entity2)) {
+//                    createImpacts(entity1, entity2);
+//                    resolveCircleLineCollision(entity1, entity2);
+//                }
+//            }
         }
     }
 }
@@ -124,15 +128,14 @@ void CollisionSystem::resolveCircleLineCollision(Entity *circle,
 }
 
 
-bool CollisionSystem::areCirclesIntersecting(Entity *entity1,
-                                             Entity *entity2) const {
-    Vector3 diff = (
-            entity1->get<Transform>()->position -
-            entity2->get<Transform>()->position
-    );
-
-    return diff.magnitude() < (entity1->get<CircleCollision>()->radius +
-                               entity2->get<CircleCollision>()->radius);
+bool CollisionSystem::areSpheresIntersecting(Entity *entity1, Entity *entity2) const {
+    Vector3 &position1 = entity1->get<Transform>()->position;
+    Vector3 &position2 = entity2->get<Transform>()->position;
+    double dist = Vector3::distanceBetween(position1, position2);
+    
+    double radius1 = entity1->get<CircleCollision>()->radius;
+    double radius2 = entity2->get<CircleCollision>()->radius;
+    return dist < radius1 + radius2;
 }
 
 
@@ -140,40 +143,41 @@ void CollisionSystem::resolveCircleCircleCollision(
         EntityManager &entities, Entity *entity1, Entity *entity2) {
 
     if (entity1->has<Asteroid>() && entity2->has<Asteroid>()) {
-        double r1 = entity1->get<CircleCollision>()->radius;
-        double r2 = entity2->get<CircleCollision>()->radius;
         Transform *transform1 = entity1->get<Transform>();
         Transform *transform2 = entity2->get<Transform>();
+
         Kinematics *kinematics1 = entity1->get<Kinematics>();
         Kinematics *kinematics2 = entity2->get<Kinematics>();
 
+        double &r1 = entity1->get<CircleCollision>()->radius;
+        double &r2 = entity2->get<CircleCollision>()->radius;
 
-        Vector3 diff = transform1->position - transform2->position;
+        Vector3 &p1 = transform1->position;
+        Vector3 &p2 = transform2->position;
+
+        double &m1 = kinematics1->mass;
+        double &m2 = kinematics2->mass;
+
+        Vector3 &v1 = kinematics1->velocity;
+        Vector3 &v2 = kinematics2->velocity;
+
+        Vector3 diff = p1 - p2;
         double overlap = diff.magnitude() - (r1 + r2);
-
-        std::cout << "Asteroid collision: " << overlap << std::endl;
 
         Vector3 offset = (diff / diff.magnitude()) * overlap;
 
-        double m1 = kinematics1->mass;
-        double m2 = kinematics2->mass;
-
-        Vector3 p1 = transform1->position;
-        Vector3 p2 = transform2->position;
-        Vector3 v1 = kinematics1->velocity;
-        Vector3 v2 = kinematics2->velocity;
 
         // STATIC COLLISION RESOLUTION
         // both entities are moved so that they no longer overlap. The amount
         // they move is proportional to the mass of the other entity. This better
         // simulates conservation of momentum.
 
-        transform1->position -= offset * (m2 / (m1 + m2));
-        transform2->position += offset * (m1 / (m1 + m2));
-//
-//        // DYNAMIC COLLISION RESOLUTION
-//        // Equation sourced from: https://en.wikipedia.org/wiki/Elastic_collision
-//
+        p1 -= offset * (m2 / (m1 + m2));
+        p2 += offset * (m1 / (m1 + m2));
+
+        // DYNAMIC COLLISION RESOLUTION
+        // Equation sourced from: https://en.wikipedia.org/wiki/Elastic_collision
+
         kinematics1->velocity = v1 - ((p1 - p2) * (v1 - v2).dot(p1 - p2) /
                                     pow((p1 - p2).magnitude(), 2)) *
                                    (2 * m2) / (m1 + m2);
@@ -182,4 +186,22 @@ void CollisionSystem::resolveCircleCircleCollision(
                                     pow((p2 - p1).magnitude(), 2)) *
                                    (2 * m1) / (m1 + m2);
     }
+}
+
+bool CollisionSystem::intersectingWithArenaWall(Entity *entity) {
+    if (entity->has<OutsideArena>()) {
+        return false;
+    }
+
+    Vector3 &position = entity->get<Transform>()->position;
+    double radius = entity->get<CircleCollision>()->radius;
+    return !gameModel.isSphereFullyInsideArena(position, radius);
+}
+
+void CollisionSystem::handleArenaWallCollision(Entity *entity) const {
+    Vector3 &position = entity->get<Transform>()->position;
+    double radius = entity->get<CircleCollision>()->radius;
+
+    double length = gameModel.arenaSize - radius;
+    position = position.clampScalar(-length, length);
 }
