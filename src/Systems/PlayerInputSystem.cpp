@@ -14,21 +14,11 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
     for(Entity* entity: entities.getEntitiesWith<Camera, Rotation, Position>()) {
         Vector3 &position = entity->get<Position>()->position;
         Quaternion &rotation = entity->get<Rotation>()->rotation;
-
-
-
     }
 
     for(Entity* entity: entities.getEntitiesWith<Transform, Rotation, Kinematics, PlayerInput, SpaceShip>()) {
         Vector3 &position = entity->get<Transform>()->position;
-        Kinematics *kinematics = entity->get<Kinematics>();
-        SpaceShip *spaceShip = entity->get<SpaceShip>();
         Quaternion &rotation = entity->get<Rotation>()->rotation;
-
-//        rotation = Quaternion::lookRotation(transform->position * -1, Vector3::forward());
-//        rotation = Quaternion::slerp(rotation, Quaternion::angleAxis(180, Vector3::forward()), 0.001);
-        double angle = (float) gameConfig.PLAYER_TURN_SPEED * dt / 1000;
-
 
         if (keyboardState.isKeyPressed('k')) {
             Vector3 localMove = Vector3::down() * 10 * dt / 1000;
@@ -41,13 +31,11 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
         }
 
         if (keyboardState.isKeyPressed('a')) {
-            Vector3 localMove = Vector3::right() * 10 * dt / 1000;
-            position += rotation * localMove;
+            rotation = Quaternion::angleAxis(180 * dt / 1000, Vector3::forward()) * rotation;
         }
 
         if (keyboardState.isKeyPressed('d')) {
-            Vector3 localMove = Vector3::left() * 10 * dt / 1000;
-            position += rotation * localMove;
+            rotation = Quaternion::angleAxis(-180 * dt / 1000, Vector3::forward()) * rotation;
         }
 
         if (keyboardState.isKeyPressed('w')) {
@@ -59,7 +47,7 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
             position += rotation * localMove;
         }
 
-        if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
+//        if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
 //            kinematics->acceleration = Vector3::polar(transform->rotation, spaceShip->thrust);
 
             // Create exhaust particle system
@@ -76,7 +64,7 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
 //            Transform particlesTransform = *transform;
 //            particlesTransform.position += kinematics->acceleration.normalize().scale(-3);
 //            particles->assign<Transform>(particlesTransform);
-        }
+//        }
 
 //        if (keyboardState.isKeyPressed(gameConfig.PLAYER_SHOOT)) {
 //            entity->assign<FiringBullet>();
