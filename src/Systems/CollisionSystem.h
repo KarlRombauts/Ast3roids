@@ -27,6 +27,8 @@ public:
     bool intersectingWithArenaWall(Entity *pEntity);
 
     void handleArenaWallCollision(Entity *entity) const;
+
+    void createArenaImpacts(Entity *entity) const;
 };
 
 

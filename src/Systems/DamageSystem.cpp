@@ -47,7 +47,6 @@ void DamageSystem::handleDeath(EntityManager &entities, Entity *entity, Entity *
 //                asteroid2->get<Transform>()->position = p1 - splitDir;
 //                asteroid1->get<Kinematics>()->velocity = (p2 - p1).normalize().scale(v.magnitude()).rotate(-25);
             }
-
         }
     }
 

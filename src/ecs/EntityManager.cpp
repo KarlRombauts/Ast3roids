@@ -113,26 +113,34 @@ Entity *EntityManager::createGridPlane(Vector3 bottomLeft, Vector3 bottomRight,
 }
 
 void EntityManager::createArena() {
-    double l = gameModel.arenaSize;
+    Arena &arena = gameModel.arena;
+    double l = arena.size;
+
     Entity *walls[6];
 
-    // Front Wall
+    // Left Wall
     walls[0] = createGridPlane({l, -l, -l}, {l, -l, l}, {l, l, l}, {l, l, -l});
+    arena.leftWall = walls[0];
+
+    // right Wall
+    walls[1] = createGridPlane({-l, -l, -l}, {-l, -l, l}, {-l, l, l}, {-l, l, -l});
+    arena.rightWall = walls[1];
+
+    // Front Wall
+    walls[2] = createGridPlane({-l, -l, l}, {-l, l, l}, {l, l, l}, {l, -l, l});
+    arena.frontWall = walls[2];
 
     // Back Wall
-    walls[1] = createGridPlane({-l, -l, -l}, {-l, -l, l}, {-l, l, l}, {-l, l, -l});
-
-    // Left Wall
-    walls[2] = createGridPlane({-l, -l, l}, {-l, l, l}, {l, l, l}, {l, -l, l});
-
-    // Right Wall
     walls[3] = createGridPlane({-l, -l, -l}, {-l, l, -l}, {l, l, -l}, {l, -l, -l});
+    arena.backWall = walls[3];
 
     // Top Wall
     walls[4] = createGridPlane({-l, l, -l}, {-l, l, l}, {l, l, l}, {l, l, -l});
+    arena.topWall = walls[4];
 
     // Bottom Wall
     walls[5] = createGridPlane({-l, -l, -l}, {-l, -l, l}, {l, -l, l}, {l, -l, -l});
+    arena.bottomWall = walls[5];
 
     for (Entity *wall: walls) {
         wall->assign<Wall>();
@@ -143,12 +151,6 @@ void EntityManager::createArena() {
 Entity *EntityManager::createSpaceShip(Vector3 position) {
     Entity *spaceShip = create();
 
-    std::vector<Vector3> spaceShipModel = {
-            {-1, -1, -1},
-            {-1, -1, 1}
-    };
-
-    spaceShip->assign<Shape>(spaceShipModel);
     spaceShip->assign<SpaceShip>(gameConfig.PLAYER_FIRING_RATE,
                                  gameConfig.PLAYER_SPEED);
     spaceShip->assign<Collision>(CollisionType::DYNAMIC);

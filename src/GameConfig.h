@@ -21,7 +21,7 @@ struct GameConfig {
     double EXHAUST_PARTICLE_DECAY = 3;
     double EXPLOSION_DECAY_RATE = 0.5;
 
-    double WARNING_DISTANCE = 20; // Game world units
+    double WARNING_DISTANCE = 40; // Game world units
 
 
     // Asteroid Config

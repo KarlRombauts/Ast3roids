@@ -1,3 +1,4 @@
+#include <Components/BoundingCircle.h>
 #include "CollisionSystem.h"
 #include "../Components/Transform.h"
 #include "../Globals.h"
@@ -201,7 +202,65 @@ bool CollisionSystem::intersectingWithArenaWall(Entity *entity) {
 void CollisionSystem::handleArenaWallCollision(Entity *entity) const {
     Vector3 &position = entity->get<Transform>()->position;
     double radius = entity->get<CircleCollision>()->radius;
+    Arena &arena = gameModel.arena;
 
     double length = gameModel.arenaSize - radius;
-    position = position.clampScalar(-length, length);
+
+    if (entity->get<Collision>()->type == CollisionType::DYNAMIC) {
+        //Static Resolution
+        position = position.clampScalar(-length, length);
+
+        // Dynamic Resolution
+        if (entity->has<Kinematics>()) {
+            Vector3 &velocity = entity->get<Kinematics>()->velocity;
+            if (abs(position.x) >= length) {
+                velocity.x *= -1;
+            }
+
+            if (abs(position.y) >= length) {
+                velocity.y *= -1;
+            }
+
+            if (abs(position.z) >= length) {
+                velocity.z *= -1;
+            }
+        }
+    }
+
+    createArenaImpacts(entity);
+}
+
+void CollisionSystem::createArenaImpacts(Entity *entity) const {
+    Vector3 &position = entity->get<Transform>()->position;
+    double radius = entity->get<CircleCollision>()->radius;
+    Arena &arena = gameModel.arena;
+    double length = gameModel.arenaSize - radius;
+
+    if (entity->has<BoundingCircle>()) {
+
+    }
+
+    if (position.x >= length) {
+        createImpacts(entity, arena.leftWall);
+    }
+
+    if (position.x <= -length) {
+        createImpacts(entity, arena.rightWall);
+    }
+
+    if (position.y >= length) {
+        createImpacts(entity, arena.topWall);
+    }
+
+    if (position.y <= -length) {
+        createImpacts(entity, arena.bottomWall);
+    }
+
+    if (position.z >= length) {
+        createImpacts(entity, arena.frontWall);
+    }
+
+    if (position.z <= -length) {
+        createImpacts(entity, arena.backWall);
+    }
 }

@@ -16,7 +16,7 @@ set(SOURCES ${SOURCES})
 
 add_executable(${BINARY}_run main.cpp ${SOURCES})
 
-add_library(${BINARY}_lib STATIC ${SOURCES})
+add_library(${BINARY}_lib STATIC ${SOURCES} Arena.cpp Arena.h)
 
 target_link_libraries(${BINARY}_run PUBLIC ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
 

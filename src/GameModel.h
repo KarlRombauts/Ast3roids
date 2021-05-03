@@ -2,6 +2,7 @@
 #define UNTITLED_GAMEMODEL_H
 
 #include "Coordinates.h"
+#include "Arena.h"
 
 enum class GameState {
     GAME_OVER,
@@ -18,12 +19,15 @@ enum class Difficulty {
 
 struct GameModel {
     int worldSize = 100;
-    int arenaSize = worldSize - 10;
+    int arenaSize = worldSize;
     int waveCount = 0;
     int elapsedTime = 0;
     int score = 0;
     int resetTime = 0;
+    Arena arena;
+
     Difficulty difficulty = Difficulty::EASY;
+
     GameState state = GameState::START;
 
     int width;

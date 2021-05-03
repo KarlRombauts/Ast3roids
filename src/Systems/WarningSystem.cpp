@@ -8,7 +8,7 @@
 
 void WarningSystem::update(EntityManager &entities) {
     for(Entity *wall: entities.getEntitiesWith<Wall>()) {
-        wall->assign<Texture>(1, 1, 1);
+        wall->assign<Texture>(0.3, 0.3, 0.3);
     }
 
     for (Entity *entity: entities.getEntitiesWith<Impact, BoundingCircle>()) {
