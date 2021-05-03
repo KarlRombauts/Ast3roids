@@ -27,8 +27,8 @@ void RayCastingSystem::update(EntityManager &entities) {
 
             if (target->has<Rotation>()) {
                 Quaternion &targetRotation = target->get<Rotation>()->rotation;
-                targetRotation = Quaternion::angleAxis(-4 * mouseNorm.y, Vector3::left()) * targetRotation;
-                targetRotation = Quaternion::angleAxis(-4 * mouseNorm.x, Vector3::up()) * targetRotation;
+                targetRotation *= Quaternion::angleAxis(-4 * mouseNorm.y, Vector3::left());
+                targetRotation *= Quaternion::angleAxis(-4 * mouseNorm.x, Vector3::up());
             }
         } else {
 //            rotation *= Quaternion::angleAxis(4 * mouseNorm.y, Vector3::left());

@@ -9,11 +9,11 @@ std::string Quaternion::toString() const {
 }
 
 Quaternion Quaternion::operator*(const Quaternion &other) const {
-    return Quaternion::multiply(other, *this);
+    return Quaternion::multiply(*this, other);
 }
 
 void Quaternion::operator*=(const Quaternion &q) {
-    *this = Quaternion::multiply(q, *this);
+    *this = Quaternion::multiply(*this, q);
 }
 
 Quaternion Quaternion::identity() {

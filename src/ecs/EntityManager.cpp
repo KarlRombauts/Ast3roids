@@ -210,7 +210,7 @@ void EntityManager::createWorld() {
 //                                   gameModel.arenaSize * -0.7);
     Entity *spaceShip = createSpaceShip(Vector3(0, 0, 0));
     Entity *camera = createCamera(Vector3(0, 0, 20), Quaternion());
-    camera->assign<SmoothFollow>(spaceShip, Vector3::forward() * 10);
+    camera->assign<SmoothFollow>(spaceShip, Vector3(0, 3, 20));
 
 
 //    Entity *center = create();

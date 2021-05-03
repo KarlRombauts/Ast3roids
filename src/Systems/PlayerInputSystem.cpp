@@ -31,11 +31,11 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
         }
 
         if (keyboardState.isKeyPressed('a')) {
-            rotation = Quaternion::angleAxis(180 * dt / 1000, Vector3::forward()) * rotation;
+            rotation *= Quaternion::angleAxis(180 * dt / 1000, Vector3::forward());
         }
 
         if (keyboardState.isKeyPressed('d')) {
-            rotation = Quaternion::angleAxis(-180 * dt / 1000, Vector3::forward()) * rotation;
+            rotation *= Quaternion::angleAxis(-180 * dt / 1000, Vector3::forward());
         }
 
         if (keyboardState.isKeyPressed('w')) {

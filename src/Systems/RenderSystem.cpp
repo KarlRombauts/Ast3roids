@@ -18,7 +18,7 @@
 
 void RenderSystem::update(EntityManager &entities, double dt) {
     updateCamera(entities);
-    drawDifficulty();
+//    drawDifficulty();
     switch (gameModel.state) {
         case GameState::START:
 //            renderString(0, 0, "Press SPACE BAR to start...",
@@ -47,9 +47,9 @@ void RenderSystem::drawEntities(EntityManager &entities) {
         Texture *texture = entity->get<Texture>();
         Quaternion &rotation = entity->get<Rotation>()->rotation;
 
-        if (entity->has<Health, HealthBar>()) {
-            drawHealthBars(entity);
-        }
+//        if (entity->has<Health, HealthBar>()) {
+//            drawHealthBars(entity);
+//        }
 
         glPushMatrix();
         glTranslatef(transform->position.x, transform->position.y,
@@ -181,27 +181,14 @@ void RenderSystem::drawParticle(Entity *entity) const {
 }
 
 void RenderSystem::drawAxis() const {
-    glBegin(GL_LINES);
-    {
-        glColor3f(1, 0, 0);
-        glVertex3f(0, 0, 0);
-        glVertex3f(1, 0, 0);
-    }
-    glEnd();
-    glBegin(GL_LINES);
-    {
-        glColor3f(0, 1, 0);
-        glVertex3f(0, 0, 0);
-        glVertex3f(0, 3, 0);
-    }
-    glEnd();
-    glBegin(GL_LINES);
-    {
-        glColor3f(0, 0, 1);
-        glVertex3f(0, 0, 0);
-        glVertex3f(0, 0, 3);
-    }
-    glEnd();
+    glColor3f(1, 0, 0);
+    drawLine({0, 0, 0}, {3, 0, 0});
+
+    glColor3f(0, 1, 0);
+    drawLine({0, 0, 0}, {0, 3, 0});
+
+    glColor3f(0, 0, 1);
+    drawLine({0, 0, 0}, {0, 0, 3});
 }
 
 void RenderSystem::drawLine(Entity *entity) const {
