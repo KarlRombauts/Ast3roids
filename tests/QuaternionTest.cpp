@@ -313,3 +313,35 @@ TEST(QuaternionTest, LookRotation_1) {
         EXPECT_NEAR(abs(a.z), abs(b.z), error);
     }
 }
+
+TEST(QuaternionTest, Normalise) {
+    for (int i = 0; i < 10000; i++) {
+        Quaternion q = Quaternion::angleAxis(randf(0, 360), Vector3::random(randf(1, 20)));
+        EXPECT_NEAR(q.magnitude(), 1, error);
+
+        Quaternion n = q.normalize();
+
+        EXPECT_NEAR(n.w, q.w, error);
+        EXPECT_NEAR(n.v.x, q.v.x, error);
+        EXPECT_NEAR(n.v.y, q.v.y, error);
+        EXPECT_NEAR(n.v.z, q.v.z, error);
+    }
+}
+
+TEST(QuaternionTest, Normalise_1) {
+    for (int i = 0; i < 10000; i++) {
+        Quaternion q = Quaternion::angleAxis(randf(0, 360), Vector3::random(randf(1, 20)));
+        Quaternion p = q;
+
+        for (int j = 0; j < 1000; j++) {
+            p *= p;
+            p = p.normalize();
+        }
+
+        EXPECT_NEAR(p.magnitude(), 1, error);
+    }
+}
+
+TEST(QuaternionTest, Angle0) {
+   Quaternion q = Quaternion
+}

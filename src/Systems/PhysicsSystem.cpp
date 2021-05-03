@@ -1,4 +1,6 @@
 #include <iostream>
+#include <Components/Rotation.h>
+#include <Components/PlayerInput.h>
 #include "PhysicsSystem.h"
 #include "../Components/Kinematics.h"
 #include "../Components/Transform.h"
@@ -21,14 +23,19 @@ void PhysicsSystem::update(EntityManager &entities, double dt) {
 
         Transform *transform = entity->get<Transform>();
         Kinematics *kinematics = entity->get<Kinematics>();
+        Quaternion &rotation = entity->get<Rotation>()->rotation;
+        Vector3 &angularVelocity = entity->get<Kinematics>()->angularVelocity;
 
         kinematics->acceleration -= kinematics->velocity * kinematics->drag;
 
+        // TODO: Fix velocity
         kinematics->velocity += kinematics->acceleration * dt / 1000;
-        transform->position += kinematics->velocity * dt / 1000;
+//        transform->position += kinematics->velocity * dt / 1000;
 
-//        transform->rotation += kinematics->angularVelocity * dt / 1000;
-
+        if (!entity->has<PlayerInput>()) {
+            double angle = angularVelocity.magnitude() * dt / 1000;
+            rotation *= Quaternion::angleAxis(angle, angularVelocity);
+        }
 
         kinematics->acceleration = Vector3(0, 0);
 

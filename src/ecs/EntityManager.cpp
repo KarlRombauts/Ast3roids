@@ -81,8 +81,8 @@ Entity *EntityManager::createAsteroid(double radius) {
 
 
     // Kinematics
-    const Vector3 &velocity = Vector3::random(randf(10, 20));
-    Kinematics kinematics(velocity, Vector3(0, 0, 0), pow(radius, 2));
+    const Vector3 &velocity = Vector3::random(0);
+    Kinematics kinematics(Vector3(0,0,0), Vector3(0, 0, 0), pow(radius, 2));
 
     double rotationMagnitude = randf(gameConfig.ASTEROID_MIN_ROTATION,
                                      gameConfig.ASTEROID_MAX_ROTATION);
@@ -202,10 +202,9 @@ void EntityManager::createWorld() {
     camera->assign<SmoothFollow>(spaceShip, Vector3(0, 3, 20));
 
 
-    createAsteroid(16);
-    createAsteroid(8);
-    createAsteroid(4);
-    createAsteroid(4);
+    for (int i = 0; i < 100; i++) {
+        createAsteroid(randf(3, 10));
+    }
 //    Entity *center = create();
 //    center->assign<Shape>(spaceShipModel);
 //    center->assign<Texture>(1, 0, 0);

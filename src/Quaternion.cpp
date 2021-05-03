@@ -25,8 +25,18 @@ Quaternion Quaternion::multiply(const Quaternion &a, const Quaternion &b) {
     r.w = a.w * b.w - a.v.dot(b.v);
     r.v = a.v * b.w + b.v * a.w + a.v.cross(b.v);
 
+    // Clamp the quaternion to a unit quaternion if close to unit length
+    double dot = r.dot(r);
+    if (dot > 0 && dot < 0.0001) {
+        r = r.normalize();
+    }
     return r;
 }
+
+double Quaternion::dot(const Quaternion &q) {
+    return w * q.w + v.dot(q.v);
+}
+
 
 Quaternion Quaternion::fromTo(Vector3 from, Vector3 to) {
     double angle = Vector3::angle(from, to);
@@ -98,4 +108,16 @@ Vector3 Quaternion::operator*(const Vector3 &vector) {
 
 Quaternion Quaternion::conjugate() const {
     return Quaternion(w, v * -1);
+}
+
+Quaternion Quaternion::normalize() {
+    Quaternion r;
+    double m = magnitude();
+    r.w = w / m;
+    r.v = v / m;
+    return r;
+}
+
+double Quaternion::magnitude() {
+    return sqrt(pow(w, 2) + v.dot(v));
 }

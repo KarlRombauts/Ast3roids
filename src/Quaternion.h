@@ -53,6 +53,12 @@ public:
     std::string toString() const;
 
     Vector3 getAxis();
+
+    Quaternion normalize();
+
+    double magnitude();
+
+    double dot(const Quaternion &q);
 };
 
 
