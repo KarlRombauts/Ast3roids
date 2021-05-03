@@ -1,5 +1,7 @@
 #include <Components/Camera.h>
 #include <Components/Position.h>
+#include <Components/Plane.h>
+#include <Components/PlaneCollision.h>
 #include "EntityManager.h"
 #include "Entity.h"
 #include "../Components/Transform.h"
@@ -117,10 +119,21 @@ Entity *EntityManager::createFixedLine(Vector3 start, Vector3 end) {
     return line;
 }
 
+
+//Entity *EntityManager::createGridPlane(Vector3 bottomLeft, Vector3 bottomRight, Vector3 topRight, Vector3 topLeft) {
+//    Entity * plane = create();
+//    plane->assign<Plane>(bottomLeft, bottomRight, topRight, topLeft);
+//    plane->assign<Collision>(CollisionType::STATIC);
+//    plane->assign<PlaneCollision>(plane->get<Plane>());
+//    plane->assign<Transform>();
+//    plane->assign<Texture>(1, 1, 1);
+//    return plane;
+//}
+
 void EntityManager::createArena() {
     int l = gameModel.arenaSize;
-    Entity *leftWall = createFixedLine(Vector3(-l, -l), Vector3(-l, l));
-    leftWall->assign<Wall>();
+//    Entity *leftWall = createPlane({l, -l, -l}, {l, -l, l}, {l, l, l});
+//    leftWall->assign<Wall>();
 
     Entity *topWall = createFixedLine(Vector3(-l, l), Vector3(l, l));
     topWall->assign<Wall>();

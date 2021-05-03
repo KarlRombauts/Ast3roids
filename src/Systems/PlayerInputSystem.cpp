@@ -18,21 +18,21 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
 
         if (keyboardState.isKeyPressed('a')) {
             Vector3 localMove = Vector3::right() * 10 * dt / 1000;
-            position += rotation * localMove;
+            position += rotation.conjugate() * localMove;
         }
 
         if (keyboardState.isKeyPressed('d')) {
             Vector3 localMove = Vector3::left() * 10 * dt / 1000;
-            position += rotation * localMove;
+            position += rotation.conjugate() * localMove;
         }
 
         if (keyboardState.isKeyPressed('w')) {
             Vector3 localMove = Vector3::back() * 10 * dt / 1000;
-            position += rotation * localMove;
+            position += rotation.conjugate() * localMove;
         }
         if (keyboardState.isKeyPressed('s')) {
             Vector3 localMove = Vector3::forward() * 10 * dt / 1000;
-            position += rotation * localMove;
+            position += rotation.conjugate() * localMove;
         }
     }
 
