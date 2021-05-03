@@ -69,8 +69,8 @@ Entity *EntityManager::createAsteroid(double radius) {
 
 
     // Kinematics
-    const Vector3 &velocity = Vector3::random(0);
-    Kinematics kinematics(Vector3(0,0,0), Vector3(0, 0, 0), pow(radius, 2));
+    const Vector3 &velocity = Vector3::random(randf(10, 20));
+    Kinematics kinematics(velocity, Vector3(0, 0, 0), pow(radius, 2));
 
     double rotationMagnitude = randf(gameConfig.ASTEROID_MIN_ROTATION,
                                      gameConfig.ASTEROID_MAX_ROTATION);

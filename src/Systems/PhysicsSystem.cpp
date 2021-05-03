@@ -10,23 +10,23 @@
 
 void PhysicsSystem::update(EntityManager &entities, double dt) {
     for (Entity *entity: entities.getEntitiesWith<Kinematics, Transform>()) {
-//        for (Entity *gravityEntity: entities.getEntitiesWith<GravityForce, Transform>()) {
-//            Vector3 diff = gravityEntity->get<Transform>()->position - entity->get<Transform>()->position;
-//            double distance = diff.magnitude();
-//
-//            double forceMagnitude =
-//                    gravityEntity->get<GravityForce>()->mass / pow(distance, 2);
-//
-//            Vector3 force = diff.normalize().scale(forceMagnitude);
-//            entity->get<Kinematics>()->acceleration += force;
-//        }
+        for (Entity *gravityEntity: entities.getEntitiesWith<GravityForce, Transform>()) {
+            Vector3 diff = gravityEntity->get<Transform>()->position - entity->get<Transform>()->position;
+            double distance = diff.magnitude();
+
+            double forceMagnitude =
+                    gravityEntity->get<GravityForce>()->mass / pow(distance, 2);
+
+            Vector3 force = diff.normalize().scale(forceMagnitude);
+            entity->get<Kinematics>()->acceleration += force;
+        }
 
         Transform *transform = entity->get<Transform>();
         Kinematics *kinematics = entity->get<Kinematics>();
         Quaternion &rotation = entity->get<Rotation>()->rotation;
         Vector3 &angularVelocity = entity->get<Kinematics>()->angularVelocity;
 
-//        kinematics->acceleration -= kinematics->velocity * kinematics->drag;
+        kinematics->acceleration -= kinematics->velocity * kinematics->drag;
 
         // TODO: Fix velocity
         kinematics->velocity += kinematics->acceleration * dt / 1000;
