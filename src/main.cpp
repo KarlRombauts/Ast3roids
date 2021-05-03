@@ -54,8 +54,6 @@ void handleGamePlay();
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_DEPTH_TEST);
-
     renderSystem.update(entities, 0);
     glutSwapBuffers();
 }
@@ -211,6 +209,7 @@ void onMouseDrag(int x, int y) {
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+//    glEnable(GL_DEPTH_TEST);
     glutInitWindowSize(600, 600);
     glutCreateWindow("Asteroids");
     reshape(500, 600);

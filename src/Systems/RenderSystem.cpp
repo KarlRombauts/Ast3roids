@@ -4,6 +4,7 @@
 #include <Components/Position.h>
 #include <Components/Plane.h>
 #include <Components/Wall.h>
+#include <Components/Asteroid.h>
 #include "RenderSystem.h"
 #include "../OpenGL.h"
 #include "../Components/Shape.h"
@@ -74,6 +75,8 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 //                drawParticle(entity);
         if (entity->has<Plane, Wall>()) {
            drawGridPlane(entity);
+        } else if (entity->has<Asteroid>()) {
+
         } else {
             drawTestCube();
         }
@@ -84,8 +87,8 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 }
 
 void RenderSystem::drawTestCube() const {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glBegin(GL_POLYGON);                // Begin drawing the color cube with 6 quads
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_);
+    glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
 // Top face (y = 1.0f)
 // Define vertices in counter-clockwise (CCW) order with normal pointing out
     glColor3f(0.0f, 1.0f, 0.0f);     // Green
