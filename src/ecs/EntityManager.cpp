@@ -27,6 +27,7 @@
 #include "../Components/Bullet.h"
 #include "../Components/Damage.h"
 #include "../Components/Rotation.h"
+#include "../Components/SmoothFollow.h"
 
 
 Entity *EntityManager::create() {
@@ -207,16 +208,17 @@ void EntityManager::createWorld() {
     createArena();
 //    const Vector3 shipPosition = Vector3(gameModel.arenaSize * -0.7,
 //                                   gameModel.arenaSize * -0.7);
-    createCamera(Vector3(0, 0, 20), Quaternion());
-    createSpaceShip(Vector3(0, 0, 0));
+    Entity *spaceShip = createSpaceShip(Vector3(0, 0, 0));
+    Entity *camera = createCamera(Vector3(0, 0, 20), Quaternion());
+    camera->assign<SmoothFollow>(spaceShip, Vector3::forward() * 10);
 
 
-    Entity *center = create();
-//    center->assign<Shape>(spaceShipModel);
-    center->assign<Texture>(1, 0, 0);
-    center->assign<Transform>(Vector3(0, 0, 0), 90, Vector3(2, 2, 2));
-    center->assign<Rotation>();
-    center->assign<Kinematics>(Vector3(0, 0), Vector3(0, 0), 1);
+//    Entity *center = create();
+////    center->assign<Shape>(spaceShipModel);
+//    center->assign<Texture>(1, 0, 0);
+//    center->assign<Transform>(Vector3(0, 0, 0), 90, Vector3(2, 2, 2));
+//    center->assign<Rotation>();
+//    center->assign<Kinematics>(Vector3(0, 0), Vector3(0, 0), 1);
 //    if (gameModel.difficulty == Difficulty::HARD) {
 //        // Never create a black hole that is too close to the ship
 //        int range = gameModel.arenaSize * 0.8;
@@ -257,5 +259,6 @@ Entity *EntityManager::createCamera(Vector3 position, Quaternion rotation) {
     camera->assign<Camera>(60, aspect, 1, 1000);
     camera->assign<Position>(position);
     camera->assign<Rotation>(rotation);
+    return camera;
 }
 

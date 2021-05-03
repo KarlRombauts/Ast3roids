@@ -1,12 +1,17 @@
-//
-// Created by Karl Rombauts on 3/5/21.
-//
-
 #ifndef STARFOX_SMOOTHFOLLOW_H
 #define STARFOX_SMOOTHFOLLOW_H
 
 
-class SmoothFollow {};
+#include <ecs/Entity.h>
+#include "Vector3.h"
+
+struct SmoothFollow : public Component {
+    SmoothFollow(Entity *entity, Vector3 relativeOffset)
+            : entity(entity), relativeOffset(relativeOffset) {}
+
+    Entity *entity;
+    Vector3 relativeOffset;
+};
 
 
 #endif //STARFOX_SMOOTHFOLLOW_H

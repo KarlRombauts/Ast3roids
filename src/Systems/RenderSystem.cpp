@@ -344,7 +344,7 @@ void RenderSystem::updateCamera(EntityManager &entities) {
     for (Entity *entity: entities.getEntitiesWith<Camera, Position, Rotation>()) {
         Vector3 &position = entity->get<Position>()->position;
         Quaternion &rotation = entity->get<Rotation>()->rotation;
-        glRotateQuaternion(rotation);
+        glRotateQuaternion(rotation.conjugate());
         glTranslated(-position.x, -position.y, -position.z);
     }
 }

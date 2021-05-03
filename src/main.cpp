@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <Systems/RayCastingSystem.h>
+#include <Systems/SmoothFollowSystem.h>
 #include "OpenGL.h"
 #include "Globals.h"
 #include "GameModel.h"
@@ -40,6 +41,7 @@ ParticleSystem particleSystem;
 BlackHoleSystem blackHoleSystem;
 DestroySystem destroySystem;
 RayCastingSystem rayCastingSystem;
+SmoothFollowSystem smoothFollowSystem;
 
 
 void handleGameOver();
@@ -118,6 +120,7 @@ void handleGamePlay() {
 
     playerInputSystem.update(entities, dt);
     rayCastingSystem.update(entities);
+    smoothFollowSystem.update(entities, dt);
 //    firingSystem.update(entities, dt);
 //    collisionSystem.update(entities, dt);
 //    particleSystem.update(entities, dt);
