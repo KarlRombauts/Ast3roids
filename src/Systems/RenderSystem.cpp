@@ -2,6 +2,8 @@
 #include <iostream>
 #include <Components/Camera.h>
 #include <Components/Position.h>
+#include <Components/Plane.h>
+#include <Components/Wall.h>
 #include "RenderSystem.h"
 #include "../OpenGL.h"
 #include "../Components/Shape.h"
@@ -70,56 +72,64 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 //                drawLine(entity);
 //            } else if (entity->has<Particle>()) {
 //                drawParticle(entity);
-//            }
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        glBegin(GL_POLYGON);                // Begin drawing the color cube with 6 quads
-        // Top face (y = 1.0f)
-        // Define vertices in counter-clockwise (CCW) order with normal pointing out
-        glColor3f(0.0f, 1.0f, 0.0f);     // Green
-        glVertex3f(1.0f, 1.0f, -1.0f);
-        glVertex3f(-1.0f, 1.0f, -1.0f);
-        glVertex3f(-1.0f, 1.0f, 1.0f);
-        glVertex3f(1.0f, 1.0f, 1.0f);
-
-// Bottom face (y = -1.0f)
-        glColor3f(1.0f, 0.5f, 0.0f);     // Orange
-        glVertex3f(1.0f, -1.0f, 1.0f);
-        glVertex3f(-1.0f, -1.0f, 1.0f);
-        glVertex3f(-1.0f, -1.0f, -1.0f);
-        glVertex3f(1.0f, -1.0f, -1.0f);
-
-// Front face  (z = 1.0f)
-        glColor3f(1.0f, 0.0f, 0.0f);     // Red
-        glVertex3f(1.0f, 1.0f, 1.0f);
-        glVertex3f(-1.0f, 1.0f, 1.0f);
-        glVertex3f(-1.0f, -1.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 1.0f);
-
-// Back face (z = -1.0f)
-        glColor3f(1.0f, 1.0f, 0.0f);     // Yellow
-        glVertex3f(1.0f, -1.0f, -1.0f);
-        glVertex3f(-1.0f, -1.0f, -1.0f);
-        glVertex3f(-1.0f, 1.0f, -1.0f);
-        glVertex3f(1.0f, 1.0f, -1.0f);
-
-// Left face (x = -1.0f)
-        glColor3f(0.0f, 0.0f, 1.0f);     // Blue
-        glVertex3f(-1.0f, 1.0f, 1.0f);
-        glVertex3f(-1.0f, 1.0f, -1.0f);
-        glVertex3f(-1.0f, -1.0f, -1.0f);
-        glVertex3f(-1.0f, -1.0f, 1.0f);
-
-// Right face (x = 1.0f)
-        glColor3f(1.0f, 0.0f, 1.0f);     // Magenta
-        glVertex3f(1.0f, 1.0f, -1.0f);
-        glVertex3f(1.0f, 1.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, 1.0f);
-        glVertex3f(1.0f, -1.0f, -1.0f);
-        glEnd();  // End of drawing color-cube
+        if (entity->has<Plane, Wall>()) {
+           drawGridPlane(entity);
+        } else {
+            drawTestCube();
+        }
 
         glFlush();
         glPopMatrix();
     }
+}
+
+void RenderSystem::drawTestCube() const {
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glBegin(GL_POLYGON);                // Begin drawing the color cube with 6 quads
+// Top face (y = 1.0f)
+// Define vertices in counter-clockwise (CCW) order with normal pointing out
+    glColor3f(0.0f, 1.0f, 0.0f);     // Green
+    glVertex3f(1.0f, 1.0f, -1.0f);
+    glVertex3f(-1.0f, 1.0f, -1.0f);
+    glVertex3f(-1.0f, 1.0f, 1.0f);
+    glVertex3f(1.0f, 1.0f, 1.0f);
+
+    // Bottom face (y = -1.0f)
+    glColor3f(1.0f, 0.5f, 0.0f);     // Orange
+    glVertex3f(1.0f, -1.0f, 1.0f);
+    glVertex3f(-1.0f, -1.0f, 1.0f);
+    glVertex3f(-1.0f, -1.0f, -1.0f);
+    glVertex3f(1.0f, -1.0f, -1.0f);
+
+    // Front face  (z = 1.0f)
+    glColor3f(1.0f, 0.0f, 0.0f);     // Red
+    glVertex3f(1.0f, 1.0f, 1.0f);
+    glVertex3f(-1.0f, 1.0f, 1.0f);
+    glVertex3f(-1.0f, -1.0f, 1.0f);
+    glVertex3f(1.0f, -1.0f, 1.0f);
+
+    // Back face (z = -1.0f)
+    glColor3f(1.0f, 1.0f, 0.0f);     // Yellow
+    glVertex3f(1.0f, -1.0f, -1.0f);
+    glVertex3f(-1.0f, -1.0f, -1.0f);
+    glVertex3f(-1.0f, 1.0f, -1.0f);
+    glVertex3f(1.0f, 1.0f, -1.0f);
+
+    // Left face (x = -1.0f)
+    glColor3f(0.0f, 0.0f, 1.0f);     // Blue
+    glVertex3f(-1.0f, 1.0f, 1.0f);
+    glVertex3f(-1.0f, 1.0f, -1.0f);
+    glVertex3f(-1.0f, -1.0f, -1.0f);
+    glVertex3f(-1.0f, -1.0f, 1.0f);
+
+    // Right face (x = 1.0f)
+    glColor3f(1.0f, 0.0f, 1.0f);     // Magenta
+    glVertex3f(1.0f, 1.0f, -1.0f);
+    glVertex3f(1.0f, 1.0f, 1.0f);
+    glVertex3f(1.0f, -1.0f, 1.0f);
+    glVertex3f(1.0f, -1.0f, -1.0f);
+    glEnd();  // End of drawing color-cube
+
 }
 
 void RenderSystem::drawScore() {
@@ -219,6 +229,36 @@ void RenderSystem::drawShape(Entity *entity) const {
     glEnd();
 }
 
+void RenderSystem::drawGridPlane(Entity *entity) const {
+    Plane *plane = entity->get<Plane>();
+
+    glLineWidth(2.0);
+    int numLines = 10;
+
+    // Vertical grid lines
+    for (int i = 0; i <= numLines; i++) {
+        double t = (double) i / (double) numLines;
+        Vector3 start = Vector3::lerp(plane->bottomLeft, plane->bottomRight, t);
+        Vector3 end = Vector3::lerp(plane->topLeft, plane->topRight, t);
+        drawLine(start, end);
+    }
+
+    // Horizontal grid lines
+    for (int i = 0; i <= numLines; i++) {
+        double t = (double) i / (double) numLines;
+        Vector3 start = Vector3::lerp(plane->bottomLeft, plane->topLeft, t);
+        Vector3 end = Vector3::lerp(plane->bottomRight, plane->topRight, t);
+        drawLine(start, end);
+    }
+}
+
+void RenderSystem::drawLine(const Vector3 &start, const Vector3 &end) const {
+    glBegin (GL_LINES);
+        glVertex3d(start.x, start.y, start.z);
+        glVertex3d(end.x, end.y, end.z);
+    glEnd();
+}
+
 void RenderSystem::drawHealthBars(Entity *entity) const {
     Transform *transform = entity->get<Transform>();
 
@@ -264,79 +304,39 @@ void RenderSystem::drawDifficulty() {
 }
 
 void RenderSystem::glRotateQuaternion(const Quaternion &q) {
-    // Row 1
     double w = q.w;
     double x = q.v.x;
     double y = q.v.y;
     double z = q.v.z;
 
-
-//    double m00 = 2 * (w * w + x * x) - 1;
-//    double m01 = 2 * (x * y - w * z);
-//    double m02 = 2 * (x * z + w * y);
-//
-//    // Row 2
-//    double m10 = 2 * (x * y + w * z);
-//    double m11 = 2 * (w * w + y * y) - 1;
-//    double m12 = 2 * (y * z - w * x);
-//
-//    // Row 3
-//    double m20 = 2 * (x * z - w * y);
-//    double m21 = 2 * (y * z + w * x);
-//    double m22 = 2 * (w * w + z * z) - 1;
-//
     double matrix[16] = {1, 0, 0, 0,
                          0, 1, 0, 0,
                          0, 0, 1, 0,
                          0, 0, 0, 1};
 
+
     double sqw = w * w;
     double sqx = x * x;
     double sqy = y * y;
     double sqz = z * z;
-    double invs = 1.0f / (sqx + sqy + sqz + sqw);
 
-    matrix[0] = (w*w) + (x*x) - (y*y) - (z*z);
+    // Column 1
+    matrix[0] = sqw + sqx - sqy - sqz;
     matrix[1] = (2*x*y) + (2*w*z);
     matrix[2] = (2*x*z) - (2*w*y);
-    matrix[3] = 0;
-    //Column 2
+
+    // Column 2
     matrix[4] = (2*x*y) - (2*w*z);
-    matrix[5] = (w*w) - (x*x) + (y*y) - (z*z);
+    matrix[5] = sqw - sqx + sqy - sqz;
     matrix[6] = (2*y*z) + (2*w*x);
-    matrix[7] = 0;
-    //Column 3
+
+    // Column 3
     matrix[8] = (2*x*z) + (2*w*y);
     matrix[9] = (2*y*z) - (2*w*x);
-    matrix[10] = (w*w) - (x*x) - (y*y) + (z*z);
-    matrix[11] = 0;
-    //Column 4
-    matrix[12] = 0;
-    matrix[13] = 0;
-    matrix[14] = 0;
-    matrix[15] = 1;
-//    matrix[0] = (sqx - sqy - sqz + sqw);
-//    matrix[4] = (-sqx + sqy - sqz + sqw);
-//    matrix[8] = (-sqx - sqy + sqz + sqw);
-//
-//    double tmp1 = x * y;
-//    double tmp2 = z * w;
-//    matrix[1] = 2.0 * (tmp1 - tmp2);
-//    matrix[3] = 2.0 * (tmp1 + tmp2);
-//
-//    tmp1 = x * z;
-//    tmp2 = y * w;
-//    matrix[2] = 2.0 * (tmp1 + tmp2);
-//    matrix[6] = 2.0 * (tmp1 - tmp2);
-//
-//    tmp1 = y * z;
-//    tmp2 = x * w;
-//    matrix[5] = 2.0 * (tmp1 - tmp2);
-//    matrix[7] = 2.0 * (tmp1 + tmp2);
+    matrix[10] = sqw - sqx - sqy + sqz;
 
     glMultMatrixd(matrix);
 }
-
 
 void RenderSystem::updateCamera(EntityManager &entities) {
     glLoadIdentity();

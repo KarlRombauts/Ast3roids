@@ -47,6 +47,10 @@ public:
     void createWorld();
 
     Entity *createCamera(Vector3 position, Quaternion rotation);
+
+    Entity *
+    createGridPlane(Vector3 bottomLeft, Vector3 bottomRight, Vector3 topRight,
+                    Vector3 topLeft);
 };
 
 template<typename... Components>

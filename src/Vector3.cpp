@@ -128,6 +128,15 @@ double Vector3::angle(const Vector3 &from, const Vector3 &to) {
     return atan2(opp, adj);
 }
 
+Vector3 Vector3::lerp(const Vector3 &start, const Vector3 & end, double t) {
+    Vector3 r;
+    r.x = start.x + t * (end.x - start.x);
+    r.y = start.y + t * (end.y - start.y);
+    r.z = start.z + t * (end.z - start.z);
+
+    return r;
+}
+
 bool Vector3::operator==(const Vector3 &other) const {
     return x == other.x && y == other.y && z == other.z;
 }

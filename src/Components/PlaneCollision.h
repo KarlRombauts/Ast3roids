@@ -4,7 +4,7 @@
 
 #include "Plane.h"
 
-class PlaneCollision : public Component {
+struct PlaneCollision : public Component {
     PlaneCollision(Plane *plane) : plane(plane) {};
 
     Plane *plane;

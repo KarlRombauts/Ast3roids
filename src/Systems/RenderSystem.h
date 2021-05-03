@@ -40,6 +40,12 @@ public:
     void drawAxis() const;
 
     void updateCamera(EntityManager &entities);
+
+    void drawLine(const Vector3 &start, const Vector3 &end) const;
+
+    void drawGridPlane(Entity *entity) const;
+
+    void drawTestCube() const;
 };
 
 

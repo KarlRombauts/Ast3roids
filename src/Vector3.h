@@ -114,6 +114,8 @@ public:
     bool isNull() const;
 
     Vector3 orthogonalize(const Vector3 &v);
+
+    static Vector3 lerp(const Vector3 &start, const Vector3 &end, double t);
 };
 
 #endif //UNTITLED_VEC2_H

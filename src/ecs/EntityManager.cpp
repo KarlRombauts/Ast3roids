@@ -67,7 +67,8 @@ Entity *EntityManager::createAsteroid(double radius) {
     const CoordinateSpace &world = gameModel.worldCoordinates;
 
     asteroid->assign<Transform>(
-            Vector3(randf(world.minX, world.maxX), randf(world.minY, world.maxY)),
+            Vector3(randf(world.minX, world.maxX),
+                    randf(world.minY, world.maxY)),
             0, Vector3(1, 1));
 
     std::vector<Vector3> asteroidModel;
@@ -94,7 +95,8 @@ Entity *EntityManager::createAsteroid(double radius) {
     asteroid->assign<Texture>(gameConfig.ASTEROID_COLOR);
     asteroid->assign<Health>(radius * 10);
 
-    Kinematics kinematics(Vector3::polar(randf(0, 360), randf(10, 20)), Vector3(0, 0),
+    Kinematics kinematics(Vector3::polar(randf(0, 360), randf(10, 20)),
+                          Vector3(0, 0),
                           pow(radius, 2));
     kinematics.angularVelocity = randf(gameConfig.ASTEROID_MIN_ROTATION,
                                        gameConfig.ASTEROID_MAX_ROTATION);
@@ -120,29 +122,44 @@ Entity *EntityManager::createFixedLine(Vector3 start, Vector3 end) {
 }
 
 
-//Entity *EntityManager::createGridPlane(Vector3 bottomLeft, Vector3 bottomRight, Vector3 topRight, Vector3 topLeft) {
-//    Entity * plane = create();
-//    plane->assign<Plane>(bottomLeft, bottomRight, topRight, topLeft);
-//    plane->assign<Collision>(CollisionType::STATIC);
-//    plane->assign<PlaneCollision>(plane->get<Plane>());
-//    plane->assign<Transform>();
-//    plane->assign<Texture>(1, 1, 1);
-//    return plane;
-//}
+Entity *EntityManager::createGridPlane(Vector3 bottomLeft, Vector3 bottomRight,
+                                       Vector3 topRight, Vector3 topLeft) {
+    Entity *plane = create();
+    plane->assign<Plane>(bottomLeft, bottomRight, topRight, topLeft);
+    plane->assign<Collision>(CollisionType::STATIC);
+    plane->assign<PlaneCollision>(plane->get<Plane>());
+    plane->assign<Transform>();
+    plane->assign<Rotation>();
+    plane->assign<Texture>(1, 1, 1);
+    return plane;
+}
 
 void EntityManager::createArena() {
-    int l = gameModel.arenaSize;
-//    Entity *leftWall = createPlane({l, -l, -l}, {l, -l, l}, {l, l, l});
-//    leftWall->assign<Wall>();
+    double l = gameModel.arenaSize;
+    Entity *walls[6];
 
-    Entity *topWall = createFixedLine(Vector3(-l, l), Vector3(l, l));
-    topWall->assign<Wall>();
+    // Front Wall
+    walls[0] = createGridPlane({l, -l, -l}, {l, -l, l}, {l, l, l}, {l, l, -l});
 
-    Entity *rightWall = createFixedLine(Vector3(l, -l), Vector3(l, l));
-    rightWall->assign<Wall>();
+    // Back Wall
+    walls[1] = createGridPlane({-l, -l, -l}, {-l, -l, l}, {-l, l, l}, {-l, l, -l});
 
-    Entity *bottomWall = createFixedLine(Vector3(-l, -l), Vector3(l, -l));
-    bottomWall->assign<Wall>();
+    // Left Wall
+    walls[2] = createGridPlane({-l, -l, l}, {-l, l, l}, {l, l, l}, {l, -l, l});
+
+    // Right Wall
+    walls[3] = createGridPlane({-l, -l, -l}, {-l, l, -l}, {l, l, -l}, {l, -l, -l});
+
+    // Top Wall
+    walls[4] = createGridPlane({-l, l, -l}, {-l, l, l}, {l, l, l}, {l, l, -l});
+
+    // Bottom Wall
+    walls[5] = createGridPlane({-l, -l, -l}, {-l, -l, l}, {l, -l, l}, {l, -l, -l});
+
+    for (Entity *wall: walls) {
+        wall->assign<Wall>();
+        wall->assign<Texture>(0.3, 0.3, 0.3);
+    }
 }
 
 Entity *EntityManager::createSpaceShip(Vector3 position) {
@@ -187,7 +204,7 @@ void EntityManager::destroy(Entity *entity) {
 }
 
 void EntityManager::createWorld() {
-//    createArena();
+    createArena();
 //    const Vector3 shipPosition = Vector3(gameModel.arenaSize * -0.7,
 //                                   gameModel.arenaSize * -0.7);
     createCamera(Vector3(0, 0, 20), Quaternion());
@@ -197,7 +214,7 @@ void EntityManager::createWorld() {
     Entity *center = create();
 //    center->assign<Shape>(spaceShipModel);
     center->assign<Texture>(1, 0, 0);
-    center->assign<Transform>(Vector3(0,0,0), 90, Vector3(2, 2, 2));
+    center->assign<Transform>(Vector3(0, 0, 0), 90, Vector3(2, 2, 2));
     center->assign<Rotation>();
     center->assign<Kinematics>(Vector3(0, 0), Vector3(0, 0), 1);
 //    if (gameModel.difficulty == Difficulty::HARD) {
