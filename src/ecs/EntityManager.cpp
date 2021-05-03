@@ -40,20 +40,8 @@ Entity *EntityManager::create() {
 
 Entity *EntityManager::createBlackHole(double radius, Vector3 position) {
     std::vector<Vector3> circle;
-    int num_segments = 16;
-    for (int i = 0; i < num_segments; i++) {
-        double theta = 2.0 * M_PI * float(i) /
-                       float(num_segments); // get the current angle
-        double x = radius * cos(theta); // calculate the x component
-        double y = radius * sin(theta); // calculate the y component
-        Vector3 vertex = {x, y};
-        circle.push_back(vertex);
-    }
-
-
     Entity *blackHole = create();
-    blackHole->assign<Transform>(position, 0, Vector3(1, 1));
-    blackHole->assign<Shape>(circle);
+    blackHole->assign<Transform>(position, 0, Vector3(1, 1, 1));
     blackHole->assign<BlackHole>();
     blackHole->assign<Collision>(CollisionType::TRIGGER);
     blackHole->assign<CircleCollision>(radius / 4);
@@ -169,7 +157,7 @@ Entity *EntityManager::createSpaceShip(Vector3 position) {
     spaceShip->assign<Texture>(1, 0, 0);
     spaceShip->assign<Transform>(position, 90, Vector3(2, 2, 2));
     spaceShip->assign<Rotation>();
-    spaceShip->assign<Kinematics>(Vector3(0, 0), Vector3(0, 0), 1);
+    spaceShip->assign<Kinematics>(Vector3(0, 0, 0), Vector3(0, 0, 0), 1);
     spaceShip->get<Kinematics>()->drag = 1;
 
     spaceShip->assign<PlayerInput>();
@@ -184,7 +172,7 @@ Entity *EntityManager::createBoundingCircle(double radius) {
     boundingCircle->assign<BoundingCircle>();
     boundingCircle->assign<Collision>(CollisionType::TRIGGER);
     boundingCircle->assign<CircleCollision>(radius);
-    boundingCircle->assign<Transform>(Vector3(0, 0), 90, Vector3(1, 1));
+    boundingCircle->assign<Transform>(Vector3(0, 0, 0), 90, Vector3(1, 1, 1));
     return boundingCircle;
 }
 
@@ -234,8 +222,8 @@ void EntityManager::destroyAll() {
 
 Entity *EntityManager::createBullet(Vector3 position, Vector3 velocity) {
     Entity *bullet = create();
-    bullet->assign<Transform>(position, 0, Vector3(1, 1));
-    bullet->assign<Kinematics>(velocity, Vector3(0, 0), 1);
+    bullet->assign<Transform>(position, 0, Vector3(1, 1, 1));
+    bullet->assign<Kinematics>(velocity, Vector3(0, 0, 0), 1);
     bullet->assign<Particle>();
     bullet->assign<Bullet>();
     bullet->assign<Damage>(gameConfig.BULLET_DAMAGE);

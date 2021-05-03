@@ -16,7 +16,7 @@ void BlackHoleSystem::update(EntityManager &entities, double dt) {
         double minSize = 0.7;
         double scale = (1 - ((fmod(gameModel.elapsedTime / (double) 1000, pulseTime)) / pulseTime) + minSize) / (1 + minSize);
 
-        transform->scale = Vector3(scale, scale);
+        transform->scale = Vector3(scale, scale, scale);
     }
 
     for (Entity *blackHole: entities.getEntitiesWith<BlackHole, Impact>()) {

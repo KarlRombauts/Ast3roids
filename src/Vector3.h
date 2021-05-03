@@ -13,8 +13,6 @@ public:
     double x;
     double z;
 
-    Vector3(double x, double y);
-
     Vector3(double x, double y, double z);
 
     /**
@@ -98,12 +96,6 @@ public:
     bool operator==(const Vector3 &other) const;
 
     bool operator!=(const Vector3 &other) const;
-
-    static Vector3 polar(double rotation, double radius);
-
-    Vector3 perpendicular() const;
-
-    Vector3 rotate(double theta);
 
     void setXYZ(const Vector3 &newVec);
 

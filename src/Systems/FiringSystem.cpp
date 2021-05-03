@@ -19,7 +19,9 @@ void FiringSystem::update(EntityManager &entities, double dt) {
             entity->remove<FiringBullet>();
 
             Transform *transform = entity->get<Transform>();
-            Vector3 bulletVelocity = entity->get<Kinematics>()->velocity + Vector3::polar(transform->rotation, gameConfig.BULLET_SPEED);
+
+            // Todo: Rotate forward velocity by current rotation
+            Vector3 bulletVelocity = entity->get<Kinematics>()->velocity; //+ Vector3::polar(transform->rotation, gameConfig.BULLET_SPEED);
 
             entities.createBullet(transform->position, bulletVelocity);
         }

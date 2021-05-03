@@ -2,8 +2,6 @@
 #include "Vector3.h"
 #include "Helpers.h"
 
-Vector3::Vector3(double x, double y) : x(x), y(y), z(1) {}
-
 Vector3::Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
 
 Vector3 Vector3::random(double magnitude) {
@@ -36,11 +34,6 @@ Vector3 Vector3::operator/(const double &scalar) const {
     return scale(1 / scalar);
 }
 
-Vector3 Vector3::polar(double rotation, double radius) {
-    double x = cos(rotation * (M_PI / 180)) * radius;
-    double y = sin(rotation * (M_PI / 180)) * radius;
-    return Vector3(x, y);
-}
 
 //Vector3 Vector3::polar(double rotation, double radius) {
 //    double x = cos(rotation * (M_PI / 180)) * radius;
@@ -78,17 +71,6 @@ double Vector3::dot(const Vector3 &vector) const {
 
 Vector3 Vector3::normalize() {
     return *this / magnitude();
-}
-
-Vector3 Vector3::perpendicular() const {
-    return Vector3(y, x * -1).normalize();
-}
-
-Vector3 Vector3::rotate(double theta) {
-    double sinT = sin(theta);
-    double cosT = cos(theta);
-    return Vector3(x * cosT - y * sinT,
-                   x * sinT + y * cosT);
 }
 
 void Vector3::operator*=(const double &scalar) {
