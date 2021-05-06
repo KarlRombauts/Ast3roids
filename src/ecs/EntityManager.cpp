@@ -2,6 +2,7 @@
 #include <Components/Position.h>
 #include <Components/Plane.h>
 #include <Components/PlaneCollision.h>
+#include <Factory/IcoSphere.h>
 #include "EntityManager.h"
 #include "Entity.h"
 #include "../Components/Transform.h"
@@ -62,6 +63,7 @@ Entity *EntityManager::createAsteroid(double radius) {
     asteroid->assign<Rotation>();
 
     asteroid->assign<Asteroid>(radius);
+    asteroid->assign<Geometry>(IcoSphere::create());
     asteroid->assign<Collision>(CollisionType::DYNAMIC);
     asteroid->assign<CircleCollision>(radius);
     asteroid->assign<Texture>(gameConfig.ASTEROID_COLOR);

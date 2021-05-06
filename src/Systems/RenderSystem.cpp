@@ -5,6 +5,7 @@
 #include <Components/Plane.h>
 #include <Components/Wall.h>
 #include <Components/Asteroid.h>
+#include <Components/Geometry.h>
 #include "RenderSystem.h"
 #include "../OpenGL.h"
 #include "../Components/Shape.h"
@@ -90,7 +91,7 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 
         glRotateQuaternion(rotation);
 
-        drawAxis();
+//        drawAxis();
         glColor3f(texture->red, texture->green, texture->blue);
 
 //            if (entity->has<Shape>()) {
@@ -102,7 +103,9 @@ void RenderSystem::drawEntities(EntityManager &entities) {
         if (entity->has<Plane, Wall>()) {
            drawGridPlane(entity);
         } else if (entity->has<Asteroid>()) {
-            glutSolidSphere(1.0, 20, 16);
+//            glutSolidSphere(1.0, 20, 16);
+                drawShape(entity);
+
         } else {
             drawTestCube();
         }
@@ -231,18 +234,87 @@ void RenderSystem::drawLine(Entity *entity) const {
     glEnd();
 }
 
-void RenderSystem::drawShape(Entity *entity) const {
-    Shape *shape = entity->get<Shape>();
+struct int3
+{
+    int3( GLuint x = 0, GLuint y = 0, GLuint z = 0 )
+            : x(x), y(y), z(z) {}
 
-    glLineWidth(2.0);
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    glBegin(GL_POLYGON);
-    {
-        for (Vector3 vertex: shape->vertices) {
-            glVertex3f(vertex.x, vertex.y, 0);
-        }
-    }
-    glEnd();
+    GLuint x;
+    GLuint y;
+    GLuint z;
+};
+
+struct int4
+{
+    int4(GLuint a = 0, GLuint b = 0, GLuint c = 0, GLuint d = 0)
+            : a(a), b(b), c(c), d(d) {}
+
+    GLuint a;
+    GLuint b;
+    GLuint c;
+    GLuint d;
+};
+
+// Vertex definition
+struct VertexXYZColor
+{
+    Vector3 m_Pos;
+    Vector3 m_Color;
+};
+
+void RenderSystem::drawShape(Entity *entity) const {
+    Geometry *geometry = entity->get<Geometry>();
+// Define the 8 vertices of a unit cube
+//    Vector3 g_Vertices[8] = {
+//             Vector3(  1,  1,  1 ),  // 0
+//             Vector3( -1,  1,  1 ),  // 1
+//             Vector3( -1, -1,  1 ),  // 2
+//             Vector3(  1, -1,  1 ),  // 3
+//             Vector3(  1, -1, -1 ),  // 4
+//             Vector3( -1, -1, -1 ),  // 5
+//             Vector3( -1,  1, -1 ),  // 6
+//             Vector3(  1,  1, -1 ),  // 7
+//    };
+//
+//    // Define the vertex indices for the cube.
+//    int3 g_Indices_tries[12] = {
+//            int3(0, 1, 2),
+//            int3(0, 2, 3),                 // Front face
+//            int3(7, 4, 5),
+//            int3(7, 5, 6),                 // Back face
+//            int3(6, 5, 2),
+//            int3(6, 2, 1),                 // Left face
+//    };
+//
+//    int4 g_Indices_quads[3] = {
+//            int4(7, 0, 3, 4),                 // Right face
+//            int4(7, 6, 1, 0),                 // Top face
+//            int4(3, 2, 5, 4),                 // Bottom face
+//    };
+    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+    glEnableClientState(GL_COLOR_ARRAY);
+    glEnableClientState(GL_VERTEX_ARRAY);
+
+
+    glVertexPointer( 3, GL_DOUBLE, sizeof(Vector3), &geometry->vertices[0]);
+    glDrawElements( GL_TRIANGLES, geometry->triangles.size() * 3, GL_UNSIGNED_INT, &geometry->triangles[0]);
+    glDrawElements( GL_QUADS, geometry->quads.size() * 4, GL_UNSIGNED_INT, &geometry->quads[0]);
+
+    glDisableClientState( GL_COLOR_ARRAY );
+    glDisableClientState( GL_VERTEX_ARRAY );
+    glShadeModel(GL_FLAT);
+//    Shape *shape = entity->get<Shape>();
+
+//    glLineWidth(2.0);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+//    glBegin(GL_TRIANGLES);
+//    {
+//        for (Vector3 vertex: shape->vertices) {
+//            glVertex3f(vertex.x, vertex.y, vertex.z);
+//        }
+//    }
+
+//    glEnd();
 }
 
 void RenderSystem::drawGridPlane(Entity *entity) const {

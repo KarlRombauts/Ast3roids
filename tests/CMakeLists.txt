@@ -1,6 +1,6 @@
 set(BINARY ${CMAKE_PROJECT_NAME}_test)
 
-add_executable(${BINARY} QuaternionTest.cpp VectorTest.cpp ../src/Components/Camera.h ../src/Components/Position.h ../src/Components/Plane.h)
+add_executable(${BINARY} QuaternionTest.cpp VectorTest.cpp ../src/Components/Camera.h ../src/Components/Position.h ../src/Components/Plane.h ../src/Factory/IcoSphere.cpp ../src/Factory/IcoSphere.h ../src/Components/Geometry.h)
 
 add_test(NAME ${BINARY} COMMAND ${BINARY})
 

@@ -1,0 +1,18 @@
+#ifndef STARFOX_ICOSPHERE_H
+#define STARFOX_ICOSPHERE_H
+
+#include "Vector3.h"
+#include "Components/Geometry.h"
+#include <vector>
+
+class IcoSphere {
+public:
+    static Geometry create();
+
+    static Vector3 computeHalfVertex(const Vector3 &v1, const Vector3 &v2);
+
+    static void subdivide(Geometry &geometry, int subdivision);
+};
+
+
+#endif //STARFOX_ICOSPHERE_H
