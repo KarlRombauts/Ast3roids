@@ -3,6 +3,7 @@
 #include <Components/Plane.h>
 #include <Components/PlaneCollision.h>
 #include <Factory/IcoSphere.h>
+#include <Helpers/ObjParser.h>
 #include "EntityManager.h"
 #include "Entity.h"
 #include "../Components/Transform.h"
@@ -159,6 +160,9 @@ Entity *EntityManager::createSpaceShip(Vector3 position) {
     spaceShip->assign<CircleCollision>(5);
 
     spaceShip->assign<Texture>(1, 0, 0);
+    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/SpaceShip/Ship_large.obj"));
+//    spaceShip->assign<Transform>(position, 90, Vector3(0.05, 0.05, 0.05));
+//    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/sphere.obj"));
     spaceShip->assign<Transform>(position, 90, Vector3(2, 2, 2));
     spaceShip->assign<Rotation>();
     spaceShip->assign<Kinematics>(Vector3(0, 0, 0), Vector3(0, 0, 0), 1);
@@ -191,7 +195,7 @@ void EntityManager::createWorld() {
 //                                   gameModel.arenaSize * -0.7);
     Entity *spaceShip = createSpaceShip(Vector3(0, 0, 0));
     Entity *camera = createCamera(Vector3(0, 0, 20), Quaternion());
-    camera->assign<SmoothFollow>(spaceShip, Vector3(0, 3, 20));
+    camera->assign<SmoothFollow>(spaceShip, Vector3(0, 5, 20));
 
 
     for (int i = 0; i < 10; i++) {

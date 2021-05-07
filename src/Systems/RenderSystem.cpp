@@ -6,6 +6,7 @@
 #include <Components/Wall.h>
 #include <Components/Asteroid.h>
 #include <Components/Geometry.h>
+#include <Components/SpaceShip.h>
 #include "RenderSystem.h"
 #include "../OpenGL.h"
 #include "../Components/Shape.h"
@@ -22,16 +23,22 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     updateCamera(entities);
 //    drawDifficulty();
 
-    GLfloat light_position[] = { 0, 0, 1.0, 0.0 };
-    GLfloat light_ambient[] = { 0.3, 0.3, 0.3, 1.0 };
+
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 1.0);
+//    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CW);
+//    glCullFace(GL_BACK);
 
     glClearColor (0.0, 0.0, 0.0, 0.0);
     glShadeModel (GL_SMOOTH);
 
     glutSolidSphere (1.0, 20, 16);
 
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    GLfloat light_position[] = { 0.0, 100.0, 0.0, 1.0 };
+    GLfloat lm_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
+
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lm_ambient);
 
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
@@ -67,31 +74,32 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 //        if (entity->has<Health, HealthBar>()) {
 //            drawHealthBars(entity);
 //        }
-        GLfloat color[] = {
-                (GLfloat) texture->red,
-                (GLfloat) texture->green,
-                (GLfloat) texture->blue,
-                1.0 };
-        GLfloat mat_shininess[] = { 50.0 };
-        glMaterialfv(GL_FRONT, GL_SPECULAR, color);
-        glMaterialfv(GL_FRONT, GL_DIFFUSE, color);
-        glMaterialfv(GL_FRONT, GL_AMBIENT, color);
-        glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-
 
         glPushMatrix();
         glTranslatef(transform->position.x, transform->position.y,
                      transform->position.z);
         glScalef(transform->scale.x, transform->scale.y, transform->scale.z);
 
-//        Quaternion rotation =
-//                Quaternion::angleAxis(transform->rotation/3, Vector3(0, 0, 1))
-//                * Quaternion::angleAxis(transform->rotation/3, Vector3(0, 1, 0))
-//                * Quaternion::angleAxis(transform->rotation/3, Vector3(-1, 0, 0));
-
-        glRotateQuaternion(rotation);
-
 //        drawAxis();
+        GLfloat color[] = {
+                (GLfloat) texture->red,
+                (GLfloat) texture->green,
+                (GLfloat) texture->blue,
+                1.0 };
+
+        GLfloat color_spec[] = {1, 1, 1, 1};
+
+
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, color);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, color_spec);
+        if (entity->has<SpaceShip>()) {
+
+            glRotateQuaternion(rotation);
+        } else {
+            glRotateQuaternion(rotation);
+        }
+
         glColor3f(texture->red, texture->green, texture->blue);
 
 //            if (entity->has<Shape>()) {
@@ -101,7 +109,9 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 //            } else if (entity->has<Particle>()) {
 //                drawParticle(entity);
         if (entity->has<Plane, Wall>()) {
-           drawGridPlane(entity);
+            drawGridPlane(entity);
+        } else if (entity->has<Geometry>()) {
+            drawShape(entity);
         } else if (entity->has<Asteroid>()) {
 //            glutSolidSphere(1.0, 20, 16);
                 drawShape(entity);
@@ -213,13 +223,16 @@ void RenderSystem::drawParticle(Entity *entity) const {
 }
 
 void RenderSystem::drawAxis() const {
-    glColor3f(1, 0, 0);
+    float colorx[4] = {1, 0, 0, 1};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colorx);
     drawLine({0, 0, 0}, {3, 0, 0});
 
-    glColor3f(0, 1, 0);
+    float colory[4] = {0, 1, 0, 1};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colory);
     drawLine({0, 0, 0}, {0, 3, 0});
 
-    glColor3f(0, 0, 1);
+    float colorz[4] = {0, 0, 1, 1};
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colorz);
     drawLine({0, 0, 0}, {0, 0, 3});
 }
 
@@ -264,57 +277,23 @@ struct VertexXYZColor
 
 void RenderSystem::drawShape(Entity *entity) const {
     Geometry *geometry = entity->get<Geometry>();
-// Define the 8 vertices of a unit cube
-//    Vector3 g_Vertices[8] = {
-//             Vector3(  1,  1,  1 ),  // 0
-//             Vector3( -1,  1,  1 ),  // 1
-//             Vector3( -1, -1,  1 ),  // 2
-//             Vector3(  1, -1,  1 ),  // 3
-//             Vector3(  1, -1, -1 ),  // 4
-//             Vector3( -1, -1, -1 ),  // 5
-//             Vector3( -1,  1, -1 ),  // 6
-//             Vector3(  1,  1, -1 ),  // 7
-//    };
-//
-//    // Define the vertex indices for the cube.
-//    int3 g_Indices_tries[12] = {
-//            int3(0, 1, 2),
-//            int3(0, 2, 3),                 // Front face
-//            int3(7, 4, 5),
-//            int3(7, 5, 6),                 // Back face
-//            int3(6, 5, 2),
-//            int3(6, 2, 1),                 // Left face
-//    };
-//
-//    int4 g_Indices_quads[3] = {
-//            int4(7, 0, 3, 4),                 // Right face
-//            int4(7, 6, 1, 0),                 // Top face
-//            int4(3, 2, 5, 4),                 // Bottom face
-//    };
-    glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-    glEnableClientState(GL_COLOR_ARRAY);
+//    glEnableClientState(GL_COLOR_ARRAY);
     glEnableClientState(GL_VERTEX_ARRAY);
+//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
+    glVertexPointer(3, GL_DOUBLE, sizeof(Vector3), &geometry->vertices[0]);
+    glDrawElements(GL_TRIANGLES, geometry->triangles.size() * 3, GL_UNSIGNED_INT, &geometry->triangles[0]);
 
-    glVertexPointer( 3, GL_DOUBLE, sizeof(Vector3), &geometry->vertices[0]);
-    glDrawElements( GL_TRIANGLES, geometry->triangles.size() * 3, GL_UNSIGNED_INT, &geometry->triangles[0]);
-    glDrawElements( GL_QUADS, geometry->quads.size() * 4, GL_UNSIGNED_INT, &geometry->quads[0]);
+    if (!geometry->normals.empty()) {
+        glEnableClientState(GL_NORMAL_ARRAY);
+        glNormalPointer(GL_DOUBLE, 0, &geometry->normals[0]);
+    }
+
+    glDrawElements(GL_QUADS, geometry->quads.size() * 4, GL_UNSIGNED_INT, &geometry->quads[0]);
 
     glDisableClientState( GL_COLOR_ARRAY );
     glDisableClientState( GL_VERTEX_ARRAY );
-    glShadeModel(GL_FLAT);
-//    Shape *shape = entity->get<Shape>();
-
-//    glLineWidth(2.0);
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-//    glBegin(GL_TRIANGLES);
-//    {
-//        for (Vector3 vertex: shape->vertices) {
-//            glVertex3f(vertex.x, vertex.y, vertex.z);
-//        }
-//    }
-
-//    glEnd();
+//    glShadeModel(GL_FLAT);
 }
 
 void RenderSystem::drawGridPlane(Entity *entity) const {

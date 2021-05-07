@@ -30,6 +30,7 @@ struct Geometry : public Component {
     std::vector<TriangleIndices> triangles;
     std::vector<QuadIndices> quads;
     std::vector<Vector3> vertices;
+    std::vector<Vector3> normals;
 };
 
 

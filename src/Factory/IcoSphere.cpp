@@ -51,7 +51,7 @@ Geometry IcoSphere::create() {
     geometry.triangles.emplace_back(8, 6, 7);
     geometry.triangles.emplace_back(9, 8, 1);
 
-    IcoSphere::subdivide(geometry, 2);
+    IcoSphere::subdivide(geometry, 0);
     return geometry;
 }
 
