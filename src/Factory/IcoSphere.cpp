@@ -2,6 +2,7 @@
 #include <vector>
 #include <Vector3.h>
 #include <cmath>
+#include <Helpers/Normals.h>
 
 Geometry IcoSphere::create() {
     double t = (1.0 + sqrt(5.0)) / 2.0;
@@ -51,7 +52,8 @@ Geometry IcoSphere::create() {
     geometry.triangles.emplace_back(8, 6, 7);
     geometry.triangles.emplace_back(9, 8, 1);
 
-    IcoSphere::subdivide(geometry, 0);
+    IcoSphere::subdivide(geometry, 1);
+    Normals::recalculate(geometry);
     return geometry;
 }
 
@@ -62,39 +64,73 @@ void IcoSphere::subdivide(Geometry &geometry, int subdivision) {
 
     for (int i = 1; i <= subdivision; ++i) {
         // copy prev vertex/index arrays and clear
-        tmpVertices = geometry.vertices;
+//        tmpVertices = geometry.vertices;
         tmpTriangles = geometry.triangles;
-        geometry.vertices.clear();
+//        geometry.vertices.clear();
         geometry.triangles.clear();
 
-        index = 0;
 
         // perform subdivision for each triangle
         for (int j = 0; j < tmpTriangles.size(); j++) {
             // get 3 vertices of a triangle
-            Vector3 &v1 = tmpVertices[tmpTriangles[j].v1];
-            Vector3 &v2 = tmpVertices[tmpTriangles[j].v2];
-            Vector3 &v3 = tmpVertices[tmpTriangles[j].v3];
+            index = geometry.vertices.size();
 
-            Vector3 newV1 = computeHalfVertex(v1, v2);
-            Vector3 newV2 = computeHalfVertex(v2, v3);
-            Vector3 newV3 = computeHalfVertex(v1, v3);
+            GLuint i1 = tmpTriangles[j].v1;
+            GLuint i2 = tmpTriangles[j].v2;
+            GLuint i3 = tmpTriangles[j].v3;
 
-            // add 4 new triangles to vertex array
-            geometry.vertices.push_back(v1);        // index + 0
-            geometry.vertices.push_back(newV1);     // index + 1
+            Vector3 &v1 = geometry.vertices[i1];
+            Vector3 &v2 = geometry.vertices[i2];
+            Vector3 &v3 = geometry.vertices[i3];
 
-            geometry.vertices.push_back(v2);        // index + 2
-            geometry.vertices.push_back(newV2);     // index + 3
+            Vector3 v4 = computeHalfVertex(v1, v2);
+            Vector3 v5 = computeHalfVertex(v2, v3);
+            Vector3 v6 = computeHalfVertex(v1, v3);
 
-            geometry.vertices.push_back(v3);        // index + 4
-            geometry.vertices.push_back(newV3);     // index + 5
+            GLuint i4 = -1;
+            GLuint i5 = -1;
+            GLuint i6 = -1;
 
-            geometry.triangles.emplace_back(index, index + 1, index + 5);
-            geometry.triangles.emplace_back(index + 1, index + 2, index + 3);
-            geometry.triangles.emplace_back(index + 5, index + 3, index + 4);
-            geometry.triangles.emplace_back(index + 1, index + 3, index + 5);
-            index += 6;    // next index
+            for (int k = 0; k < geometry.vertices.size(); k++) {
+                Vector3 &currentVector = geometry.vertices[k];
+                if (currentVector.doubleEquals(v4)) {
+                    i4 = k;
+                } else if (currentVector.doubleEquals(v5)) {
+                    i5 = k;
+                } else if (currentVector.doubleEquals(v6)) {
+                    i6 = k;
+                }
+
+                if (i4 != -1 && i5 != -1 && i6 != -1) {
+                    break;
+                }
+            }
+
+            if (i4 == -1) {
+                geometry.vertices.push_back(v4);     // index + 0
+                i4 = index++;
+            }
+
+            if (i5 == -1) {
+                geometry.vertices.push_back(v5);     // index + 1
+                i5 = index++;
+            }
+            if (i6 == -1) {
+                geometry.vertices.push_back(v6);     // index + 2
+                i6 = index++;
+            }
+
+//               v1
+//               /\
+//           v4 /__\ v6
+//             /\  /\
+//         v2 /__\/__\ v3
+//               v5
+
+            geometry.triangles.emplace_back(i1, i4, i6);
+            geometry.triangles.emplace_back(i4, i2, i5);
+            geometry.triangles.emplace_back(i6, i5, i3);
+            geometry.triangles.emplace_back(i4, i5, i6);
         }
     }
 }

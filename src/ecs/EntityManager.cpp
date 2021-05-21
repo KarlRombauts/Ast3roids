@@ -4,6 +4,8 @@
 #include <Components/PlaneCollision.h>
 #include <Factory/IcoSphere.h>
 #include <Helpers/ObjParser.h>
+#include <Helpers/NoiseDistortion.h>
+#include <Helpers/Normals.h>
 #include "EntityManager.h"
 #include "Entity.h"
 #include "../Components/Transform.h"
@@ -55,6 +57,7 @@ Entity *EntityManager::createBlackHole(double radius, Vector3 position) {
 
 Entity *EntityManager::createAsteroid(double radius) {
     Entity *asteroid = create();
+
     const CoordinateSpace &world = gameModel.worldCoordinates;
 
     double l = gameModel.arenaSize;
@@ -62,14 +65,17 @@ Entity *EntityManager::createAsteroid(double radius) {
             0, Vector3(radius, radius, radius));
 
     asteroid->assign<Rotation>();
-
     asteroid->assign<Asteroid>(radius);
-    asteroid->assign<Geometry>(IcoSphere::create());
+
+    Geometry geometry = IcoSphere::create();
+//    distortMesh(geometry.vertices, 0.1);
+
+    asteroid->assign<Geometry>(geometry);
+
     asteroid->assign<Collision>(CollisionType::DYNAMIC);
     asteroid->assign<CircleCollision>(radius);
     asteroid->assign<Texture>(gameConfig.ASTEROID_COLOR);
     asteroid->assign<Health>(radius * 10);
-
 
     // Kinematics
     const Vector3 &velocity = Vector3::random(randf(10, 20));
@@ -161,6 +167,7 @@ Entity *EntityManager::createSpaceShip(Vector3 position) {
 
     spaceShip->assign<Texture>(1, 0, 0);
     spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/SpaceShip/Ship_large.obj"));
+//    spaceShip->assign<Geometry>(IcoSphere::create());
 //    spaceShip->assign<Transform>(position, 90, Vector3(0.05, 0.05, 0.05));
 //    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/sphere.obj"));
     spaceShip->assign<Transform>(position, 90, Vector3(2, 2, 2));
@@ -191,16 +198,18 @@ void EntityManager::destroy(Entity *entity) {
 
 void EntityManager::createWorld() {
     createArena();
+
 //    const Vector3 shipPosition = Vector3(gameModel.arenaSize * -0.7,
 //                                   gameModel.arenaSize * -0.7);
+
     Entity *spaceShip = createSpaceShip(Vector3(0, 0, 0));
     Entity *camera = createCamera(Vector3(0, 0, 20), Quaternion());
     camera->assign<SmoothFollow>(spaceShip, Vector3(0, 5, 20));
 
-
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 2; i++) {
         createAsteroid(randf(3, 10));
     }
+
 //    Entity *center = create();
 //    center->assign<Shape>(spaceShipModel);
 //    center->assign<Texture>(1, 0, 0);

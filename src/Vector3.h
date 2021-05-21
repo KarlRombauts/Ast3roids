@@ -104,6 +104,8 @@ public:
 
     void operator/=(const double &scalar);
 
+    bool doubleEquals(const Vector3 &other) const;
+
     bool operator==(const Vector3 &other) const;
 
     bool operator!=(const Vector3 &other) const;
@@ -124,7 +126,7 @@ public:
 
     static double distanceBetween(Vector3 &from, Vector3 &to);
 
-    static Vector3 toFrom(Vector3 &from, Vector3 &to);
+    static Vector3 fromTo(Vector3 &from, Vector3 &to);
 
     double absMaxComponent();
 };

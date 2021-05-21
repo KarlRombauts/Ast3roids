@@ -29,13 +29,13 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     glFrontFace(GL_CW);
 //    glCullFace(GL_BACK);
 
-    glClearColor (0.0, 0.0, 0.0, 0.0);
-    glShadeModel (GL_SMOOTH);
+    glClearColor(0.0, 0.0, 0.0, 0.0);
+    glShadeModel(GL_SMOOTH);
 
-    glutSolidSphere (1.0, 20, 16);
+    glutSolidSphere(1.0, 20, 16);
 
-    GLfloat light_position[] = { 0.0, 100.0, 0.0, 1.0 };
-    GLfloat lm_ambient[] = { 0.2, 0.2, 0.2, 1.0 };
+    GLfloat light_position[] = {0.0, 100.0, 0.0, 1.0};
+    GLfloat lm_ambient[] = {0.2, 0.2, 0.2, 1.0};
 
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lm_ambient);
@@ -80,45 +80,29 @@ void RenderSystem::drawEntities(EntityManager &entities) {
                      transform->position.z);
         glScalef(transform->scale.x, transform->scale.y, transform->scale.z);
 
-//        drawAxis();
-        GLfloat color[] = {
-                (GLfloat) texture->red,
-                (GLfloat) texture->green,
-                (GLfloat) texture->blue,
-                1.0 };
-
+        GLfloat color[] = {(GLfloat) texture->red, (GLfloat) texture->green,
+                           (GLfloat) texture->blue, 1.0};
         GLfloat color_spec[] = {1, 1, 1, 1};
-
 
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color);
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, color);
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, color_spec);
-        if (entity->has<SpaceShip>()) {
 
-            glRotateQuaternion(rotation);
-        } else {
-            glRotateQuaternion(rotation);
-        }
+        glRotateQuaternion(rotation);
 
         glColor3f(texture->red, texture->green, texture->blue);
 
-//            if (entity->has<Shape>()) {
-//                drawShape(entity);
-//            } else if (entity->has<Line>()) {
-//                drawLine(entity);
-//            } else if (entity->has<Particle>()) {
-//                drawParticle(entity);
         if (entity->has<Plane, Wall>()) {
             drawGridPlane(entity);
         } else if (entity->has<Geometry>()) {
             drawShape(entity);
         } else if (entity->has<Asteroid>()) {
-//            glutSolidSphere(1.0, 20, 16);
-                drawShape(entity);
-
+            drawShape(entity);
         } else {
             drawTestCube();
         }
+
+        glDisableClientState(GL_COLOR_ARRAY);
 
         glFlush();
         glPopMatrix();
@@ -126,10 +110,9 @@ void RenderSystem::drawEntities(EntityManager &entities) {
 }
 
 void RenderSystem::drawTestCube() const {
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_);
-    glBegin(GL_QUADS);                // Begin drawing the color cube with 6 quads
-// Top face (y = 1.0f)
-// Define vertices in counter-clockwise (CCW) order with normal pointing out
+    glBegin(GL_QUADS);
+
+    // Top face (y = 1.0f)
     glColor3f(0.0f, 1.0f, 0.0f);     // Green
     glVertex3f(1.0f, 1.0f, -1.0f);
     glVertex3f(-1.0f, 1.0f, -1.0f);
@@ -170,8 +153,7 @@ void RenderSystem::drawTestCube() const {
     glVertex3f(1.0f, 1.0f, 1.0f);
     glVertex3f(1.0f, -1.0f, 1.0f);
     glVertex3f(1.0f, -1.0f, -1.0f);
-    glEnd();  // End of drawing color-cube
-
+    glEnd();
 }
 
 void RenderSystem::drawScore() {
@@ -190,9 +172,7 @@ void RenderSystem::drawScore() {
                  TextAlignment::RIGHT);
 }
 
-void
-RenderSystem::renderString(GLdouble x, GLdouble y, const std::string &string,
-                           TextAlignment alignment) {
+void RenderSystem::renderString(GLdouble x, GLdouble y, const std::string &string, TextAlignment alignment) {
     double width = 0;
     for (int n = 0; n < string.size(); ++n) {
         width += glutBitmapWidth(GLUT_BITMAP_HELVETICA_18, string[n]);
@@ -247,53 +227,28 @@ void RenderSystem::drawLine(Entity *entity) const {
     glEnd();
 }
 
-struct int3
-{
-    int3( GLuint x = 0, GLuint y = 0, GLuint z = 0 )
-            : x(x), y(y), z(z) {}
-
-    GLuint x;
-    GLuint y;
-    GLuint z;
-};
-
-struct int4
-{
-    int4(GLuint a = 0, GLuint b = 0, GLuint c = 0, GLuint d = 0)
-            : a(a), b(b), c(c), d(d) {}
-
-    GLuint a;
-    GLuint b;
-    GLuint c;
-    GLuint d;
-};
-
-// Vertex definition
-struct VertexXYZColor
-{
-    Vector3 m_Pos;
-    Vector3 m_Color;
-};
-
 void RenderSystem::drawShape(Entity *entity) const {
     Geometry *geometry = entity->get<Geometry>();
 //    glEnableClientState(GL_COLOR_ARRAY);
-    glEnableClientState(GL_VERTEX_ARRAY);
 //    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    glVertexPointer(3, GL_DOUBLE, sizeof(Vector3), &geometry->vertices[0]);
-    glDrawElements(GL_TRIANGLES, geometry->triangles.size() * 3, GL_UNSIGNED_INT, &geometry->triangles[0]);
+    glEnableClientState(GL_VERTEX_ARRAY);
 
     if (!geometry->normals.empty()) {
         glEnableClientState(GL_NORMAL_ARRAY);
         glNormalPointer(GL_DOUBLE, 0, &geometry->normals[0]);
     }
 
-    glDrawElements(GL_QUADS, geometry->quads.size() * 4, GL_UNSIGNED_INT, &geometry->quads[0]);
+    glVertexPointer(3, GL_DOUBLE, sizeof(Vector3), &geometry->vertices[0]);
+    glDrawElements(GL_TRIANGLES, geometry->triangles.size() * 3,
+                   GL_UNSIGNED_INT, &geometry->triangles[0]);
+    glDrawElements(GL_QUADS, geometry->quads.size() * 4, GL_UNSIGNED_INT,
+                   &geometry->quads[0]);
 
-    glDisableClientState( GL_COLOR_ARRAY );
-    glDisableClientState( GL_VERTEX_ARRAY );
-//    glShadeModel(GL_FLAT);
+    glDisableClientState(GL_NORMAL_ARRAY);
+
+
+    glDisableClientState(GL_VERTEX_ARRAY);
 }
 
 void RenderSystem::drawGridPlane(Entity *entity) const {
@@ -320,9 +275,9 @@ void RenderSystem::drawGridPlane(Entity *entity) const {
 }
 
 void RenderSystem::drawLine(const Vector3 &start, const Vector3 &end) const {
-    glBegin (GL_LINES);
-        glVertex3d(start.x, start.y, start.z);
-        glVertex3d(end.x, end.y, end.z);
+    glBegin(GL_LINES);
+    glVertex3d(start.x, start.y, start.z);
+    glVertex3d(end.x, end.y, end.z);
     glEnd();
 }
 
@@ -389,17 +344,17 @@ void RenderSystem::glRotateQuaternion(const Quaternion &q) {
 
     // Column 1
     matrix[0] = sqw + sqx - sqy - sqz;
-    matrix[1] = (2*x*y) + (2*w*z);
-    matrix[2] = (2*x*z) - (2*w*y);
+    matrix[1] = (2 * x * y) + (2 * w * z);
+    matrix[2] = (2 * x * z) - (2 * w * y);
 
     // Column 2
-    matrix[4] = (2*x*y) - (2*w*z);
+    matrix[4] = (2 * x * y) - (2 * w * z);
     matrix[5] = sqw - sqx + sqy - sqz;
-    matrix[6] = (2*y*z) + (2*w*x);
+    matrix[6] = (2 * y * z) + (2 * w * x);
 
     // Column 3
-    matrix[8] = (2*x*z) + (2*w*y);
-    matrix[9] = (2*y*z) - (2*w*x);
+    matrix[8] = (2 * x * z) + (2 * w * y);
+    matrix[9] = (2 * y * z) - (2 * w * x);
     matrix[10] = sqw - sqx - sqy + sqz;
 
     glMultMatrixd(matrix);

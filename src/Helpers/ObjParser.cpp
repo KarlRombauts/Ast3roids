@@ -6,10 +6,11 @@
 #include <Helpers.h>
 #include <regex>
 #include "ObjParser.h"
+#include "Normals.h"
 
 Geometry ObjParser::parse(std::string filename) {
     geometry = Geometry();
-    normalVectors.clear();
+    normalVectors = std::vector<Vector3>();
     objFile = std::ifstream(filename);
     std::string line;
     if (objFile.is_open()) {
@@ -73,7 +74,7 @@ void ObjParser::parseNormals(const std::string &string) {
 
 void ObjParser::parseFaces(std::string &line) {
     if (geometry.normals.empty()) {
-        geometry.normals = std::vector<Vector3>(geometry.vertices);
+        geometry.normals = std::vector<Vector3>(geometry.vertices.size());
     }
 
     trim(line);
@@ -90,13 +91,13 @@ void ObjParser::parseFaces(std::string &line) {
 void ObjParser::parseQuadFace(const std::string &line) {
     QuadIndices quad;
     int vt1, vt2, vt3, vt4; // texture
-    int vn1, vn2, vn3, vn4; // normals
+    int vn1, vn2, vn3, vn4; // Normals
 
     sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d",
-        &quad.v1, &vt1, &vn1,
-        &quad.v2, &vt2, &vn2,
-        &quad.v3, &vt3, &vn3,
-        &quad.v4, &vt4, &vn4
+           &quad.v1, &vt1, &vn1,
+           &quad.v2, &vt2, &vn2,
+           &quad.v3, &vt3, &vn3,
+           &quad.v4, &vt4, &vn4
     );
 
     quad.v1--;
@@ -115,7 +116,7 @@ void ObjParser::parseQuadFace(const std::string &line) {
 void ObjParser::parseTriangleFace(const std::string &line) {
     TriangleIndices triangle;
     int vt1, vt2, vt3; // texture
-    int vn1, vn2, vn3; // normals
+    int vn1, vn2, vn3; // Normals
 
     sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d",
            &triangle.v1, &vt1, &vn1,
@@ -127,7 +128,6 @@ void ObjParser::parseTriangleFace(const std::string &line) {
     triangle.v2--;
     triangle.v3--;
 
-    if (triangle.v1)
     geometry.normals[triangle.v1] += normalVectors[vn1 - 1];
     geometry.normals[triangle.v2] += normalVectors[vn2 - 1];
     geometry.normals[triangle.v3] += normalVectors[vn3 - 1];

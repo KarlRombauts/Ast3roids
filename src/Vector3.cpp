@@ -5,7 +5,8 @@
 Vector3::Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
 
 Vector3 Vector3::random(double magnitude) {
-    return Vector3(randf(-1, 1), randf(-1, 1), randf(-1, 1)).normalize() * magnitude;
+    return Vector3(randf(-1, 1), randf(-1, 1), randf(-1, 1)).normalize() *
+           magnitude;
 }
 
 Vector3 Vector3::add(Vector3 vector) {
@@ -115,7 +116,7 @@ double Vector3::angle(const Vector3 &from, const Vector3 &to) {
     return atan2(opp, adj);
 }
 
-Vector3 Vector3::lerp(const Vector3 &start, const Vector3 & end, double t) {
+Vector3 Vector3::lerp(const Vector3 &start, const Vector3 &end, double t) {
     Vector3 r;
     r.x = start.x + t * (end.x - start.x);
     r.y = start.y + t * (end.y - start.y);
@@ -159,10 +160,10 @@ Vector3 Vector3::orthogonalize(const Vector3 &v) {
 }
 
 double Vector3::distanceBetween(Vector3 &from, Vector3 &to) {
-    return Vector3::toFrom(from, to).magnitude();
+    return Vector3::fromTo(from, to).magnitude();
 }
 
-Vector3 Vector3::toFrom(Vector3 &from, Vector3 &to) {
+Vector3 Vector3::fromTo(Vector3 &from, Vector3 &to) {
     return to - from;
 }
 
@@ -176,5 +177,12 @@ Vector3 Vector3::clampScalar(double min, double max) {
     v.y = std::max(min, std::min(max, y));
     v.z = std::max(min, std::min(max, z));
     return v;
+}
+
+bool Vector3::doubleEquals(const Vector3 &other) const {
+    double error = 0.0000000001;
+    return abs(this->x - other.x) < error &&
+           abs(this->y - other.y) < error &&
+           abs(this->z - other.z) < error;
 }
 
