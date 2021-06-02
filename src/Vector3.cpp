@@ -1,6 +1,7 @@
 #include <cmath>
 #include "Vector3.h"
 #include "Helpers.h"
+#include "Quaternion.h"
 
 Vector3::Vector3(double x, double y, double z) : x(x), y(y), z(z) {}
 
@@ -184,5 +185,11 @@ bool Vector3::doubleEquals(const Vector3 &other) const {
     return abs(this->x - other.x) < error &&
            abs(this->y - other.y) < error &&
            abs(this->z - other.z) < error;
+}
+
+Vector3 Vector3::polar(Quaternion &quaternion, double magnitude) {
+    Quaternion rot = quaternion;
+    Vector3 vector = rot * Vector3::back();
+    return vector.normalize().scale(magnitude);
 }
 

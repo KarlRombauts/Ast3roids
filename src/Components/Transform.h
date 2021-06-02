@@ -9,6 +9,9 @@ struct Transform : public Component {
     Transform(Vector3 position, double rotation, Vector3 scale)
             : position(position), rotation(rotation), scale(scale) {}
 
+    Transform(Vector3 position)
+            : position(position), rotation(1), scale(1, 1, 1) {}
+
     Vector3 position;
     Vector3 scale;
     double rotation;

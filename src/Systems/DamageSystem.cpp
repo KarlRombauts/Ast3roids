@@ -4,7 +4,7 @@
 #include "../Components/Health.h"
 #include "../Components/SplitOnDeath.h"
 #include "../Components/Asteroid.h"
-#include "../Components/Transform.h"
+#include "../Components/Position.h"
 #include "../Components/Kinematics.h"
 #include "../Components/ParticleSource.h"
 #include "../GameModel.h"
@@ -30,22 +30,24 @@ void DamageSystem::update(EntityManager &entities) {
 
 void DamageSystem::handleDeath(EntityManager &entities, Entity *entity, Entity *otherEntity) const {
     if (entity->has<SplitOnDeath>()) {
-        if (entity->has<Asteroid, Transform>()) {
+        if (entity->has<Asteroid, Position>()) {
             double size = entity->get<Asteroid>()->size;
-            Vector3 p1 = entity->get<Transform>()->position;
-            Vector3 p2 = otherEntity->get<Transform>()->position;
+            Vector3 p1 = entity->get<Position>()->position;
             Vector3 v = entity->get<Kinematics>()->velocity;
 
-//            Vector3 splitDir = (p2 - p1).perpendicular() * size / 2;
+            Vector3 randVector = Vector3::random(1);
+            Vector3 bulletVelocity = otherEntity->get<Kinematics>()->velocity;
+            Vector3 splitDir = bulletVelocity.cross(randVector).cross(bulletVelocity).normalize();
 
             if (size >= 2) {
-                Entity *asteroid1 = entities.createAsteroid(size / 2);
-                Entity *asteroid2 = entities.createAsteroid(size / 2);
+                Entity *asteroid1 = entities.createAsteroid(size / 1.5);
+                Entity *asteroid2 = entities.createAsteroid(size / 1.5);
 
-//                asteroid1->get<Transform>()->position = p1 + splitDir;
-//                asteroid1->get<Kinematics>()->velocity = (p2 - p1).normalize().scale(v.magnitude()).rotate(25);
-//                asteroid2->get<Transform>()->position = p1 - splitDir;
-//                asteroid1->get<Kinematics>()->velocity = (p2 - p1).normalize().scale(v.magnitude()).rotate(-25);
+                asteroid1->get<Position>()->position = p1 + splitDir.scale(size / 1.5);
+                asteroid1->get<Kinematics>()->velocity = (v + splitDir.scale(v.magnitude())).normalize().scale(v.magnitude());;
+
+                asteroid2->get<Position>()->position = p1 - splitDir.scale(size / 1.5);
+                asteroid2->get<Kinematics>()->velocity = (v - splitDir.scale(v.magnitude())).normalize().scale(v.magnitude());
             }
         }
     }
@@ -55,8 +57,7 @@ void DamageSystem::handleDeath(EntityManager &entities, Entity *entity, Entity *
         double size = entity->get<Asteroid>()->size;
         Entity* particles = entities.create();
         particles->assign<ParticleSource>(Vector3(0, 0, 0), 20, size * 5, gameConfig.EXPLOSION_DECAY_RATE);
-        particles->assign<Transform>(*entity->get<Transform>());
-
+        particles->assign<Position>(*entity->get<Position>());
         // Increment Score
         gameModel.score++;
     }

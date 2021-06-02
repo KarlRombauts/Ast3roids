@@ -312,7 +312,7 @@ inline E GetElementOr(const std::vector<E>& v, int i, E default_value) {
 }
 
 // Performs an in-place shuffle of a range of the vector's elements.
-// 'begin' and 'end' are element indices as an STL-style range;
+// 'begin' and 'end' are element vertIndices as an STL-style range;
 // i.e. [begin, end) are shuffled, where 'end' == size() means to
 // shuffle to the end of the vector.
 template <typename E>

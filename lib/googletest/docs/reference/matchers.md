@@ -223,7 +223,7 @@ reorder them) to participate in the matching:
 | Matcher                    | Description                                     |
 | :------------------------- | :---------------------------------------------- |
 | `AllArgs(m)`               | Equivalent to `m`. Useful as syntactic sugar in `.With(AllArgs(m))`. |
-| `Args<N1, N2, ..., Nk>(m)` | The tuple of the `k` selected (using 0-based indices) arguments matches `m`, e.g. `Args<1, 2>(Eq())`. |
+| `Args<N1, N2, ..., Nk>(m)` | The tuple of the `k` selected (using 0-based vertIndices) arguments matches `m`, e.g. `Args<1, 2>(Eq())`. |
 
 ### Composite Matchers
 

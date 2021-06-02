@@ -30,8 +30,6 @@ public:
     template<typename ... Components>
     std::vector<Entity*> getEntitiesWith();
 
-    Entity *createFixedLine(Vector3 start, Vector3 end);
-
     void createArena();
 
     Entity *createSpaceShip(Vector3 position);

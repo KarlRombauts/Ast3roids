@@ -1,10 +1,11 @@
 #include <GLUT/glut.h>
+#include <Components/Rotation.h>
 #include "FiringSystem.h"
 #include "../Components/FiringBullet.h"
 #include "../Components/SpaceShip.h"
-#include "../Components/Transform.h"
+#include "../Components/Position.h"
 #include "../Components/Kinematics.h"
-#include "../Components/Texture.h"
+#include "../Components/Color.h"
 #include "../Globals.h"
 
 void FiringSystem::update(EntityManager &entities, double dt) {
@@ -18,12 +19,13 @@ void FiringSystem::update(EntityManager &entities, double dt) {
             spaceShip->lastFire = thisTime;
             entity->remove<FiringBullet>();
 
-            Transform *transform = entity->get<Transform>();
+            Vector3 &position = entity->get<Position>()->position;
+            Quaternion &rotation = entity->get<Rotation>()->rotation;
 
             // Todo: Rotate forward velocity by current rotation
-            Vector3 bulletVelocity = entity->get<Kinematics>()->velocity; //+ Vector3::polar(transform->rotation, gameConfig.BULLET_SPEED);
+            Vector3 bulletVelocity = entity->get<Kinematics>()->velocity + Vector3::polar(rotation, gameConfig.BULLET_SPEED);
 
-            entities.createBullet(transform->position, bulletVelocity);
+            entities.createBullet(position, bulletVelocity);
         }
     }
 }

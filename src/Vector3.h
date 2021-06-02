@@ -5,6 +5,8 @@
 #ifndef UNTITLED_VEC2_H
 #define UNTITLED_VEC2_H
 
+class Quaternion;
+
 class Vector3 {
 public:
     Vector3(): x(0), y(0), z(0) {};
@@ -129,6 +131,8 @@ public:
     static Vector3 fromTo(Vector3 &from, Vector3 &to);
 
     double absMaxComponent();
+
+    static Vector3 polar(Quaternion &quaternion, double magnitude);
 };
 
 #endif //UNTITLED_VEC2_H

@@ -1,17 +1,17 @@
-//
-// Created by Karl Rombauts on 7/5/21.
-//
-
 #include <sstream>
 #include <Helpers.h>
 #include <regex>
 #include "ObjParser.h"
 #include "Normals.h"
+#include "MaterialParser.h"
 
-Geometry ObjParser::parse(std::string filename) {
+Geometry ObjParser::parse(std::string filepath) {
     geometry = Geometry();
     normalVectors = std::vector<Vector3>();
-    objFile = std::ifstream(filename);
+
+    objFilePath = filepath;
+    objFile = std::ifstream(filepath);
+
     std::string line;
     if (objFile.is_open()) {
         while (getline(objFile, line)) {
@@ -20,11 +20,14 @@ Geometry ObjParser::parse(std::string filename) {
         objFile.close();
     }
 
+    normaliseNormals();
+    return geometry;
+}
+
+void ObjParser::normaliseNormals() {
     for (Vector3 &normal: geometry.normals) {
         normal = normal.normalize();
     }
-
-    return geometry;
 }
 
 void ObjParser::parseLine(std::string &_line) {
@@ -33,12 +36,18 @@ void ObjParser::parseLine(std::string &_line) {
     std::string token;
     line >> token;
 
-    if (token == "v") {
+    if (token == "mtllib") {
+        parseMaterialFile(_line);
+    } else if (token == "v") {
         parseVertices(_line);
+    } else if (token == "vt") {
+        parseTexCoor(_line);
     } else if (token == "vn") {
         parseNormals(_line);
     } else if (token == "f") {
         parseFaces(_line);
+    } else if (token == "usemtl") {
+        parseCurrentMaterial(_line);
     }
 }
 
@@ -77,60 +86,81 @@ void ObjParser::parseFaces(std::string &line) {
         geometry.normals = std::vector<Vector3>(geometry.vertices.size());
     }
 
-    trim(line);
-    std::vector<std::string> tokens = splitString(line, " ");
-    int numVerts = tokens.size() - 1; // Ignore first token
-
-    if (numVerts == 3) {
-        parseTriangleFace(line);
-    } else if (numVerts == 4) {
-        parseQuadFace(line);
+    if (geometry.uvs.empty()) {
+        geometry.uvs = std::vector<Vector2>(geometry.vertices.size());
     }
+
+    parseTriangleFace(line);
 }
 
-void ObjParser::parseQuadFace(const std::string &line) {
-    QuadIndices quad;
-    int vt1, vt2, vt3, vt4; // texture
-    int vn1, vn2, vn3, vn4; // Normals
-
-    sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d %d/%d/%d",
-           &quad.v1, &vt1, &vn1,
-           &quad.v2, &vt2, &vn2,
-           &quad.v3, &vt3, &vn3,
-           &quad.v4, &vt4, &vn4
-    );
-
-    quad.v1--;
-    quad.v2--;
-    quad.v3--;
-    quad.v4--;
-
-    geometry.normals[quad.v1] += normalVectors[vn1 - 1];
-    geometry.normals[quad.v2] += normalVectors[vn2 - 1];
-    geometry.normals[quad.v3] += normalVectors[vn3 - 1];
-    geometry.normals[quad.v4] += normalVectors[vn4 - 1];
-
-    geometry.quads.push_back(quad);
-}
 
 void ObjParser::parseTriangleFace(const std::string &line) {
-    TriangleIndices triangle;
-    int vt1, vt2, vt3; // texture
+    TriangleIndices vertIndices;
+    TriangleIndices uvIndices;
     int vn1, vn2, vn3; // Normals
 
     sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d",
-           &triangle.v1, &vt1, &vn1,
-           &triangle.v2, &vt2, &vn2,
-           &triangle.v3, &vt3, &vn3
+           &vertIndices.v1, &uvIndices.v1, &vn1,
+           &vertIndices.v2, &uvIndices.v2, &vn2,
+           &vertIndices.v3, &uvIndices.v3, &vn3
     );
 
-    triangle.v1--;
-    triangle.v2--;
-    triangle.v3--;
+    vertIndices.v1--;
+    vertIndices.v2--;
+    vertIndices.v3--;
 
-    geometry.normals[triangle.v1] += normalVectors[vn1 - 1];
-    geometry.normals[triangle.v2] += normalVectors[vn2 - 1];
-    geometry.normals[triangle.v3] += normalVectors[vn3 - 1];
+    uvIndices.v1--;
+    uvIndices.v2--;
+    uvIndices.v3--;
 
-    geometry.triangles.push_back(triangle);
+
+    geometry.normals[vertIndices.v1] += normalVectors[vn1 - 1];
+    geometry.normals[vertIndices.v2] += normalVectors[vn2 - 1];
+    geometry.normals[vertIndices.v3] += normalVectors[vn3 - 1];
+
+    geometry.faces.emplace_back(vertIndices, uvIndices, currentMaterial);
+}
+
+void ObjParser::parseTexCoor(const std::string &string) {
+    std::stringstream stringstream(string);
+
+    std::string token;
+    double x;
+    double y;
+
+    stringstream >> token; // skip token
+    stringstream >> x;
+    stringstream >> y;
+    geometry.uvs.emplace_back(x, y);
+}
+
+void ObjParser::setCurrentMaterial(std::string materialName) {
+    for (Material *material: geometry.materials) {
+        if (material->name == materialName) {
+            currentMaterial = material;
+            return;
+        }
+    }
+}
+
+void ObjParser::parseMaterialFile(const std::string & string) {
+    std::stringstream stringstream(string);
+    std::string token;
+    std::string filename;
+
+    stringstream >> token;
+    stringstream >> filename;
+
+    geometry.materials = MaterialParser().parse(getDirFromPath(objFilePath) + "/" + filename);
+}
+
+void ObjParser::parseCurrentMaterial(std::string &string) {
+    std::stringstream stringstream(string);
+    std::string token;
+    std::string materialName;
+
+    stringstream >> token;
+    stringstream >> materialName;
+
+    setCurrentMaterial(materialName);
 }

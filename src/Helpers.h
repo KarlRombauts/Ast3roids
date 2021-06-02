@@ -35,4 +35,6 @@ void rtrim(std::string &s);
 // trim from both ends (in place)
 void trim(std::string &s);
 
+std::string getDirFromPath(std::string &filename);
+
 #endif //UNTITLED_HELPERS_H

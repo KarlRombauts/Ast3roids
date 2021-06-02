@@ -6,7 +6,6 @@ set(GL_SILENCE_DEPRECATION)
 
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
-
 include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
 
 include_directories(src)

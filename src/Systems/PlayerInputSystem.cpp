@@ -3,7 +3,7 @@
 #include "PlayerInputSystem.h"
 #include "../Globals.h"
 #include "../Components/PlayerInput.h"
-#include "../Components/Transform.h"
+#include "../Components/Position.h"
 #include "../Components/Kinematics.h"
 #include "../Components/SpaceShip.h"
 #include "../Components/FiringBullet.h"
@@ -16,8 +16,8 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
         Quaternion &rotation = entity->get<Rotation>()->rotation;
     }
 
-    for(Entity* entity: entities.getEntitiesWith<Transform, Rotation, Kinematics, PlayerInput, SpaceShip>()) {
-        Vector3 &position = entity->get<Transform>()->position;
+    for(Entity* entity: entities.getEntitiesWith<Position, Rotation, Kinematics, PlayerInput, SpaceShip>()) {
+        Vector3 &position = entity->get<Position>()->position;
         Quaternion &rotation = entity->get<Rotation>()->rotation;
 
         if (keyboardState.isKeyPressed('k')) {
@@ -48,7 +48,7 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
         }
 
 //        if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
-//            kinematics->acceleration = Vector3::polar(transform->rotation, spaceShip->thrust);
+//            kinematics->acceleration = Vector3::polar(Position->rotation, spaceShip->thrust);
 
             // Create exhaust particle system
 //            Entity* particles = entities.create();
@@ -61,13 +61,13 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
 //                    gameConfig.EXHAUST_PARTICLE_DECAY);
 //
 //            // Offset particles
-//            Transform particlesTransform = *transform;
-//            particlesTransform.position += kinematics->acceleration.normalize().scale(-3);
-//            particles->assign<Transform>(particlesTransform);
+//            Position particlesPosition = *position;
+//            particlesPosition.position += kinematics->acceleration.normalize().scale(-3);
+//            particles->assign<Position>(particlesPosition);
 //        }
 
-//        if (keyboardState.isKeyPressed(gameConfig.PLAYER_SHOOT)) {
-//            entity->assign<FiringBullet>();
-//        }
+        if (keyboardState.isKeyPressed(gameConfig.PLAYER_SHOOT)) {
+            entity->assign<FiringBullet>();
+        }
     }
 }

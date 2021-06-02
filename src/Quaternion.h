@@ -48,8 +48,6 @@ public:
 
     Vector3 operator*(const Vector3 &vector);
 
-    Quaternion operator*=(const Vector3 &q);
-
     std::string toString() const;
 
     Vector3 getAxis();

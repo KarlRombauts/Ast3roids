@@ -6,6 +6,7 @@
 
 struct Position: public Component{
     Position(): position(0, 0, 0) {};
+
     Position(Vector3 position): position(position) {};
 
     Vector3 position;

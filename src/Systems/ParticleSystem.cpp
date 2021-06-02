@@ -1,14 +1,16 @@
+#include <Components/Rotation.h>
 #include "ParticleSystem.h"
 #include "../Components/ParticleSource.h"
-#include "../Components/Transform.h"
+#include "../Components/Position.h"
 #include "../Components/Particle.h"
 #include "../Components/Kinematics.h"
 #include "../Helpers.h"
 #include "../Components/Collision.h"
 #include "../Components/Destroy.h"
+#include "Components/Scale.h"
 
 void ParticleSystem::update(EntityManager &entities, double dt) {
-    for (Entity *emitter: entities.getEntitiesWith<ParticleSource, Transform>()) {
+    for (Entity *emitter: entities.getEntitiesWith<ParticleSource, Position>()) {
         ParticleSource *particleSource = emitter->get<ParticleSource>();
         for (int i = 0; i < particleSource->initialParticles; i++) {
             emitParticle(entities, emitter);
@@ -17,7 +19,7 @@ void ParticleSystem::update(EntityManager &entities, double dt) {
     }
 
     for (Entity *particleEntity: entities.getEntitiesWith<Particle>()) {
-        Texture *texture = particleEntity->get<Texture>();
+        Color *texture = particleEntity->get<Color>();
         Particle *particle = particleEntity->get<Particle>();
 
         double decayRate = particle->decayRate * dt / 1000;
@@ -38,19 +40,22 @@ void ParticleSystem::emitParticle(EntityManager &entities, Entity *emitterEntity
     Entity *particleEntity = entities.create();
 
     Particle particle;
-    particle.size = 3;
-    particle.deathSize = 3;
+    particle.size = randf(0.2, 0.5);
+    particle.deathSize = 0;
     particle.decayRate = particleSource->decayRate;
     particle.deathColor = {0, 0, 0};
 
     particleEntity->assign<Particle>(particle);
-    particleEntity->assign<Transform>(*emitterEntity->get<Transform>());
+
+    particleEntity->assign<Position>(*emitterEntity->get<Position>());
+    particleEntity->assign<Scale>(particle.size);
+    particleEntity->assign<Rotation>();
+
     particleEntity->assign<Collision>(CollisionType::DYNAMIC);
     particleEntity->assign<CircleCollision>(3);
 
     double d = particleSource->dispersion;
-//    Vector3 velocity = Vector3::polar(randf(0, 360), d + randf(-d / 3, d / 3)) +
-//                       particleSource->velocity;
-//    particleEntity->assign<Kinematics>(velocity, Vector3(0, 0, 0), 0);
-    particleEntity->assign<Texture>(1, 1, 1);
+    Vector3 velocity = Vector3::random(d + randf(-d / 3, d / 3)) + particleSource->velocity;
+    particleEntity->assign<Kinematics>(velocity, Vector3(0, 0, 0), 0);
+    particleEntity->assign<Color>(1, 1, 1);
 }

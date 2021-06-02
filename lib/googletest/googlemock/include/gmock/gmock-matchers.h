@@ -3926,7 +3926,7 @@ class ArgsMatcherImpl : public MatcherInterface<ArgsTuple> {
   }
 
  private:
-  // Prints the indices of the selected fields.
+  // Prints the vertIndices of the selected fields.
   static void PrintIndices(::std::ostream* os) {
     *os << "whose fields (";
     const char* sep = "";

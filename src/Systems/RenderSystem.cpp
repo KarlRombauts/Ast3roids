@@ -1,28 +1,23 @@
-#include <string>
-#include <iostream>
 #include <Components/Camera.h>
 #include <Components/Position.h>
 #include <Components/Plane.h>
 #include <Components/Wall.h>
 #include <Components/Asteroid.h>
 #include <Components/Geometry.h>
-#include <Components/SpaceShip.h>
+#include <Components/Scale.h>
 #include "RenderSystem.h"
 #include "../OpenGL.h"
 #include "../Components/Shape.h"
 #include "../Components/Line.h"
 #include "../Components/Health.h"
-#include "../Components/HealthBar.h"
 #include "../Components/Particle.h"
 #include "../GameModel.h"
 #include "../Helpers.h"
-#include "../Quaternion.h"
 #include "../Components/Rotation.h"
 
 void RenderSystem::update(EntityManager &entities, double dt) {
     updateCamera(entities);
 //    drawDifficulty();
-
 
     glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 1.0);
 //    glEnable(GL_CULL_FACE);
@@ -32,7 +27,6 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glShadeModel(GL_SMOOTH);
 
-    glutSolidSphere(1.0, 20, 16);
 
     GLfloat light_position[] = {0.0, 100.0, 0.0, 1.0};
     GLfloat lm_ambient[] = {0.2, 0.2, 0.2, 1.0};
@@ -66,27 +60,21 @@ void RenderSystem::update(EntityManager &entities, double dt) {
 }
 
 void RenderSystem::drawEntities(EntityManager &entities) {
-    for (Entity *entity: entities.getEntitiesWith<Transform, Rotation, Texture>()) {
-        Transform *transform = entity->get<Transform>();
-        Texture *texture = entity->get<Texture>();
+    for (Entity *entity: entities.getEntitiesWith<Position, Rotation, Scale, Color>()) {
+
+        Vector3 &position = entity->get<Position>()->position;
+        Vector3 &scale = entity->get<Scale>()->scale;
         Quaternion &rotation = entity->get<Rotation>()->rotation;
+
+        Color *texture = entity->get<Color>();
 
 //        if (entity->has<Health, HealthBar>()) {
 //            drawHealthBars(entity);
 //        }
 
         glPushMatrix();
-        glTranslatef(transform->position.x, transform->position.y,
-                     transform->position.z);
-        glScalef(transform->scale.x, transform->scale.y, transform->scale.z);
-
-        GLfloat color[] = {(GLfloat) texture->red, (GLfloat) texture->green,
-                           (GLfloat) texture->blue, 1.0};
-        GLfloat color_spec[] = {1, 1, 1, 1};
-
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, color);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, color);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, color_spec);
+        glTranslatef(position.x, position.y, position.z);
+        glScalef(scale.x, scale.y, scale.z);
 
         glRotateQuaternion(rotation);
 
@@ -96,14 +84,15 @@ void RenderSystem::drawEntities(EntityManager &entities) {
             drawGridPlane(entity);
         } else if (entity->has<Geometry>()) {
             drawShape(entity);
+//            glutSolidSphere(1.0, 20, 16);
         } else if (entity->has<Asteroid>()) {
             drawShape(entity);
+//            glutSolidSphere(1.0, 20, 16);
         } else {
-            drawTestCube();
+            glutSolidSphere(1.0, 20, 16);
         }
 
         glDisableClientState(GL_COLOR_ARRAY);
-
         glFlush();
         glPopMatrix();
     }
@@ -239,11 +228,38 @@ void RenderSystem::drawShape(Entity *entity) const {
         glNormalPointer(GL_DOUBLE, 0, &geometry->normals[0]);
     }
 
-    glVertexPointer(3, GL_DOUBLE, sizeof(Vector3), &geometry->vertices[0]);
-    glDrawElements(GL_TRIANGLES, geometry->triangles.size() * 3,
-                   GL_UNSIGNED_INT, &geometry->triangles[0]);
-    glDrawElements(GL_QUADS, geometry->quads.size() * 4, GL_UNSIGNED_INT,
-                   &geometry->quads[0]);
+//    glVertexPointer(3, GL_DOUBLE, sizeof(Vector3), &geometry->vertices[0]);
+//
+//    glDrawElements(GL_TRIANGLES, geometry->triangles.size() * 3,
+//                   GL_UNSIGNED_INT, &geometry->triangles[0]);
+
+
+
+    glEnable(GL_TEXTURE_2D);
+    for (Face face: geometry->faces) {
+
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, face.material->diffuse);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, face.material->ambient);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, face.material->specular);
+
+        glBindTexture(GL_TEXTURE_2D, face.material->textureId);
+        glBegin(GL_TRIANGLES);
+            for (int i = 0; i < 3; i++) {
+                if (!geometry->uvs.empty()) {
+                    Vector2 &t1 = geometry->uvs[face.uvIndices[i]];
+                    glTexCoord2d(t1.x, t1.y);
+                }
+
+                Vector3 &n1 = geometry->normals[face.vertIndices[i]];
+                glNormal3d(n1.x, n1.y, n1.z);
+
+                Vector3 &v1 = geometry->vertices[face.vertIndices[i]];
+                glVertex3d(v1.x, v1.y, v1.z);
+
+            }
+        glEnd();
+    }
+    glDisable(GL_TEXTURE_2D);
 
     glDisableClientState(GL_NORMAL_ARRAY);
 
@@ -282,11 +298,12 @@ void RenderSystem::drawLine(const Vector3 &start, const Vector3 &end) const {
 }
 
 void RenderSystem::drawHealthBars(Entity *entity) const {
-    Transform *transform = entity->get<Transform>();
+    Vector3 &position = entity->get<Position>()->position;
+    Vector3 &scale = entity->get<Position>()->position;
 
     glPushMatrix();
-    glTranslatef(transform->position.x, transform->position.y, 0);
-    glScalef(transform->scale.x, transform->scale.y, 1);
+    glTranslatef(position.x, position.y, 0);
+    glScalef(scale.x, scale.y, 1);
 
     int width = 10;
     Health *health = entity->get<Health>();

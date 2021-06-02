@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 #include "GameModel.h"
 #include "OpenGL.h"
 #include "Globals.h"

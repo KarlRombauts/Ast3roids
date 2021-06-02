@@ -1,0 +1,40 @@
+# Blender MTL File: 'None'
+# Material Count: 3
+
+newmtl R2D2_texture
+Ns 10.000002
+Ka 1.000000 1.000000 1.000000
+Kd 0.588235 0.588235 0.588235
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Bump R2_bump.png
+map_Kd R2_diffuse.png
+map_Ks R2_spec.png
+
+newmtl X_Wing_illuminated_for_engine_glow_
+Ns 10.000002
+Ka 1.000000 1.000000 1.000000
+Kd 0.588235 0.588235 0.588235
+Ks 0.000000 0.000000 0.000000
+Ke 0.588235 0.588235 0.588235
+Ni 1.500000
+d 1.000000
+illum 1
+map_Kd xwing_diffuse.png
+
+newmtl X_Wing_texture
+Ns 10.000002
+Ka 1.000000 1.000000 1.000000
+Kd 0.588235 0.588235 0.588235
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.500000
+d 1.000000
+illum 1
+map_Bump xwing_bump.png
+map_Kd xwing_diffuse.png
+map_Ks xwing_spec.png
+map_d xwing_transparency.png

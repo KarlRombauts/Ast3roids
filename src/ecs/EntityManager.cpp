@@ -6,11 +6,12 @@
 #include <Helpers/ObjParser.h>
 #include <Helpers/NoiseDistortion.h>
 #include <Helpers/Normals.h>
+#include <Components/Scale.h>
 #include "EntityManager.h"
 #include "Entity.h"
-#include "../Components/Transform.h"
+#include "../Components/Position.h"
 #include "../Components/Collision.h"
-#include "../Components/Texture.h"
+#include "../Components/Color.h"
 #include "../Components/Kinematics.h"
 #include "../Components/Asteroid.h"
 #include "../Helpers.h"
@@ -27,7 +28,6 @@
 #include "../Components/BlackHole.h"
 #include "../Components/GravityForce.h"
 #include "../Globals.h"
-#include "../Components/Particle.h"
 #include "../Components/Bullet.h"
 #include "../Components/Damage.h"
 #include "../Components/Rotation.h"
@@ -45,12 +45,13 @@ Entity *EntityManager::create() {
 Entity *EntityManager::createBlackHole(double radius, Vector3 position) {
     std::vector<Vector3> circle;
     Entity *blackHole = create();
-    blackHole->assign<Transform>(position, 0, Vector3(1, 1, 1));
+    blackHole->assign<Position>(position);
+    blackHole->assign<Scale>(1);
     blackHole->assign<BlackHole>();
     blackHole->assign<Collision>(CollisionType::TRIGGER);
     blackHole->assign<CircleCollision>(radius / 4);
     blackHole->assign<GravityForce>(gameConfig.BLACK_HOLE_STRENGTH);
-    blackHole->assign<Texture>(gameConfig.BLACK_HOLE_COLOR);
+    blackHole->assign<Color>(gameConfig.BLACK_HOLE_COLOR);
     return blackHole;
 }
 
@@ -61,20 +62,19 @@ Entity *EntityManager::createAsteroid(double radius) {
     const CoordinateSpace &world = gameModel.worldCoordinates;
 
     double l = gameModel.arenaSize;
-    asteroid->assign<Transform>(Vector3(randf(-l, l), randf(-l, l), randf(-l, l)),
-            0, Vector3(radius, radius, radius));
-
+    asteroid->assign<Position>(Vector3(randf(-l, l), randf(-l, l), randf(-l, l)));
+    asteroid->assign<Scale>(radius);
     asteroid->assign<Rotation>();
     asteroid->assign<Asteroid>(radius);
 
     Geometry geometry = IcoSphere::create();
-//    distortMesh(geometry.vertices, 0.1);
+    distortMesh(geometry.vertices, 0.3);
 
     asteroid->assign<Geometry>(geometry);
 
     asteroid->assign<Collision>(CollisionType::DYNAMIC);
     asteroid->assign<CircleCollision>(radius);
-    asteroid->assign<Texture>(gameConfig.ASTEROID_COLOR);
+    asteroid->assign<Color>(gameConfig.ASTEROID_COLOR);
     asteroid->assign<Health>(radius * 10);
 
     // Kinematics
@@ -98,16 +98,6 @@ Entity *EntityManager::createAsteroid(double radius) {
     return asteroid;
 }
 
-Entity *EntityManager::createFixedLine(Vector3 start, Vector3 end) {
-    Entity *line = create();
-    line->assign<Line>(start, end);
-    line->assign<Collision>(CollisionType::STATIC);
-    line->assign<LineCollision>(line->get<Line>());
-    line->assign<Transform>();
-    line->assign<Texture>(1, 1, 1);
-    return line;
-}
-
 
 Entity *EntityManager::createGridPlane(Vector3 bottomLeft, Vector3 bottomRight,
                                        Vector3 topRight, Vector3 topLeft) {
@@ -115,9 +105,10 @@ Entity *EntityManager::createGridPlane(Vector3 bottomLeft, Vector3 bottomRight,
     plane->assign<Plane>(bottomLeft, bottomRight, topRight, topLeft);
     plane->assign<Collision>(CollisionType::STATIC);
     plane->assign<PlaneCollision>(plane->get<Plane>());
-    plane->assign<Transform>();
+    plane->assign<Position>();
     plane->assign<Rotation>();
-    plane->assign<Texture>(1, 1, 1);
+    plane->assign<Scale>();
+    plane->assign<Color>(1, 1, 1);
     return plane;
 }
 
@@ -153,7 +144,7 @@ void EntityManager::createArena() {
 
     for (Entity *wall: walls) {
         wall->assign<Wall>();
-        wall->assign<Texture>(0.3, 0.3, 0.3);
+        wall->assign<Color>(0.3, 0.3, 0.3);
     }
 }
 
@@ -162,16 +153,18 @@ Entity *EntityManager::createSpaceShip(Vector3 position) {
 
     spaceShip->assign<SpaceShip>(gameConfig.PLAYER_FIRING_RATE,
                                  gameConfig.PLAYER_SPEED);
+
     spaceShip->assign<Collision>(CollisionType::DYNAMIC);
     spaceShip->assign<CircleCollision>(5);
 
-    spaceShip->assign<Texture>(1, 0, 0);
-    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/SpaceShip/Ship_large.obj"));
-//    spaceShip->assign<Geometry>(IcoSphere::create());
-//    spaceShip->assign<Transform>(position, 90, Vector3(0.05, 0.05, 0.05));
+    spaceShip->assign<Color>(1, 0, 0);
+    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/x-wing/X-Wing-2.obj"));
 //    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/sphere.obj"));
-    spaceShip->assign<Transform>(position, 90, Vector3(2, 2, 2));
+
+    spaceShip->assign<Position>(position);
+    spaceShip->assign<Scale>(1);
     spaceShip->assign<Rotation>();
+
     spaceShip->assign<Kinematics>(Vector3(0, 0, 0), Vector3(0, 0, 0), 1);
     spaceShip->get<Kinematics>()->drag = 1;
 
@@ -185,9 +178,14 @@ Entity *EntityManager::createSpaceShip(Vector3 position) {
 Entity *EntityManager::createBoundingCircle(double radius) {
     Entity *boundingCircle = create();
     boundingCircle->assign<BoundingCircle>();
+
     boundingCircle->assign<Collision>(CollisionType::TRIGGER);
     boundingCircle->assign<CircleCollision>(radius);
-    boundingCircle->assign<Transform>(Vector3(0, 0, 0), 90, Vector3(1, 1, 1));
+
+    boundingCircle->assign<Position>(Vector3(0, 0, 0));
+    boundingCircle->assign<Rotation>();
+    boundingCircle->assign<Scale>(1);
+
     return boundingCircle;
 }
 
@@ -199,32 +197,23 @@ void EntityManager::destroy(Entity *entity) {
 void EntityManager::createWorld() {
     createArena();
 
-//    const Vector3 shipPosition = Vector3(gameModel.arenaSize * -0.7,
-//                                   gameModel.arenaSize * -0.7);
+    Vector3 shipPosition = Vector3();
+    Entity *spaceShip = createSpaceShip(shipPosition);
 
-    Entity *spaceShip = createSpaceShip(Vector3(0, 0, 0));
     Entity *camera = createCamera(Vector3(0, 0, 20), Quaternion());
     camera->assign<SmoothFollow>(spaceShip, Vector3(0, 5, 20));
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 5; i++) {
         createAsteroid(randf(3, 10));
     }
 
-//    Entity *center = create();
-//    center->assign<Shape>(spaceShipModel);
-//    center->assign<Texture>(1, 0, 0);
-//    center->assign<Transform>(Vector3(0, 0, 0), 90, Vector3(2, 2, 2));
-//    center->assign<Rotation>();
-//    center->assign<Kinematics>(Vector3(0, 0), Vector3(0, 0), 1);
 //    if (gameModel.difficulty == Difficulty::HARD) {
 //        // Never create a black hole that is too close to the ship
-//        int range = gameModel.arenaSize * 0.8;
-//        Vector3 blackHolePosition = Vector3(0, 0);
+//        int range = gameModel.arenaSize * 0.9;
+//        Vector3 blackHolePosition = Vector3(0, 0, 0);
 //        do {
-//            blackHolePosition = Vector3(randInt(-range, range),
-//                                        randInt(-range, range));
-//        } while ((blackHolePosition - shipPosition).magnitude() <
-//                 gameModel.arenaSize * 0.4);
+//            blackHolePosition = Vector3(randf(-range, range), randf(-range, range), randf(-range, range));
+//        } while (Vector3::distanceBetween(blackHolePosition, shipPosition) < gameModel.arenaSize * 0.4);
 //
 //        createBlackHole(10, blackHolePosition);
 //    }
@@ -239,14 +228,18 @@ void EntityManager::destroyAll() {
 
 Entity *EntityManager::createBullet(Vector3 position, Vector3 velocity) {
     Entity *bullet = create();
-    bullet->assign<Transform>(position, 0, Vector3(1, 1, 1));
     bullet->assign<Kinematics>(velocity, Vector3(0, 0, 0), 1);
-    bullet->assign<Particle>();
+
+    bullet->assign<Position>(position);
+    bullet->assign<Rotation>();
+    bullet->assign<Scale>();
+
+    bullet->assign<Collision>(CollisionType::TRIGGER);
+    bullet->assign<CircleCollision>(1);
+
     bullet->assign<Bullet>();
     bullet->assign<Damage>(gameConfig.BULLET_DAMAGE);
-    bullet->assign<Collision>(CollisionType::TRIGGER);
-    bullet->assign<CircleCollision>(2);
-    bullet->assign<Texture>(gameConfig.BULLET_COLOR);
+    bullet->assign<Color>(1, 1, 1);
     return bullet;
 }
 

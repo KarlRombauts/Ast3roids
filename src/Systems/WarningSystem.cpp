@@ -4,11 +4,11 @@
 #include "../Components/SpaceShip.h"
 #include "../Components/BoundingCircle.h"
 #include "../Components/Wall.h"
-#include "../Components/Texture.h"
+#include "../Components/Color.h"
 
 void WarningSystem::update(EntityManager &entities) {
     for(Entity *wall: entities.getEntitiesWith<Wall>()) {
-        wall->assign<Texture>(0.3, 0.3, 0.3);
+        wall->assign<Color>(0.3, 0.3, 0.3);
     }
 
     for (Entity *entity: entities.getEntitiesWith<Impact, BoundingCircle>()) {
@@ -16,7 +16,7 @@ void WarningSystem::update(EntityManager &entities) {
 
         for (Entity *otherEntity: otherEntities) {
             if (otherEntity->has<Wall>()) {
-                otherEntity->assign<Texture>(1, 0, 0);
+                otherEntity->assign<Color>(1, 0, 0);
             }
         }
     }

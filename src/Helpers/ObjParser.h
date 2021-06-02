@@ -6,14 +6,21 @@
 #include <Components/Geometry.h>
 
 class ObjParser {
+
     std::ifstream objFile;
+
+    std::string objFilePath;
+
     Geometry geometry;
+
     std::vector<Vector3> normalVectors;
+
+    Material *currentMaterial;
 
 public:
     ObjParser() {};
 
-    Geometry parse(std::string filename);
+    Geometry parse(std::string filepath);
 
     void parseLine(std::string &_line);
 
@@ -25,11 +32,21 @@ public:
 
     void parseVertices(const std::string &string);
 
-    void parseQuadFace(const std::string &basicString);
-
     void parseTriangleFace(const std::string &basicString);
 
     void parseNormals(const std::string &string);
+
+    void parseTexCoor(const std::string &string);
+
+    void parseMaterialFile(std::stringstream stringstream);
+
+    void parseMaterialFile(const std::string &stringstream);
+
+    void normaliseNormals();
+
+    void setCurrentMaterial(std::string materialName);
+
+    void parseCurrentMaterial(std::string &string);
 };
 
 

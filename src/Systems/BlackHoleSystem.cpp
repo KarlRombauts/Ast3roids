@@ -1,6 +1,6 @@
 #include "BlackHoleSystem.h"
 #include "../Components/BlackHole.h"
-#include "../Components/Transform.h"
+#include "../Components/Position.h"
 #include "../GameModel.h"
 #include "../Components/Impact.h"
 #include "../Components/Collision.h"
@@ -9,14 +9,16 @@
 #include "../Globals.h"
 
 void BlackHoleSystem::update(EntityManager &entities, double dt) {
-    for (Entity *entity: entities.getEntitiesWith<BlackHole, Transform, CircleCollision>()) {
-        Transform *transform = entity->get<Transform>();
+    for (Entity *entity: entities.getEntitiesWith<BlackHole, Position, CircleCollision>()) {
+        Position *position = entity->get<Position>();
+
 
         double pulseTime = 1 / gameConfig.BLACK_HOLE_PULSE_RATE;
         double minSize = 0.7;
         double scale = (1 - ((fmod(gameModel.elapsedTime / (double) 1000, pulseTime)) / pulseTime) + minSize) / (1 + minSize);
 
-        transform->scale = Vector3(scale, scale, scale);
+//        transform->scale = Vector3(scale, scale, scale);
+
     }
 
     for (Entity *blackHole: entities.getEntitiesWith<BlackHole, Impact>()) {

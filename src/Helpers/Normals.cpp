@@ -4,7 +4,8 @@
 void Normals::recalculate(Geometry &geometry) {
     geometry.normals.resize(geometry.vertices.size());
 
-    for (TriangleIndices indices: geometry.triangles) {
+    for (Face &face: geometry.faces) {
+        TriangleIndices &indices = face.vertIndices;
         Vector3 &v1 = geometry.vertices[indices.v1];
         Vector3 &v2 = geometry.vertices[indices.v2];
         Vector3 &v3 = geometry.vertices[indices.v3];

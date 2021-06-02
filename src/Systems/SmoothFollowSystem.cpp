@@ -1,7 +1,7 @@
 #include <Components/SmoothFollow.h>
 #include <Components/Position.h>
 #include <Components/Rotation.h>
-#include <Components/Transform.h>
+#include <Components/Position.h>
 #include "SmoothFollowSystem.h"
 
 void SmoothFollowSystem::update(EntityManager &entities, double dt) {
@@ -10,7 +10,7 @@ void SmoothFollowSystem::update(EntityManager &entities, double dt) {
         Vector3 &relativeOffset = follower->get<SmoothFollow>()->relativeOffset;
 
 
-        if (!target->has<Transform, Rotation>()) {
+        if (!target->has<Position, Rotation>()) {
             // Target cannot be followed
             continue;
         }
@@ -19,7 +19,7 @@ void SmoothFollowSystem::update(EntityManager &entities, double dt) {
         Quaternion &currentRotation = follower->get<Rotation>()->rotation;
 
         Quaternion &targetRotation = target->get<Rotation>()->rotation;
-        Vector3 targetPosition = target->get<Transform>()->position + targetRotation * relativeOffset;
+        Vector3 targetPosition = target->get<Position>()->position + targetRotation * relativeOffset;
 
         currentPosition = Vector3::lerp(currentPosition, targetPosition, 0.1);
         currentRotation = Quaternion::slerp(currentRotation, targetRotation, 0.1);

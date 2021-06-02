@@ -1447,7 +1447,7 @@ std::string CreateUnifiedDiff(const std::vector<std::string>& left,
         hunk.PushLine('+', right[r_i].c_str());
       }
 
-      // Advance indices, depending on edit type.
+      // Advance vertIndices, depending on edit type.
       l_i += edit != kAdd;
       r_i += edit != kRemove;
     }

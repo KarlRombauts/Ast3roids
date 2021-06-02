@@ -9,7 +9,7 @@
 #include <OpenGL/OpenGL.h>
 #include "System.h"
 #include "../Components/Transform.h"
-#include "../Components/Texture.h"
+#include "../Components/Color.h"
 #include "../Quaternion.h"
 
 

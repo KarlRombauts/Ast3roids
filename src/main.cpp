@@ -1,4 +1,4 @@
-#include <stdlib.h>
+#include <cstdlib>
 #include <Systems/RayCastingSystem.h>
 #include <Systems/SmoothFollowSystem.h>
 #include "OpenGL.h"
@@ -66,12 +66,12 @@ static void idle() {
         case GameState::WAVE_OVER:
             handleWaveOver();
             break;
-        case GameState::PLAYING:
-            handleGamePlay();
-            break;
         case GameState::START:
         case GameState::PLAY_AGAIN:
             handleMenu();
+            break;
+        case GameState::PLAYING:
+            handleGamePlay();
             break;
     }
 
@@ -119,18 +119,18 @@ void handleGamePlay() {
     playerInputSystem.update(entities, dt);
     rayCastingSystem.update(entities);
     smoothFollowSystem.update(entities, dt);
-//    firingSystem.update(entities, dt);
+    firingSystem.update(entities, dt);
     collisionSystem.update(entities, dt);
-//    particleSystem.update(entities, dt);
+    particleSystem.update(entities, dt);
     physicsSystem.update(entities, dt);
     warningSystem.update(entities);
-//    damageSystem.update(entities);
-//    bulletCleanupSystem.update(entities, dt);
+    damageSystem.update(entities);
+    bulletCleanupSystem.update(entities, dt);
 //    shipImpactSystem.update(entities);
 //    blackHoleSystem.update(entities, dt);
 //    outOfBoundsSystem.update(entities);
     impactCleanupSystem.update(entities, dt);
-//    destroySystem.update(entities);
+    destroySystem.update(entities);
 
     gameModel.elapsedTime = thisTime;
 
@@ -150,9 +150,11 @@ void handleMenu() {
     if (keyboardState.isKeyPressed('1')) {
         gameModel.difficulty = Difficulty::EASY;
     }
+
     if (keyboardState.isKeyPressed('2')) {
         gameModel.difficulty = Difficulty::HARD;
     }
+
     if (keyboardState.isKeyPressed(' ')) {
         entities.createWorld();
         gameModel.reset();
@@ -170,6 +172,8 @@ void init() {
     glMatrixMode(GL_PROJECTION);
     glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glEnable(GL_DEPTH_TEST);
 }

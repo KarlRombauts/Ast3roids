@@ -2548,7 +2548,7 @@ WithArgs<N1, N2, ..., Nk>(action)
 ```
 
 creates an action that passes the arguments of the mock function at the given
-indices (0-based) to the inner `action` and performs it. Using `WithArgs`, our
+vertIndices (0-based) to the inner `action` and performs it. Using `WithArgs`, our
 original example can be written as:
 
 ```cpp
