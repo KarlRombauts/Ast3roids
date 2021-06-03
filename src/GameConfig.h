@@ -1,6 +1,7 @@
 #ifndef UNTITLED_GAMECONFIG_H
 #define UNTITLED_GAMECONFIG_H
 
+#include <Helpers/TextureLoader.h>
 #include "Components/Color.h"
 
 struct GameConfig {
@@ -14,8 +15,10 @@ struct GameConfig {
 
     int PLAYER_FIRING_RATE = 200; // Bullets per second
     int BULLET_DAMAGE = 20; // Hit points
-    double BULLET_SPEED = 500;
+    double BULLET_SPEED = 300;
     Color BULLET_COLOR = {1, 1, 0};
+//    unsigned int BULLET_TEXTURE = TextureLoader::load("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/test.jpg");
+//    unsigned int ASTEROID_TEXTURE = TextureLoader::load("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Textures/asteroid.jpg");
 
     int EXHAUST_PARTICLE_RATE = 3;
     double EXHAUST_PARTICLE_DECAY = 3;

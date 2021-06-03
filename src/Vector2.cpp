@@ -77,3 +77,7 @@ void Vector2::operator*=(const double &scalar) {
     y = newVec.y;
 }
 
+double Vector2::cross(Vector2 other) {
+    return x * other.y - y * other.x;
+}
+

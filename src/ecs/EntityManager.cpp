@@ -7,6 +7,11 @@
 #include <Helpers/NoiseDistortion.h>
 #include <Helpers/Normals.h>
 #include <Components/Scale.h>
+#include <Components/Skybox.h>
+#include <Factory/PlaneFactory.h>
+#include <Components/LookAt.h>
+#include <Components/Transparency.h>
+#include <Components/AnimatedTexture.h>
 #include "EntityManager.h"
 #include "Entity.h"
 #include "../Components/Position.h"
@@ -55,6 +60,12 @@ Entity *EntityManager::createBlackHole(double radius, Vector3 position) {
     return blackHole;
 }
 
+Entity *EntityManager::createSkybox() {
+    Entity *skybox = create();
+    skybox->assign<Skybox>();
+    skybox->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/skybox/skybox.obj"));
+}
+
 
 Entity *EntityManager::createAsteroid(double radius) {
     Entity *asteroid = create();
@@ -68,7 +79,7 @@ Entity *EntityManager::createAsteroid(double radius) {
     asteroid->assign<Asteroid>(radius);
 
     Geometry geometry = IcoSphere::create();
-    distortMesh(geometry.vertices, 0.3);
+    distortMesh(geometry.vertices, 0.3, 0.5);
 
     asteroid->assign<Geometry>(geometry);
 
@@ -159,10 +170,10 @@ Entity *EntityManager::createSpaceShip(Vector3 position) {
 
     spaceShip->assign<Color>(1, 0, 0);
     spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/x-wing/X-Wing-2.obj"));
-//    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/sphere.obj"));
+//    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/plane.obj"));
 
     spaceShip->assign<Position>(position);
-    spaceShip->assign<Scale>(1);
+    spaceShip->assign<Scale>(0.5);
     spaceShip->assign<Rotation>();
 
     spaceShip->assign<Kinematics>(Vector3(0, 0, 0), Vector3(0, 0, 0), 1);
@@ -195,13 +206,19 @@ void EntityManager::destroy(Entity *entity) {
 }
 
 void EntityManager::createWorld() {
+    createSkybox();
     createArena();
 
     Vector3 shipPosition = Vector3();
     Entity *spaceShip = createSpaceShip(shipPosition);
 
     Entity *camera = createCamera(Vector3(0, 0, 20), Quaternion());
+    gameModel.activeCamera = camera;
     camera->assign<SmoothFollow>(spaceShip, Vector3(0, 5, 20));
+
+
+//    createExplosion(Vector3(0, 0, 0));
+
 
     for (int i = 0; i < 5; i++) {
         createAsteroid(randf(3, 10));
@@ -219,6 +236,27 @@ void EntityManager::createWorld() {
 //    }
 }
 
+void EntityManager::createExplosion(const Vector3 &postion, double scale) {
+    Entity *explosion = create();
+    explosion->assign<Scale>(scale);
+    explosion->assign<Rotation>();
+    explosion->assign<Position>(postion);
+    explosion->assign<Transparency>();
+    explosion->assign<LookAt>(gameModel.activeCamera);
+    explosion->assign<AnimatedTexture>(5, 4, AnimationBehaviour::DEATH);
+
+    Geometry geometry = PlaneFactory::create();
+
+    for (Vector2 &uv: geometry.uvs) {
+        uv.x /= 5;
+        uv.y /= 4;
+    }
+    geometry.materials[0]->setEmission(1, 1, 1);
+    geometry.materials[0]->textureId = TextureLoader::load("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Textures/explosion.png");
+
+    explosion->assign<Geometry>(geometry);
+}
+
 void EntityManager::destroyAll() {
     for (std::pair<const unsigned int, Entity *> entity: entities) {
         delete entity.second;
@@ -234,8 +272,16 @@ Entity *EntityManager::createBullet(Vector3 position, Vector3 velocity) {
     bullet->assign<Rotation>();
     bullet->assign<Scale>();
 
+    Geometry geometry = PlaneFactory::create();
+    geometry.materials[0]->textureId = TextureLoader::load("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Textures/fireball_green.png");
+    geometry.materials[0]->setEmission(1, 1, 1);
+    geometry.materials[0]->setSpecular(0, 0, 0);
+
+    bullet->assign<Geometry>(geometry);
+    bullet->assign<Transparency>();
     bullet->assign<Collision>(CollisionType::TRIGGER);
     bullet->assign<CircleCollision>(1);
+    bullet->assign<LookAt>(gameModel.activeCamera);
 
     bullet->assign<Bullet>();
     bullet->assign<Damage>(gameConfig.BULLET_DAMAGE);

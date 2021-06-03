@@ -17,6 +17,11 @@ class ObjParser {
 
     Material *currentMaterial;
 
+    int numVerts;
+    int numTexCoors;
+    int numNormals;
+    int numFaces;
+    int numShapes;
 public:
     ObjParser() {};
 
@@ -47,6 +52,9 @@ public:
     void setCurrentMaterial(std::string materialName);
 
     void parseCurrentMaterial(std::string &string);
+
+    void countLine(std::string line);
+
 };
 
 

@@ -3,8 +3,14 @@
 #include "Helpers/StbImage.h"
 #include "OpenGL.h"
 
+TextureLoader::TexturesMap TextureLoader::textures = {};
 
 unsigned int TextureLoader::load(std::string filepath) {
+    auto it = textures.find(filepath);
+    if (it != textures.end()) {
+        return it->second;
+    }
+
     int width, height, components;
     stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load(filepath.c_str(), &width, &height, &components, STBI_rgb_alpha);
@@ -21,5 +27,7 @@ unsigned int TextureLoader::load(std::string filepath) {
     glPopAttrib();
 
     delete data;
+
+    textures.insert({filepath, id});
     return id;
 }

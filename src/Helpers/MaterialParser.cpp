@@ -40,6 +40,8 @@ void MaterialParser::parseLine(std::string &_line) {
         parseDiffuse(_line);
     } else if (token == "Ks") {
         parseSpecular(_line);
+    } else if (token == "Ke") {
+        parseEmission(_line);
     } else if (token == "map_Kd") {
         parseTexture(_line);
     }
@@ -55,6 +57,19 @@ void MaterialParser::parseName(std::string &string) {
     line >> material->name;
 
     materials.push_back(material);
+}
+
+void MaterialParser::parseEmission(std::string &string) {
+    Material *material = materials.back();
+
+    std::stringstream line(string);
+    std::string token;
+    line >> token;
+
+    line >> material->emission[0];
+    line >> material->emission[1];
+    line >> material->emission[2];
+    material->emission[3] = 1 ;
 }
 
 void MaterialParser::parseSpecular(std::string &string) {

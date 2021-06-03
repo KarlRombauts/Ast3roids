@@ -14,6 +14,8 @@ public:
 
     double dot(Vector2 vector);
 
+    double cross(Vector2 vector);
+
     Vector2 scale(double scalar);
 
     Vector2 normalize();

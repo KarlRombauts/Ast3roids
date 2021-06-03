@@ -24,6 +24,9 @@ struct GameModel {
     int elapsedTime = 0;
     int score = 0;
     int resetTime = 0;
+
+    Entity *activeCamera = nullptr;
+
     Arena arena;
 
     Difficulty difficulty = Difficulty::EASY;

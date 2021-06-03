@@ -9,18 +9,30 @@ Geometry ObjParser::parse(std::string filepath) {
     geometry = Geometry();
     normalVectors = std::vector<Vector3>();
 
+    numFaces=0;
+    numNormals=0;
+    numTexCoors=0;
+    numVerts=0;
+    numShapes=0;
+
     objFilePath = filepath;
     objFile = std::ifstream(filepath);
 
     std::string line;
     if (objFile.is_open()) {
         while (getline(objFile, line)) {
+            countLine(line);
+        }
+        objFile.clear();
+        objFile.seekg(0, std::ios::beg);
+
+        while (getline(objFile, line)) {
             parseLine(line);
         }
         objFile.close();
     }
 
-    normaliseNormals();
+//    normaliseNormals();
     return geometry;
 }
 
@@ -83,11 +95,11 @@ void ObjParser::parseNormals(const std::string &string) {
 
 void ObjParser::parseFaces(std::string &line) {
     if (geometry.normals.empty()) {
-        geometry.normals = std::vector<Vector3>(geometry.vertices.size());
+        geometry.normals = std::vector<Vector3>(numVerts);
     }
 
     if (geometry.uvs.empty()) {
-        geometry.uvs = std::vector<Vector2>(geometry.vertices.size());
+        geometry.uvs = std::vector<Vector2>(numTexCoors);
     }
 
     parseTriangleFace(line);
@@ -163,4 +175,23 @@ void ObjParser::parseCurrentMaterial(std::string &string) {
     stringstream >> materialName;
 
     setCurrentMaterial(materialName);
+}
+
+void ObjParser::countLine(std::string _line) {
+    std::stringstream line(_line);
+
+    std::string token;
+    line >> token;
+
+    if (token == "v") {
+        numVerts++;
+    } else if (token == "vt") {
+        numTexCoors++;
+    } else if (token == "vn") {
+        numNormals++;
+    } else if (token == "f") {
+        numFaces++;
+    } else if (token == "o") {
+        numShapes++;
+    }
 }

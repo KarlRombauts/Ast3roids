@@ -3,6 +3,7 @@
 #include <Vector3.h>
 #include <cmath>
 #include <Helpers/Normals.h>
+#include <Helpers/TextureLoader.h>
 
 Geometry IcoSphere::create() {
     double t = (1.0 + sqrt(5.0)) / 2.0;
@@ -53,8 +54,58 @@ Geometry IcoSphere::create() {
     geometry.faces.emplace_back(TriangleIndices(8, 6, 7), geometry.materials[0]);
     geometry.faces.emplace_back(TriangleIndices(9, 8, 1), geometry.materials[0]);
 
-    IcoSphere::subdivide(geometry, 1);
+    IcoSphere::subdivide(geometry, 2);
     Normals::recalculate(geometry);
+
+    double piInv = 1 / M_PI;
+    double twoPiInv = 1 / (M_PI * 2);
+
+    // Add basic uvs
+    for (Face &face: geometry.faces) {
+        for (int i = 0; i < 3; i++) {
+            Vector3 vert = geometry.vertices[face.vertIndices[i]].normalize();
+            double u = 0.5 + atan2(vert.z, vert.x) * twoPiInv;
+            double v = 0.5 - asin(vert.y) * piInv;
+            geometry.uvs.emplace_back(u, v);
+            face.uvIndices[i] = geometry.uvs.size() - 1;
+        }
+    }
+
+    // Fix the uvs
+    for (Face &face: geometry.faces) {
+        Vector2 &uv1 = geometry.uvs[face.uvIndices[0]];
+        Vector2 &uv2 = geometry.uvs[face.uvIndices[1]];
+        Vector2 &uv3 = geometry.uvs[face.uvIndices[2]];
+
+        // Fix the zigzag seam
+        if ((uv2 - uv1).cross(uv3 - uv1) < 0) {
+            if (uv1.x < 0.25) {
+               uv1.x += 1;
+            }
+            if (uv2.x < 0.25) {
+                uv2.x += 1;
+            }
+            if (uv3.x < 0.25) {
+                uv3.x += 1;
+            }
+        }
+
+        // Fix the uvs for the poles
+        if (uv1.y == 0 || uv1.y == 1) {
+            uv1.x = (uv2.x + uv3.x) / 2;
+        }
+        if (uv2.y == 0 || uv2.y == 1) {
+            uv2.x = (uv1.x + uv3.x) / 2;
+
+        }
+        if (uv3.y == 0 || uv3.y == 1) {
+            uv3.x = (uv2.x + uv1.x) / 2;
+        }
+    }
+
+
+
+    geometry.materials[0]->textureId = TextureLoader::load("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Textures/asteroid.jpg");
     return geometry;
 }
 

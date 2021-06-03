@@ -8,7 +8,7 @@ GameModel gameModel;
 void GameModel::resizeWorld(double aspectRatio) {
     glMatrixMode (GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60, aspectRatio, 1, 10000);
+    gluPerspective(60, aspectRatio, 0.1, 10000);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();

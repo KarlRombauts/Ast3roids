@@ -51,8 +51,8 @@ void ParticleSystem::emitParticle(EntityManager &entities, Entity *emitterEntity
     particleEntity->assign<Scale>(particle.size);
     particleEntity->assign<Rotation>();
 
-    particleEntity->assign<Collision>(CollisionType::DYNAMIC);
-    particleEntity->assign<CircleCollision>(3);
+//    particleEntity->assign<Collision>(CollisionType::DYNAMIC);
+//    particleEntity->assign<CircleCollision>(3);
 
     double d = particleSource->dispersion;
     Vector3 velocity = Vector3::random(d + randf(-d / 3, d / 3)) + particleSource->velocity;

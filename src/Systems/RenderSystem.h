@@ -11,6 +11,7 @@
 #include "../Components/Transform.h"
 #include "../Components/Color.h"
 #include "../Quaternion.h"
+#include "../Components/Geometry.h"
 
 
 class RenderSystem: public System {
@@ -27,7 +28,7 @@ public:
     void drawParticle(Entity *entity) const;
 
     void renderString(GLdouble x, GLdouble y, const std::string &string,
-                      TextAlignment alignment);
+                      TextAlignment alignment, void **font);
 
     void drawScore();
 
@@ -39,13 +40,35 @@ public:
 
     void drawAxis() const;
 
-    void updateCamera(EntityManager &entities);
-
     void drawLine(const Vector3 &start, const Vector3 &end) const;
 
     void drawGridPlane(Entity *entity) const;
 
-    void drawTestCube() const;
+    void drawEntity(Entity *entity);
+
+    void drawTransparentEntities(EntityManager &entities);
+
+    void applyTransformations(Entity *entity);
+
+    double getStringWidth(const std::string &string, void **font) const;
+
+    double getTextOffset(double width, const TextAlignment &alignment) const;
+
+    double
+    getTextOffset(const std::string& string, void **font,
+                  const TextAlignment &alignment) const;
+
+    void applyMaterial(const Material *material) const;
+
+    void drawFace(const Geometry *geometry, const Face &face) const;
+
+    void applyCameraPosition() const;
+
+    void applyCameraRotation();
+
+    void drawSkyBox(EntityManager &entities) const;
+
+    void drawFace(Entity *entity, const Face &face) const;
 };
 
 

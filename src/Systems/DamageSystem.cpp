@@ -29,12 +29,13 @@ void DamageSystem::update(EntityManager &entities) {
 }
 
 void DamageSystem::handleDeath(EntityManager &entities, Entity *entity, Entity *otherEntity) const {
-    if (entity->has<SplitOnDeath>()) {
-        if (entity->has<Asteroid, Position>()) {
-            double size = entity->get<Asteroid>()->size;
-            Vector3 p1 = entity->get<Position>()->position;
-            Vector3 v = entity->get<Kinematics>()->velocity;
+    if (entity->has<Asteroid, Position>()) {
+        double size = entity->get<Asteroid>()->size;
+        Vector3 p1 = entity->get<Position>()->position;
+        Vector3 v = entity->get<Kinematics>()->velocity;
+        entities.createExplosion(p1, size * 5);
 
+        if (entity->has<SplitOnDeath>()) {
             Vector3 randVector = Vector3::random(1);
             Vector3 bulletVelocity = otherEntity->get<Kinematics>()->velocity;
             Vector3 splitDir = bulletVelocity.cross(randVector).cross(bulletVelocity).normalize();
@@ -43,10 +44,10 @@ void DamageSystem::handleDeath(EntityManager &entities, Entity *entity, Entity *
                 Entity *asteroid1 = entities.createAsteroid(size / 1.5);
                 Entity *asteroid2 = entities.createAsteroid(size / 1.5);
 
-                asteroid1->get<Position>()->position = p1 + splitDir.scale(size / 1.5);
+                asteroid1->get<Position>()->position = p1 + splitDir.scale(size / 1.25);
                 asteroid1->get<Kinematics>()->velocity = (v + splitDir.scale(v.magnitude())).normalize().scale(v.magnitude());;
 
-                asteroid2->get<Position>()->position = p1 - splitDir.scale(size / 1.5);
+                asteroid2->get<Position>()->position = p1 - splitDir.scale(size / 1.25);
                 asteroid2->get<Kinematics>()->velocity = (v - splitDir.scale(v.magnitude())).normalize().scale(v.magnitude());
             }
         }

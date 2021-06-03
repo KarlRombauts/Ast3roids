@@ -5,6 +5,8 @@
 #include <Components/Asteroid.h>
 #include <Components/Geometry.h>
 #include <Components/Scale.h>
+#include <Components/Skybox.h>
+#include <Components/Transparency.h>
 #include "RenderSystem.h"
 #include "../OpenGL.h"
 #include "../Components/Shape.h"
@@ -14,22 +16,27 @@
 #include "../GameModel.h"
 #include "../Helpers.h"
 #include "../Components/Rotation.h"
+#include <algorithm>
+#include <Components/AnimatedTexture.h>
+
+bool compareDistanceFromCamera(Entity *a, Entity *b) {
+    Quaternion camRotation = gameModel.activeCamera->get<Rotation>()->rotation;
+    Vector3 camPosition = gameModel.activeCamera->get<Position>()->position;
+    Vector3 camForward = camRotation * Vector3::forward();
+
+    Vector3 posA = a->get<Position>()->position;
+    Vector3 posB = b->get<Position>()->position;
+    double distA = Vector3::fromTo(camPosition, posA).dot(camForward);
+    double distB = Vector3::fromTo(camPosition, posB).dot(camForward);
+
+    return distA < distB;
+}
 
 void RenderSystem::update(EntityManager &entities, double dt) {
-    updateCamera(entities);
 //    drawDifficulty();
 
-    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 1.0);
-//    glEnable(GL_CULL_FACE);
-    glFrontFace(GL_CW);
-//    glCullFace(GL_BACK);
-
-    glClearColor(0.0, 0.0, 0.0, 0.0);
-    glShadeModel(GL_SMOOTH);
-
-
-    GLfloat light_position[] = {0.0, 100.0, 0.0, 1.0};
-    GLfloat lm_ambient[] = {0.2, 0.2, 0.2, 1.0};
+    GLfloat light_position[] = {0, 0, -100, 0};
+    GLfloat lm_ambient[] = {0.4, 0.4, 0.4, 1.0};
 
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, lm_ambient);
@@ -54,95 +61,56 @@ void RenderSystem::update(EntityManager &entities, double dt) {
         case GameState::WAVE_OVER:
         case GameState::PLAYING:
 //            drawScore();
+            glLoadIdentity();
+            applyCameraRotation();
+            drawSkyBox(entities);
+            applyCameraPosition();
+
             drawEntities(entities);
+            drawTransparentEntities(entities);
             break;
     }
 }
 
 void RenderSystem::drawEntities(EntityManager &entities) {
-    for (Entity *entity: entities.getEntitiesWith<Position, Rotation, Scale, Color>()) {
+    for (Entity *entity: entities.getEntitiesWith<Position, Rotation, Scale>()) {
+        // Skip objects that have transparency so that we can draw them last
+        if (entity->has<Transparency>()) continue;
 
-        Vector3 &position = entity->get<Position>()->position;
-        Vector3 &scale = entity->get<Scale>()->scale;
-        Quaternion &rotation = entity->get<Rotation>()->rotation;
-
-        Color *texture = entity->get<Color>();
-
-//        if (entity->has<Health, HealthBar>()) {
-//            drawHealthBars(entity);
-//        }
-
-        glPushMatrix();
-        glTranslatef(position.x, position.y, position.z);
-        glScalef(scale.x, scale.y, scale.z);
-
-        glRotateQuaternion(rotation);
-
-        glColor3f(texture->red, texture->green, texture->blue);
-
-        if (entity->has<Plane, Wall>()) {
-            drawGridPlane(entity);
-        } else if (entity->has<Geometry>()) {
-            drawShape(entity);
-//            glutSolidSphere(1.0, 20, 16);
-        } else if (entity->has<Asteroid>()) {
-            drawShape(entity);
-//            glutSolidSphere(1.0, 20, 16);
-        } else {
-            glutSolidSphere(1.0, 20, 16);
-        }
-
-        glDisableClientState(GL_COLOR_ARRAY);
-        glFlush();
-        glPopMatrix();
+        drawEntity(entity);
     }
 }
 
-void RenderSystem::drawTestCube() const {
-    glBegin(GL_QUADS);
+void RenderSystem::drawTransparentEntities(EntityManager &entities) {
+    std::vector<Entity *> transparentEntities = entities.getEntitiesWith<Position, Rotation, Scale, Transparency>();
+    std::sort(transparentEntities.begin(), transparentEntities.end(), compareDistanceFromCamera);
 
-    // Top face (y = 1.0f)
-    glColor3f(0.0f, 1.0f, 0.0f);     // Green
-    glVertex3f(1.0f, 1.0f, -1.0f);
-    glVertex3f(-1.0f, 1.0f, -1.0f);
-    glVertex3f(-1.0f, 1.0f, 1.0f);
-    glVertex3f(1.0f, 1.0f, 1.0f);
+    for (Entity *entity: transparentEntities) {
+        drawEntity(entity);
+    }
+}
 
-    // Bottom face (y = -1.0f)
-    glColor3f(1.0f, 0.5f, 0.0f);     // Orange
-    glVertex3f(1.0f, -1.0f, 1.0f);
-    glVertex3f(-1.0f, -1.0f, 1.0f);
-    glVertex3f(-1.0f, -1.0f, -1.0f);
-    glVertex3f(1.0f, -1.0f, -1.0f);
+void RenderSystem::drawEntity(Entity *entity) {
+    glPushMatrix();
+    applyTransformations(entity);
 
-    // Front face  (z = 1.0f)
-    glColor3f(1.0f, 0.0f, 0.0f);     // Red
-    glVertex3f(1.0f, 1.0f, 1.0f);
-    glVertex3f(-1.0f, 1.0f, 1.0f);
-    glVertex3f(-1.0f, -1.0f, 1.0f);
-    glVertex3f(1.0f, -1.0f, 1.0f);
+    if (entity->has<Plane, Wall>()) {
+        drawGridPlane(entity);
+    } else if (entity->has<Geometry>()) {
+        drawShape(entity);
+    }
 
-    // Back face (z = -1.0f)
-    glColor3f(1.0f, 1.0f, 0.0f);     // Yellow
-    glVertex3f(1.0f, -1.0f, -1.0f);
-    glVertex3f(-1.0f, -1.0f, -1.0f);
-    glVertex3f(-1.0f, 1.0f, -1.0f);
-    glVertex3f(1.0f, 1.0f, -1.0f);
+    glPopMatrix();
+}
 
-    // Left face (x = -1.0f)
-    glColor3f(0.0f, 0.0f, 1.0f);     // Blue
-    glVertex3f(-1.0f, 1.0f, 1.0f);
-    glVertex3f(-1.0f, 1.0f, -1.0f);
-    glVertex3f(-1.0f, -1.0f, -1.0f);
-    glVertex3f(-1.0f, -1.0f, 1.0f);
-
-    // Right face (x = 1.0f)
-    glColor3f(1.0f, 0.0f, 1.0f);     // Magenta
-    glVertex3f(1.0f, 1.0f, -1.0f);
-    glVertex3f(1.0f, 1.0f, 1.0f);
-    glVertex3f(1.0f, -1.0f, 1.0f);
-    glVertex3f(1.0f, -1.0f, -1.0f);
-    glEnd();
+void RenderSystem::applyTransformations(Entity *entity) {
+    Vector3 &position = entity->get<Position>()->position;
+    Vector3 &scale = entity->get<Scale>()->scale;
+    Quaternion &rotation = entity->get<Rotation>()->rotation;
+    
+    glTranslatef(position.x, position.y, position.z);
+    glScalef(scale.x, scale.y, scale.z);
+    glRotateQuaternion(rotation);
 }
 
 void RenderSystem::drawScore() {
@@ -150,24 +118,31 @@ void RenderSystem::drawScore() {
     int arenaSize = gameModel.arenaSize;
     renderString(-arenaSize, arenaSize + 2,
                  "Score: " + std::to_string(gameModel.score),
-                 TextAlignment::LEFT);
+                 TextAlignment::LEFT, GLUT_BITMAP_HELVETICA_18);
 
     renderString(0, arenaSize + 2,
                  "Wave: " + std::to_string(gameModel.waveCount),
-                 TextAlignment::CENTER);
+                 TextAlignment::CENTER, GLUT_BITMAP_HELVETICA_18);
 
     renderString(arenaSize, arenaSize + 2, "Time: " + formatTime(
             gameModel.elapsedTime - gameModel.resetTime),
-                 TextAlignment::RIGHT);
+                 TextAlignment::RIGHT, GLUT_BITMAP_HELVETICA_18);
 }
 
-void RenderSystem::renderString(GLdouble x, GLdouble y, const std::string &string, TextAlignment alignment) {
-    double width = 0;
-    for (int n = 0; n < string.size(); ++n) {
-        width += glutBitmapWidth(GLUT_BITMAP_HELVETICA_18, string[n]);
-    }
+void
+RenderSystem::renderString(GLdouble x, GLdouble y, const std::string &string,
+                           TextAlignment alignment, void **font) {
+    double offset = getTextOffset(string, font, alignment);
 
-    width = width / gameModel.getWorldToPixelRatioWidth();
+    glRasterPos2d(x - offset, y);
+
+    for (char n : string) {
+        glutBitmapCharacter(font, n);
+    }
+}
+
+double RenderSystem::getTextOffset(const std::string& string, void **font, const TextAlignment &alignment) const {
+    double width = getStringWidth(string, font);
 
     double offset = 0;
     if (alignment == TextAlignment::CENTER) {
@@ -176,10 +151,18 @@ void RenderSystem::renderString(GLdouble x, GLdouble y, const std::string &strin
         offset = width;
     }
 
-    glRasterPos2d(x - offset, y);
-    for (int n = 0; n < string.size(); ++n) {
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, string[n]);
+    return offset;
+}
+
+double RenderSystem::getStringWidth(const std::string &string, void **font) const {
+    double width = 0;
+    
+    for (char n : string) {
+        width += glutBitmapWidth(font, n);
     }
+
+    width = width / gameModel.getWorldToPixelRatioWidth();
+    return width;
 }
 
 
@@ -193,15 +176,15 @@ void RenderSystem::drawParticle(Entity *entity) const {
 
 void RenderSystem::drawAxis() const {
     float colorx[4] = {1, 0, 0, 1};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colorx);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, colorx);
     drawLine({0, 0, 0}, {3, 0, 0});
 
     float colory[4] = {0, 1, 0, 1};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colory);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, colory);
     drawLine({0, 0, 0}, {0, 3, 0});
 
     float colorz[4] = {0, 0, 1, 1};
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, colorz);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, colorz);
     drawLine({0, 0, 0}, {0, 0, 3});
 }
 
@@ -218,58 +201,51 @@ void RenderSystem::drawLine(Entity *entity) const {
 
 void RenderSystem::drawShape(Entity *entity) const {
     Geometry *geometry = entity->get<Geometry>();
-//    glEnableClientState(GL_COLOR_ARRAY);
-//    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-    glEnableClientState(GL_VERTEX_ARRAY);
-
-    if (!geometry->normals.empty()) {
-        glEnableClientState(GL_NORMAL_ARRAY);
-        glNormalPointer(GL_DOUBLE, 0, &geometry->normals[0]);
-    }
-
-//    glVertexPointer(3, GL_DOUBLE, sizeof(Vector3), &geometry->vertices[0]);
-//
-//    glDrawElements(GL_TRIANGLES, geometry->triangles.size() * 3,
-//                   GL_UNSIGNED_INT, &geometry->triangles[0]);
-
-
 
     glEnable(GL_TEXTURE_2D);
-    for (Face face: geometry->faces) {
-
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, face.material->diffuse);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, face.material->ambient);
-        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, face.material->specular);
-
-        glBindTexture(GL_TEXTURE_2D, face.material->textureId);
-        glBegin(GL_TRIANGLES);
-            for (int i = 0; i < 3; i++) {
-                if (!geometry->uvs.empty()) {
-                    Vector2 &t1 = geometry->uvs[face.uvIndices[i]];
-                    glTexCoord2d(t1.x, t1.y);
-                }
-
-                Vector3 &n1 = geometry->normals[face.vertIndices[i]];
-                glNormal3d(n1.x, n1.y, n1.z);
-
-                Vector3 &v1 = geometry->vertices[face.vertIndices[i]];
-                glVertex3d(v1.x, v1.y, v1.z);
-
-            }
-        glEnd();
+    for (Face &face: geometry->faces) {
+        applyMaterial(face.material);
+        drawFace(entity, face);
     }
     glDisable(GL_TEXTURE_2D);
+}
 
-    glDisableClientState(GL_NORMAL_ARRAY);
+void RenderSystem::drawFace(Entity *entity, const Face &face) const {
+    Geometry *geometry = entity->get<Geometry>();
+    glBegin(GL_TRIANGLES);
+    for (int i = 0; i < 3; i++) {
+        if (!geometry->uvs.empty()) {
+            const Vector2 &t1 = geometry->uvs[face.uvIndices[i]];
 
+            if (entity->has<AnimatedTexture>()) {
+                AnimatedTexture *animTex = entity->get<AnimatedTexture>();
+                double offsetX = ((double) 1 / animTex->cols) * animTex->colOffset;
+                double offsetY = ((double) 1 / animTex->rows) * animTex->rowOffset;
+                glTexCoord2d(t1.x + offsetX, t1.y + offsetY);
+            } else {
+                glTexCoord2d(t1.x, t1.y);
+            }
+        }
 
-    glDisableClientState(GL_VERTEX_ARRAY);
+        const Vector3 &n1 = geometry->normals[face.vertIndices[i]];
+        glNormal3d(n1.x, n1.y, n1.z);
+
+        const Vector3 &v1 = geometry->vertices[face.vertIndices[i]];
+        glVertex3d(v1.x, v1.y, v1.z);
+    }
+    glEnd();
+}
+
+void RenderSystem::applyMaterial(const Material *material) const {
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, material->diffuse);
+    glMaterialfv(GL_FRONT, GL_AMBIENT, material->ambient);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, material->specular);
+    glMaterialfv(GL_FRONT, GL_EMISSION, material->emission);
+    glBindTexture(GL_TEXTURE_2D, material->textureId);
 }
 
 void RenderSystem::drawGridPlane(Entity *entity) const {
     Plane *plane = entity->get<Plane>();
-
     glLineWidth(2.0);
     int numLines = 10;
 
@@ -334,11 +310,13 @@ void RenderSystem::drawDifficulty() {
         case Difficulty::HARD:
             glColor3f(1, 0, 0);
             return renderString(0, -(arenaSize + 6), "Difficulty: HARD",
-                                TextAlignment::CENTER);
+                                TextAlignment::CENTER,
+                                GLUT_BITMAP_HELVETICA_18);
         case Difficulty::EASY:
             glColor3f(1, 1, 1);
             return renderString(0, -(arenaSize + 6), "Difficulty: EASY",
-                                TextAlignment::CENTER);
+                                TextAlignment::CENTER,
+                                GLUT_BITMAP_HELVETICA_18);
     }
 }
 
@@ -377,13 +355,28 @@ void RenderSystem::glRotateQuaternion(const Quaternion &q) {
     glMultMatrixd(matrix);
 }
 
-void RenderSystem::updateCamera(EntityManager &entities) {
-    glLoadIdentity();
+void RenderSystem::drawSkyBox(EntityManager &entities) const {
+    glDisable(GL_DEPTH_TEST);
 
-    for (Entity *entity: entities.getEntitiesWith<Camera, Position, Rotation>()) {
-        Vector3 &position = entity->get<Position>()->position;
-        Quaternion &rotation = entity->get<Rotation>()->rotation;
+    auto skyBoxes = entities.getEntitiesWith<Skybox, Geometry>();
+    if (!skyBoxes.empty()) {
+        Entity *skybox = skyBoxes[0];
+        drawShape(skybox);
+    }
+
+    glEnable(GL_DEPTH_TEST);
+}
+
+void RenderSystem::applyCameraRotation() {
+    if (gameModel.activeCamera) {
+        Quaternion &rotation = gameModel.activeCamera->get<Rotation>()->rotation;
         glRotateQuaternion(rotation.conjugate());
+    }
+}
+
+void RenderSystem::applyCameraPosition() const {
+    if (gameModel.activeCamera) {
+        Vector3 &position = gameModel.activeCamera->get<Position>()->position;
         glTranslated(-position.x, -position.y, -position.z);
     }
 }

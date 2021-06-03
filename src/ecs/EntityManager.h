@@ -49,6 +49,10 @@ public:
     Entity *
     createGridPlane(Vector3 bottomLeft, Vector3 bottomRight, Vector3 topRight,
                     Vector3 topLeft);
+
+    Entity *createSkybox();
+
+    void createExplosion(const Vector3 &postion, double scale);
 };
 
 template<typename... Components>

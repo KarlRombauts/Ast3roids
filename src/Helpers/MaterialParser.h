@@ -31,6 +31,7 @@ public:
 
     void parseTexture(std::string &string);
 
+    void parseEmission(std::string &string);
 };
 
 

@@ -17,17 +17,8 @@ struct TriangleIndices {
     GLuint v2;
     GLuint v3;
 
-    unsigned int operator[](int index) const {
-        switch (index) {
-            case 0:
-                return v1;
-            case 1:
-                return v2;
-            case 2:
-                return v3;
-            default:
-                return 0;
-        }
+    GLuint & operator[](int index) const {
+        return ((GLuint *) this)[index];
     }
 };
 
@@ -37,40 +28,41 @@ struct Material {
             ambient{0.5, 0.5, 0.5, 1},
             diffuse{0.5, 0.5, 0.5, 1},
             specular{1, 1, 1, 1},
+            emission{0, 0, 0, 1},
             shininess(50),
             textureId(0) {}
-
-    void setAmbient(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-        ambient[0] = r;
-        ambient[1] = g;
-        ambient[2] = b;
-        ambient[3] = a;
-    }
-
-    void setDiffuse(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-        diffuse[0] = r;
-        diffuse[1] = g;
-        diffuse[2] = b;
-        diffuse[3] = a;
-    }
-
-    void setSpecular(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-        specular[0] = r;
-        specular[1] = g;
-        specular[2] = b;
-        specular[3] = a;
-    }
-
-    void setShininess(GLfloat shininess) {
-        this->shininess = shininess;
-    }
 
     std::string name;
     GLfloat ambient[4];
     GLfloat diffuse[4];
     GLfloat specular[4];
+    GLfloat emission[4];
     GLfloat shininess;
     unsigned int textureId;
+
+    void setEmission(GLfloat r, GLfloat g, GLfloat b) {
+        emission[0] = r;
+        emission[1] = g;
+        emission[2] = b;
+    }
+
+    void setDiffuse(GLfloat r, GLfloat g, GLfloat b) {
+        diffuse[0] = r;
+        diffuse[1] = g;
+        diffuse[2] = b;
+    }
+
+    void setAmbient(GLfloat r, GLfloat g, GLfloat b) {
+        ambient[0] = r;
+        ambient[1] = g;
+        ambient[2] = b;
+    }
+
+    void setSpecular(GLfloat r, GLfloat g, GLfloat b) {
+        specular[0] = r;
+        specular[1] = g;
+        specular[2] = b;
+    }
 };
 
 

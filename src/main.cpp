@@ -1,6 +1,8 @@
 #include <cstdlib>
 #include <Systems/RayCastingSystem.h>
 #include <Systems/SmoothFollowSystem.h>
+#include <Systems/LookAtSystem.h>
+#include <Systems/AnimatedTextureSystem.h>
 #include "OpenGL.h"
 #include "Globals.h"
 #include "GameModel.h"
@@ -36,12 +38,14 @@ BulletCleanupSystem bulletCleanupSystem;
 WarningSystem warningSystem;
 AsteroidSystem asteroidSystem;
 OutOfBoundsSystem outOfBoundsSystem;
+AnimatedTextureSystem animatedTextureSystem;
 ShipImpactSystem shipImpactSystem;
 ParticleSystem particleSystem;
 BlackHoleSystem blackHoleSystem;
 DestroySystem destroySystem;
 RayCastingSystem rayCastingSystem;
 SmoothFollowSystem smoothFollowSystem;
+LookAtSystem lookAtSystem;
 
 
 void handleGameOver();
@@ -89,46 +93,21 @@ void handleGamePlay() {
         return;
     }
 
-
-//    if (keyboardState.isKeyPressed('A')) {
-//        camera.pos += Vector3::left() * 50 * dt / 1000;
-//    }
-//    if (keyboardState.isKeyPressed('D')) {
-//        camera.pos += Vector3::right() * 50 * dt / 1000;
-//    }
-//    if (keyboardState.isKeyPressed('W')) {
-//        camera.pos += Vector3::up() * 50 * dt / 1000;
-//    }
-//    if (keyboardState.isKeyPressed('S')) {
-//        camera.pos += Vector3::down() * 50 * dt / 1000;
-//    }
-//    if (keyboardState.isKeyPressed('I')) {
-//        camera.pos += Vector3::forward() * 50 * dt / 1000;
-//    }
-//    if (keyboardState.isKeyPressed('K')) {
-//        camera.pos += Vector3::back() * 50 * dt / 1000;
-//    }
-
-//    if(keyboardState.isKeyPressed('I')) {
-//        camera.pos += Vector3::back() * 50 * dt / 1000;
-//    }
-//    if(keyboardState.isKeyPressed('K')) {
-//        camera.pos += Vector3::forward() * 50 * dt / 1000;
-//    }
-
     playerInputSystem.update(entities, dt);
     rayCastingSystem.update(entities);
     smoothFollowSystem.update(entities, dt);
     firingSystem.update(entities, dt);
+    lookAtSystem.update(entities);
     collisionSystem.update(entities, dt);
-    particleSystem.update(entities, dt);
+//    particleSystem.update(entities, dt);
     physicsSystem.update(entities, dt);
     warningSystem.update(entities);
     damageSystem.update(entities);
     bulletCleanupSystem.update(entities, dt);
-//    shipImpactSystem.update(entities);
+    shipImpactSystem.update(entities);
 //    blackHoleSystem.update(entities, dt);
 //    outOfBoundsSystem.update(entities);
+    animatedTextureSystem.update(entities, dt);
     impactCleanupSystem.update(entities, dt);
     destroySystem.update(entities);
 
@@ -165,17 +144,19 @@ void handleMenu() {
 void handleGameOver() {
     keyboardState.clearPressedKeys();
     entities.destroyAll();
+    gameModel.activeCamera = nullptr;
     gameModel.state = GameState::PLAY_AGAIN;
 }
 
 void init() {
-    glMatrixMode(GL_PROJECTION);
-    glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
     glMatrixMode(GL_MODELVIEW);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glClearColor(0, 0, 0, 0);
+    glShadeModel(GL_SMOOTH);
 }
 
 void reshape(int w, int h) {

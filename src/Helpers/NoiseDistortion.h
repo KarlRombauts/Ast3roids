@@ -5,6 +5,6 @@
 #include <Vector3.h>
 #include <Helpers.h>
 
-std::vector<Vector3> & distortMesh(std::vector<Vector3> &vertices, float amount);
+std::vector<Vector3> & distortMesh(std::vector<Vector3> &vertices, float amount, float frequency);
 
 #endif //STARFOX_NOISEDISTORTION_H
