@@ -36,8 +36,6 @@ public:
 
     void drawDifficulty();
 
-    void glRotateQuaternion(const Quaternion &q);
-
     void drawAxis() const;
 
     void drawLine(const Vector3 &start, const Vector3 &end) const;
@@ -69,6 +67,10 @@ public:
     void drawSkyBox(EntityManager &entities) const;
 
     void drawFace(Entity *entity, const Face &face) const;
+
+    void glRotateQuaternion(const Quaternion &q) const;
+
+    void applyTransformations(const Shape &shape) const;
 };
 
 

@@ -4,9 +4,10 @@
 
 #include "PlaneFactory.h"
 
-Geometry PlaneFactory::create() {
+Geometry PlaneFactory::create(Material *material) {
     Geometry geometry;
-    geometry.materials.push_back(new Material());
+    geometry.materials.push_back(material);
+    geometry.shapes.emplace_back("plane");
 
     geometry.vertices.emplace_back(1, -1, 0); // bottom right
     geometry.vertices.emplace_back(-1, -1, 0); // bottom left

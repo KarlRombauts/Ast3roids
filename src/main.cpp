@@ -99,7 +99,7 @@ void handleGamePlay() {
     firingSystem.update(entities, dt);
     lookAtSystem.update(entities);
     collisionSystem.update(entities, dt);
-//    particleSystem.update(entities, dt);
+    particleSystem.update(entities, dt);
     physicsSystem.update(entities, dt);
     warningSystem.update(entities);
     damageSystem.update(entities);
@@ -157,6 +157,7 @@ void init() {
     glCullFace(GL_BACK);
     glClearColor(0, 0, 0, 0);
     glShadeModel(GL_SMOOTH);
+    materialLibrary.init();
 }
 
 void reshape(int w, int h) {
@@ -214,6 +215,7 @@ int main(int argc, char **argv) {
     glutMouseFunc(onMouseButton);
     glutMotionFunc(onMouseDrag);
     glutPassiveMotionFunc(onMouseMove);
+
 
     // Let glut takeover
     glutMainLoop();

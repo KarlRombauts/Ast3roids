@@ -1,4 +1,10 @@
 #include <Components/Rotation.h>
+#include <Components/Geometry.h>
+#include <GameModel.h>
+#include <Components/LookAt.h>
+#include <Components/Transparency.h>
+#include <Factory/PlaneFactory.h>
+#include <Globals.h>
 #include "ParticleSystem.h"
 #include "../Components/ParticleSource.h"
 #include "../Components/Position.h"
@@ -19,17 +25,15 @@ void ParticleSystem::update(EntityManager &entities, double dt) {
     }
 
     for (Entity *particleEntity: entities.getEntitiesWith<Particle>()) {
-        Color *texture = particleEntity->get<Color>();
         Particle *particle = particleEntity->get<Particle>();
 
         double decayRate = particle->decayRate * dt / 1000;
 
-        texture->red = lerp(texture->red, particle->deathColor.red, decayRate);
-        texture->green = lerp(texture->green, particle->deathColor.green, decayRate);
-        texture->blue = lerp(texture->blue, particle->deathColor.blue, decayRate);
         particle->size = lerp(particle->size, particle->deathSize, decayRate);
 
-        if (texture->red + texture->blue + texture->green < 0.1) {
+        particleEntity->assign<Scale>(particle->size);
+
+        if (particle->size < 0.1) {
             particleEntity->assign<Destroy>();
         }
     }
@@ -40,10 +44,9 @@ void ParticleSystem::emitParticle(EntityManager &entities, Entity *emitterEntity
     Entity *particleEntity = entities.create();
 
     Particle particle;
-    particle.size = randf(0.2, 0.5);
+    particle.size = randf(1, 2);
     particle.deathSize = 0;
     particle.decayRate = particleSource->decayRate;
-    particle.deathColor = {0, 0, 0};
 
     particleEntity->assign<Particle>(particle);
 
@@ -51,8 +54,11 @@ void ParticleSystem::emitParticle(EntityManager &entities, Entity *emitterEntity
     particleEntity->assign<Scale>(particle.size);
     particleEntity->assign<Rotation>();
 
-//    particleEntity->assign<Collision>(CollisionType::DYNAMIC);
-//    particleEntity->assign<CircleCollision>(3);
+    Geometry geometry = PlaneFactory::create(materialLibrary.GLOW_PARTICLE);
+    particleEntity->assign<Geometry>(geometry);
+
+    particleEntity->assign<LookAt>(gameModel.activeCamera);
+    particleEntity->assign<Transparency>();
 
     double d = particleSource->dispersion;
     Vector3 velocity = Vector3::random(d + randf(-d / 3, d / 3)) + particleSource->velocity;

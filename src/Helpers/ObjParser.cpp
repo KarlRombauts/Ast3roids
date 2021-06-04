@@ -23,12 +23,18 @@ Geometry ObjParser::parse(std::string filepath) {
         while (getline(objFile, line)) {
             countLine(line);
         }
+
+        if (numShapes == 0) {
+            geometry.shapes.emplace_back("untitled");
+        }
+
         objFile.clear();
         objFile.seekg(0, std::ios::beg);
 
         while (getline(objFile, line)) {
             parseLine(line);
         }
+
         objFile.close();
     }
 
@@ -56,6 +62,8 @@ void ObjParser::parseLine(std::string &_line) {
         parseTexCoor(_line);
     } else if (token == "vn") {
         parseNormals(_line);
+    } else if (token == "o") {
+        parseShape(_line);
     } else if (token == "f") {
         parseFaces(_line);
     } else if (token == "usemtl") {
@@ -125,12 +133,11 @@ void ObjParser::parseTriangleFace(const std::string &line) {
     uvIndices.v2--;
     uvIndices.v3--;
 
-
     geometry.normals[vertIndices.v1] += normalVectors[vn1 - 1];
     geometry.normals[vertIndices.v2] += normalVectors[vn2 - 1];
     geometry.normals[vertIndices.v3] += normalVectors[vn3 - 1];
 
-    geometry.faces.emplace_back(vertIndices, uvIndices, currentMaterial);
+    geometry.faces.emplace_back(vertIndices, uvIndices, currentMaterial, geometry.shapes.size() - 1);
 }
 
 void ObjParser::parseTexCoor(const std::string &string) {
@@ -194,4 +201,15 @@ void ObjParser::countLine(std::string _line) {
     } else if (token == "o") {
         numShapes++;
     }
+}
+
+void ObjParser::parseShape(std::string &string) {
+    std::stringstream line(string);
+
+    std::string token;
+    std::string shapeName;
+    line >> token;
+    line >> shapeName;
+
+    geometry.shapes.emplace_back(shapeName);
 }

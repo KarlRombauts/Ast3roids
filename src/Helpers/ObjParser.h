@@ -55,6 +55,7 @@ public:
 
     void countLine(std::string line);
 
+    void parseShape(std::string &string);
 };
 
 

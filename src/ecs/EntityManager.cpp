@@ -20,7 +20,6 @@
 #include "../Components/Kinematics.h"
 #include "../Components/Asteroid.h"
 #include "../Helpers.h"
-#include "../Components/Shape.h"
 #include "../GameModel.h"
 #include "../Components/Health.h"
 #include "../Components/HealthBar.h"
@@ -78,7 +77,7 @@ Entity *EntityManager::createAsteroid(double radius) {
     asteroid->assign<Rotation>();
     asteroid->assign<Asteroid>(radius);
 
-    Geometry geometry = IcoSphere::create();
+    Geometry geometry = IcoSphere::create(2, materialLibrary.ASTEROID);
     distortMesh(geometry.vertices, 0.3, 0.5);
 
     asteroid->assign<Geometry>(geometry);
@@ -101,7 +100,7 @@ Entity *EntityManager::createAsteroid(double radius) {
 
 
     // Assign Split Component to large asteroids
-    if (radius > 2) {
+    if (radius > gameConfig.ASTEROID_MIN_SIZE) {
         asteroid->assign<SplitOnDeath>();
         asteroid->assign<HealthBar>();
     }
@@ -169,7 +168,11 @@ Entity *EntityManager::createSpaceShip(Vector3 position) {
     spaceShip->assign<CircleCollision>(5);
 
     spaceShip->assign<Color>(1, 0, 0);
-    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/x-wing/X-Wing-2.obj"));
+    Geometry geometry = ObjParser().parse(
+            "/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/x-wing/X-Wing-2.obj");
+
+    spaceShip->assign<Geometry>(geometry);
+
 //    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/plane.obj"));
 
     spaceShip->assign<Position>(position);
@@ -217,9 +220,6 @@ void EntityManager::createWorld() {
     camera->assign<SmoothFollow>(spaceShip, Vector3(0, 5, 20));
 
 
-//    createExplosion(Vector3(0, 0, 0));
-
-
     for (int i = 0; i < 5; i++) {
         createAsteroid(randf(3, 10));
     }
@@ -243,16 +243,15 @@ void EntityManager::createExplosion(const Vector3 &postion, double scale) {
     explosion->assign<Position>(postion);
     explosion->assign<Transparency>();
     explosion->assign<LookAt>(gameModel.activeCamera);
-    explosion->assign<AnimatedTexture>(5, 4, AnimationBehaviour::DEATH);
 
-    Geometry geometry = PlaneFactory::create();
+    Geometry geometry = PlaneFactory::create(materialLibrary.EXPLOSION);
 
     for (Vector2 &uv: geometry.uvs) {
         uv.x /= 5;
         uv.y /= 4;
     }
-    geometry.materials[0]->setEmission(1, 1, 1);
-    geometry.materials[0]->textureId = TextureLoader::load("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Textures/explosion.png");
+
+    explosion->assign<AnimatedTexture>(5, 4, AnimationBehaviour::DEATH);
 
     explosion->assign<Geometry>(geometry);
 }
@@ -272,12 +271,7 @@ Entity *EntityManager::createBullet(Vector3 position, Vector3 velocity) {
     bullet->assign<Rotation>();
     bullet->assign<Scale>();
 
-    Geometry geometry = PlaneFactory::create();
-    geometry.materials[0]->textureId = TextureLoader::load("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Textures/fireball_green.png");
-    geometry.materials[0]->setEmission(1, 1, 1);
-    geometry.materials[0]->setSpecular(0, 0, 0);
-
-    bullet->assign<Geometry>(geometry);
+    bullet->assign<Geometry>(PlaneFactory::create(materialLibrary.BULLET));
     bullet->assign<Transparency>();
     bullet->assign<Collision>(CollisionType::TRIGGER);
     bullet->assign<CircleCollision>(1);

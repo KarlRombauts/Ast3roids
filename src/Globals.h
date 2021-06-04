@@ -4,11 +4,11 @@
 #include "KeyboardState.h"
 #include "GameConfig.h"
 #include "MouseState.h"
+#include "MaterialLibrary.h"
 
 extern KeyboardState keyboardState;
 extern GameConfig gameConfig;
 extern MouseState mouseState;
-
-typedef double Matrix4[16] ;
+extern MaterialLibrary materialLibrary;
 
 #endif //UNTITLED_GLOBALS_H

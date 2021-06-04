@@ -5,11 +5,12 @@
 #include <Helpers/Normals.h>
 #include <Helpers/TextureLoader.h>
 
-Geometry IcoSphere::create() {
+Geometry IcoSphere::create(int subdivisions, Material *material) {
     double t = (1.0 + sqrt(5.0)) / 2.0;
 
     Geometry geometry;
-    geometry.materials.emplace_back(new Material());
+    geometry.shapes.emplace_back("icosphere");
+    geometry.materials.emplace_back(material);
 
     geometry.vertices.emplace_back(-1, t, 0);
     geometry.vertices.emplace_back(1, t, 0);
@@ -25,6 +26,10 @@ Geometry IcoSphere::create() {
     geometry.vertices.emplace_back(t, 0, 1);
     geometry.vertices.emplace_back(-t, 0, -1);
     geometry.vertices.emplace_back(-t, 0, 1);
+
+    for(Vector3 &vert : geometry.vertices) {
+        vert = vert.normalize();
+    }
 
     // 5 faces around point 0
     geometry.faces.emplace_back(TriangleIndices(0, 11, 5), geometry.materials[0]);
@@ -54,7 +59,7 @@ Geometry IcoSphere::create() {
     geometry.faces.emplace_back(TriangleIndices(8, 6, 7), geometry.materials[0]);
     geometry.faces.emplace_back(TriangleIndices(9, 8, 1), geometry.materials[0]);
 
-    IcoSphere::subdivide(geometry, 2);
+    IcoSphere::subdivide(geometry, subdivisions);
     Normals::recalculate(geometry);
 
     double piInv = 1 / M_PI;
@@ -103,9 +108,6 @@ Geometry IcoSphere::create() {
         }
     }
 
-
-
-    geometry.materials[0]->textureId = TextureLoader::load("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Textures/asteroid.jpg");
     return geometry;
 }
 
@@ -194,5 +196,5 @@ Vector3 IcoSphere::computeHalfVertex(const Vector3 &v1, const Vector3 &v2) {
     newV.y = v1.y + v2.y;
     newV.z = v1.z + v2.z;
 
-    return newV.normalize().scale(v1.magnitude());
+    return newV.normalize();
 }

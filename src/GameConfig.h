@@ -36,6 +36,7 @@ struct GameConfig {
 
     int ASTEROID_MIN_START_RADIUS = 6;
     int ASTEROID_MAX_START_RADIUS = 20;
+    double ASTEROID_MIN_SIZE = 6;
 
     Color ASTEROID_COLOR = {1, 1, 1};
 

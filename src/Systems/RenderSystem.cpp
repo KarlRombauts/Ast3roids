@@ -9,7 +9,6 @@
 #include <Components/Transparency.h>
 #include "RenderSystem.h"
 #include "../OpenGL.h"
-#include "../Components/Shape.h"
 #include "../Components/Line.h"
 #include "../Components/Health.h"
 #include "../Components/Particle.h"
@@ -92,6 +91,7 @@ void RenderSystem::drawTransparentEntities(EntityManager &entities) {
 
 void RenderSystem::drawEntity(Entity *entity) {
     glPushMatrix();
+
     applyTransformations(entity);
 
     if (entity->has<Plane, Wall>()) {
@@ -108,6 +108,16 @@ void RenderSystem::applyTransformations(Entity *entity) {
     Vector3 &scale = entity->get<Scale>()->scale;
     Quaternion &rotation = entity->get<Rotation>()->rotation;
     
+    glTranslatef(position.x, position.y, position.z);
+    glScalef(scale.x, scale.y, scale.z);
+    glRotateQuaternion(rotation);
+}
+
+void RenderSystem::applyTransformations(const Shape &shape) const {
+    const Vector3 &position = shape.position;
+    const Vector3 &scale = shape.scale;
+    const Quaternion &rotation = shape.rotation;
+
     glTranslatef(position.x, position.y, position.z);
     glScalef(scale.x, scale.y, scale.z);
     glRotateQuaternion(rotation);
@@ -205,7 +215,10 @@ void RenderSystem::drawShape(Entity *entity) const {
     glEnable(GL_TEXTURE_2D);
     for (Face &face: geometry->faces) {
         applyMaterial(face.material);
-        drawFace(entity, face);
+        glPushMatrix();
+            applyTransformations(geometry->shapes[face.shapeIndex]);
+            drawFace(entity, face);
+        glPopMatrix();
     }
     glDisable(GL_TEXTURE_2D);
 }
@@ -320,7 +333,7 @@ void RenderSystem::drawDifficulty() {
     }
 }
 
-void RenderSystem::glRotateQuaternion(const Quaternion &q) {
+void RenderSystem::glRotateQuaternion(const Quaternion &q) const {
     double w = q.w;
     double x = q.v.x;
     double y = q.v.y;

@@ -16,8 +16,9 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
         Quaternion &rotation = entity->get<Rotation>()->rotation;
     }
 
-    for(Entity* entity: entities.getEntitiesWith<Position, Rotation, Kinematics, PlayerInput, SpaceShip>()) {
+    for(Entity* entity: entities.getEntitiesWith<Position, Rotation, Kinematics, Geometry, PlayerInput, SpaceShip>()) {
         Vector3 &position = entity->get<Position>()->position;
+        Geometry *geometry = entity->get<Geometry>();
         Quaternion &rotation = entity->get<Rotation>()->rotation;
 
         if (keyboardState.isKeyPressed('k')) {
@@ -39,9 +40,27 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
         }
 
         if (keyboardState.isKeyPressed('w')) {
-            Vector3 localMove = Vector3::forward() * 10 * dt / 1000;
+            Vector3 localMove = Vector3::back() * 10 * dt / 1000;
+
+            geometry->shapes[0].rotation = Quaternion::slerp(
+                    geometry->shapes[0].rotation,
+                    Quaternion::angleAxis(20, Vector3::forward()), 0.1);
+            geometry->shapes[2].rotation = Quaternion::slerp(
+                    geometry->shapes[2].rotation,
+                    Quaternion::angleAxis(-20, Vector3::forward()), 0.1);
+
             position += rotation * localMove;
         }
+
+        if (!keyboardState.isKeyPressed('w')) {
+            geometry->shapes[0].rotation = Quaternion::slerp(
+                    geometry->shapes[0].rotation,
+                    Quaternion::angleAxis(0, Vector3::forward()), 0.1);
+            geometry->shapes[2].rotation = Quaternion::slerp(
+                    geometry->shapes[2].rotation,
+                    Quaternion::angleAxis(0, Vector3::forward()), 0.1);
+        }
+
         if (keyboardState.isKeyPressed('s')) {
             Vector3 localMove = Vector3::back() * 10 * dt / 1000;
             position += rotation * localMove;

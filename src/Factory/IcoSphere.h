@@ -7,7 +7,7 @@
 
 class IcoSphere {
 public:
-    static Geometry create();
+    static Geometry create(int subdivisions, Material *material);
 
     static Vector3 computeHalfVertex(const Vector3 &v1, const Vector3 &v2);
 

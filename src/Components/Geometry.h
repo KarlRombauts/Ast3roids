@@ -1,6 +1,7 @@
 #ifndef STARFOX_GEOMETRY_H
 #define STARFOX_GEOMETRY_H
 
+#include <utility>
 #include <vector>
 #include <Vector3.h>
 #include <OpenGL/OpenGL.h>
@@ -8,6 +9,7 @@
 #include <Vector2.h>
 #include "Helpers/StbImage.h"
 #include <iostream>
+#include <Quaternion.h>
 
 struct TriangleIndices {
     TriangleIndices(GLuint v1 = 0, GLuint v2 = 0, GLuint v3 = 0)
@@ -67,19 +69,35 @@ struct Material {
 
 
 struct Face {
-    Face(TriangleIndices indices, Material *material)
+    Face(TriangleIndices indices, Material *material, int shapeIndex = 0)
             : vertIndices(indices),
               uvIndices(0, 0, 0),
-              material(material) {}
+              material(material),
+              shapeIndex(shapeIndex) {}
 
-    Face(TriangleIndices indices, TriangleIndices uvIndices, Material *material)
+    Face(TriangleIndices indices, TriangleIndices uvIndices, Material *material, int shapeIndex = 0)
             : vertIndices(indices),
               uvIndices(uvIndices),
-              material(material) {}
+              material(material),
+              shapeIndex(shapeIndex) {}
 
     TriangleIndices vertIndices;
     TriangleIndices uvIndices;
     Material *material;
+    int shapeIndex;
+};
+
+struct Shape {
+    Shape(std::string name) :
+        name(std::move(name)),
+        position(Vector3(0, 0, 0)),
+        scale(Vector3(1, 1, 1)),
+        rotation(Quaternion()) {}
+
+    std::string name;
+    Vector3 position;
+    Vector3 scale;
+    Quaternion rotation;
 };
 
 struct Geometry : public Component {
@@ -88,6 +106,7 @@ struct Geometry : public Component {
     std::vector<Vector3> vertices;
     std::vector<Vector3> normals;
     std::vector<Material *> materials;
+    std::vector<Shape> shapes;
 };
 
 

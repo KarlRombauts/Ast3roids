@@ -11,7 +11,7 @@
 
 class PlaneFactory {
 public:
-    static Geometry create();
+    static Geometry create(Material *material);
 };
 
 
