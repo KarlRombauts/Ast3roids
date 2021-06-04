@@ -3,6 +3,7 @@
 //
 
 #include "PlaneFactory.h"
+#include "Components/Material.h"
 
 Geometry PlaneFactory::create(Material *material) {
     Geometry geometry;

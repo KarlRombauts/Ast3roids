@@ -8,6 +8,7 @@
 
 #include <Components/Geometry.h>
 #include <Helpers/TextureLoader.h>
+#include "Components/Material.h"
 
 class PlaneFactory {
 public:

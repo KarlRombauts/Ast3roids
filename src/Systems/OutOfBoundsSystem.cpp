@@ -7,7 +7,7 @@
 void OutOfBoundsSystem::update(EntityManager &entities) {
     for (Entity *asteroid: entities.getEntitiesWith<Position, Asteroid>()) {
         Vector3 position = asteroid->get<Position>()->position;
-        if (position.magnitude() > gameModel.worldCoordinates.distanceToCorner() + 30) {
+        if (position.magnitude() > 210) {
             asteroid->assign<Destroy>();
         }
     }

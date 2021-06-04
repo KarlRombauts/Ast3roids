@@ -2,6 +2,7 @@
 #include <Components/Position.h>
 #include <Components/Rotation.h>
 #include <Components/Position.h>
+#include <Globals.h>
 #include "SmoothFollowSystem.h"
 
 void SmoothFollowSystem::update(EntityManager &entities, double dt) {
@@ -21,8 +22,9 @@ void SmoothFollowSystem::update(EntityManager &entities, double dt) {
         Quaternion &targetRotation = target->get<Rotation>()->rotation;
         Vector3 targetPosition = target->get<Position>()->position + targetRotation * relativeOffset;
 
-        currentPosition = Vector3::lerp(currentPosition, targetPosition, 0.1);
-        currentRotation = Quaternion::slerp(currentRotation, targetRotation, 0.1);
+        double t = gameConfig.CAMERA_STIFFNESS * dt / 1000;
+        currentPosition = Vector3::lerp(currentPosition, targetPosition, t);
+        currentRotation = Quaternion::slerp(currentRotation, targetRotation, t);
     }
 
 }

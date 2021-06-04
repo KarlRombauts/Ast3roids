@@ -17,8 +17,6 @@ struct GameConfig {
     int BULLET_DAMAGE = 20; // Hit points
     double BULLET_SPEED = 300;
     Color BULLET_COLOR = {1, 1, 0};
-//    unsigned int BULLET_TEXTURE = TextureLoader::load("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/test.jpg");
-//    unsigned int ASTEROID_TEXTURE = TextureLoader::load("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Textures/asteroid.jpg");
 
     int EXHAUST_PARTICLE_RATE = 3;
     double EXHAUST_PARTICLE_DECAY = 3;
@@ -43,6 +41,11 @@ struct GameConfig {
     double BLACK_HOLE_PULSE_RATE = 0.5; // times per second;
     int BLACK_HOLE_STRENGTH = 40000;
     Color BLACK_HOLE_COLOR = {0.5, 0.5, 0.5};
+
+    std::string MODEL_DIR = "./Assets/Models";
+    std::string TEXTURE_DIR = "./Assets/Textures";
+    int MOUSE_SENSITIVITY = 100;
+    double CAMERA_STIFFNESS = 3;
 };
 
 

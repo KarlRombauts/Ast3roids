@@ -3,6 +3,7 @@
 
 #include "Vector3.h"
 #include "Components/Geometry.h"
+#include "Components/Material.h"
 #include <vector>
 
 class IcoSphere {

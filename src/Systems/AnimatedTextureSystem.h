@@ -8,6 +8,7 @@ class AnimatedTextureSystem : public System {
 public:
     void update(EntityManager &entities, double dt) override;
 
+    double timeSinceLastFrame = 0;
 
 };
 

@@ -12,6 +12,7 @@
 #include "../Components/Color.h"
 #include "../Quaternion.h"
 #include "../Components/Geometry.h"
+#include "Components/Material.h"
 
 
 class RenderSystem: public System {
@@ -71,6 +72,10 @@ public:
     void glRotateQuaternion(const Quaternion &q) const;
 
     void applyTransformations(const Shape &shape) const;
+
+    void renderLight(Entity *entity, int i) const;
+
+    void renderLights(EntityManager &entities) const;
 };
 
 

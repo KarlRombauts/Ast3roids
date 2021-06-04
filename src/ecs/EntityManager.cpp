@@ -12,6 +12,8 @@
 #include <Components/LookAt.h>
 #include <Components/Transparency.h>
 #include <Components/AnimatedTexture.h>
+#include <Components/Light.h>
+#include <Components/LightAnimation.h>
 #include "EntityManager.h"
 #include "Entity.h"
 #include "../Components/Position.h"
@@ -62,9 +64,8 @@ Entity *EntityManager::createBlackHole(double radius, Vector3 position) {
 Entity *EntityManager::createSkybox() {
     Entity *skybox = create();
     skybox->assign<Skybox>();
-    skybox->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/skybox/skybox.obj"));
+    skybox->assign<Geometry>(ObjParser().parse(gameConfig.MODEL_DIR + "/skybox/skybox.obj"));
 }
-
 
 Entity *EntityManager::createAsteroid(double radius) {
     Entity *asteroid = create();
@@ -77,11 +78,20 @@ Entity *EntityManager::createAsteroid(double radius) {
     asteroid->assign<Rotation>();
     asteroid->assign<Asteroid>(radius);
 
-    Geometry geometry = IcoSphere::create(2, materialLibrary.ASTEROID);
+    int subdivisions;
+
+    if (radius >= 20) {
+        subdivisions = 3;
+    } else if (radius > 10) {
+        subdivisions = 2;
+    } else {
+        subdivisions = 1;
+    }
+
+    Geometry geometry = IcoSphere::create(subdivisions, materialLibrary.ASTEROID);
     distortMesh(geometry.vertices, 0.3, 0.5);
 
     asteroid->assign<Geometry>(geometry);
-
     asteroid->assign<Collision>(CollisionType::DYNAMIC);
     asteroid->assign<CircleCollision>(radius);
     asteroid->assign<Color>(gameConfig.ASTEROID_COLOR);
@@ -97,7 +107,6 @@ Entity *EntityManager::createAsteroid(double radius) {
     kinematics.angularVelocity = Vector3::random(rotationMagnitude);
 
     asteroid->assign<Kinematics>(kinematics);
-
 
     // Assign Split Component to large asteroids
     if (radius > gameConfig.ASTEROID_MIN_SIZE) {
@@ -119,6 +128,13 @@ Entity *EntityManager::createGridPlane(Vector3 bottomLeft, Vector3 bottomRight,
     plane->assign<Rotation>();
     plane->assign<Scale>();
     plane->assign<Color>(1, 1, 1);
+
+    Material material;
+    material.setAmbient(0.5, 0.5, 0.5);
+    material.setDiffuse(0.5, 0.5, 0.5);
+    material.setEmission(0.3, 0.3, 0.3);
+    material.setSpecular(0, 0, 0);
+    plane->assign<Material>(material);
     return plane;
 }
 
@@ -168,12 +184,9 @@ Entity *EntityManager::createSpaceShip(Vector3 position) {
     spaceShip->assign<CircleCollision>(5);
 
     spaceShip->assign<Color>(1, 0, 0);
-    Geometry geometry = ObjParser().parse(
-            "/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/x-wing/X-Wing-2.obj");
 
+    Geometry geometry = ObjParser().parse(gameConfig.MODEL_DIR + "/x-wing/X-Wing-2.obj");
     spaceShip->assign<Geometry>(geometry);
-
-//    spaceShip->assign<Geometry>(ObjParser().parse("/Users/karlrombauts/CLionProjects/asteroids-3d/src/Models/plane.obj"));
 
     spaceShip->assign<Position>(position);
     spaceShip->assign<Scale>(0.5);
@@ -219,25 +232,23 @@ void EntityManager::createWorld() {
     gameModel.activeCamera = camera;
     camera->assign<SmoothFollow>(spaceShip, Vector3(0, 5, 20));
 
-
-    for (int i = 0; i < 5; i++) {
-        createAsteroid(randf(3, 10));
-    }
-
-//    if (gameModel.difficulty == Difficulty::HARD) {
-//        // Never create a black hole that is too close to the ship
-//        int range = gameModel.arenaSize * 0.9;
-//        Vector3 blackHolePosition = Vector3(0, 0, 0);
-//        do {
-//            blackHolePosition = Vector3(randf(-range, range), randf(-range, range), randf(-range, range));
-//        } while (Vector3::distanceBetween(blackHolePosition, shipPosition) < gameModel.arenaSize * 0.4);
-//
-//        createBlackHole(10, blackHolePosition);
-//    }
+    Entity *lightEntity = create();
+    lightEntity->assign<Position>(Vector3(0, 0, -100));
+    lightEntity->assign<Light>(0.2, 0.2, 0.2);
 }
 
-void EntityManager::createExplosion(const Vector3 &postion, double scale) {
+Entity * EntityManager::createExplosion(const Vector3 &postion, double scale) {
     Entity *explosion = create();
+
+    Light startLight = Light(1, 0.5, 0.28);
+    startLight.setAmbient(1, 0.5, 0.28);
+
+    Light endLight = startLight;
+    endLight.attenuation = 10;
+
+    explosion->assign<Light>(1, 0.5, 0.28); // Orange Light
+    explosion->assign<LightAnimation>(startLight, endLight, 20);
+
     explosion->assign<Scale>(scale);
     explosion->assign<Rotation>();
     explosion->assign<Position>(postion);
@@ -252,8 +263,8 @@ void EntityManager::createExplosion(const Vector3 &postion, double scale) {
     }
 
     explosion->assign<AnimatedTexture>(5, 4, AnimationBehaviour::DEATH);
-
     explosion->assign<Geometry>(geometry);
+    return explosion;
 }
 
 void EntityManager::destroyAll() {

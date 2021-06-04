@@ -1,7 +1,3 @@
-//
-// Created by Karl Rombauts on 3/5/21.
-//
-
 #include <Components/Camera.h>
 #include <Components/Position.h>
 #include <Components/Rotation.h>
@@ -12,7 +8,7 @@
 #include <Components/SmoothFollow.h>
 #include "RayCastingSystem.h"
 
-void RayCastingSystem::update(EntityManager &entities) {
+void MouseLookSystem::update(EntityManager &entities, double dt) {
     for (Entity *entity: entities.getEntitiesWith<Camera, Position, Rotation>()) {
         Vector3 &position = entity->get<Position>()->position;
         Quaternion &rotation = entity->get<Rotation>()->rotation;
@@ -21,18 +17,16 @@ void RayCastingSystem::update(EntityManager &entities) {
         mouseNorm.x = map(mouseState.position.x, {0, gameModel.width}, {-1, 1});
         mouseNorm.y = map(mouseState.position.y, {0, gameModel.height}, {-1, 1});
 
-        // Todo: Add a tilt speed based on dt
         if (entity->has<SmoothFollow>()) {
             Entity *target = entity->get<SmoothFollow>()->entity;
 
             if (target->has<Rotation>()) {
                 Quaternion &targetRotation = target->get<Rotation>()->rotation;
-                targetRotation *= Quaternion::angleAxis(-4 * mouseNorm.y, Vector3::left());
-                targetRotation *= Quaternion::angleAxis(-4 * mouseNorm.x, Vector3::up());
+
+                double t = -gameConfig.MOUSE_SENSITIVITY * dt / 1000;
+                targetRotation *= Quaternion::angleAxis(t * mouseNorm.y, Vector3::left());
+                targetRotation *= Quaternion::angleAxis(t * mouseNorm.x, Vector3::up());
             }
-        } else {
-//            rotation *= Quaternion::angleAxis(4 * mouseNorm.y, Vector3::left());
-//            rotation *= Quaternion::angleAxis(4 * mouseNorm.x, Vector3::up());
         }
     }
 }

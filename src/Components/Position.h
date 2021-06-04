@@ -3,6 +3,7 @@
 
 
 #include <Vector3.h>
+#include <ecs/Component.h>
 
 struct Position: public Component{
     Position(): position(0, 0, 0) {};

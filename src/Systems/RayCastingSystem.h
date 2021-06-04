@@ -4,8 +4,8 @@
 
 #include <ecs/EntityManager.h>
 
-struct RayCastingSystem {
-    void update(EntityManager &entities);
+struct MouseLookSystem {
+    void update(EntityManager &entities, double dt);
 };
 
 

@@ -10,6 +10,7 @@ enum class GameState {
     PLAYING,
     START,
     PLAY_AGAIN,
+    GAME_OVER_TRANSITION,
 };
 
 enum class Difficulty {
@@ -24,6 +25,7 @@ struct GameModel {
     int elapsedTime = 0;
     int score = 0;
     int resetTime = 0;
+    int timeSinceGameOver = 0;
 
     Entity *activeCamera = nullptr;
 
@@ -35,6 +37,7 @@ struct GameModel {
 
     int width;
     int height;
+    double aspectRatio;
     CoordinateSpace worldCoordinates;
 
     void resizeWorld(double aspectRatio);
@@ -48,6 +51,7 @@ struct GameModel {
     void reset();
 
     bool isSphereFullyOutsideArena(Vector3 pos, double radius);
+
 };
 
 extern GameModel gameModel;

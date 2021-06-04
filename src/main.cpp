@@ -3,6 +3,7 @@
 #include <Systems/SmoothFollowSystem.h>
 #include <Systems/LookAtSystem.h>
 #include <Systems/AnimatedTextureSystem.h>
+#include <Systems/AnimationSystem.h>
 #include "OpenGL.h"
 #include "Globals.h"
 #include "GameModel.h"
@@ -25,6 +26,7 @@
 #include "Systems/BlackHoleSystem.h"
 #include "Systems/DestroySystem.h"
 #include "Systems/RayCastingSystem.h"
+#include <filesystem>
 
 EntityManager entities;
 RenderSystem renderSystem;
@@ -39,11 +41,12 @@ WarningSystem warningSystem;
 AsteroidSystem asteroidSystem;
 OutOfBoundsSystem outOfBoundsSystem;
 AnimatedTextureSystem animatedTextureSystem;
+AnimationSystem animationSystem;
 ShipImpactSystem shipImpactSystem;
 ParticleSystem particleSystem;
 BlackHoleSystem blackHoleSystem;
 DestroySystem destroySystem;
-RayCastingSystem rayCastingSystem;
+MouseLookSystem mouseLookSystem;
 SmoothFollowSystem smoothFollowSystem;
 LookAtSystem lookAtSystem;
 
@@ -75,6 +78,7 @@ static void idle() {
             handleMenu();
             break;
         case GameState::PLAYING:
+        case GameState::GAME_OVER_TRANSITION:
             handleGamePlay();
             break;
     }
@@ -93,8 +97,6 @@ void handleGamePlay() {
         return;
     }
 
-    playerInputSystem.update(entities, dt);
-    rayCastingSystem.update(entities);
     smoothFollowSystem.update(entities, dt);
     firingSystem.update(entities, dt);
     lookAtSystem.update(entities);
@@ -104,17 +106,27 @@ void handleGamePlay() {
     warningSystem.update(entities);
     damageSystem.update(entities);
     bulletCleanupSystem.update(entities, dt);
-    shipImpactSystem.update(entities);
-//    blackHoleSystem.update(entities, dt);
-//    outOfBoundsSystem.update(entities);
+
+    if (gameModel.state == GameState::PLAYING) {
+        mouseLookSystem.update(entities, dt);
+        playerInputSystem.update(entities, dt);
+        shipImpactSystem.update(entities);
+    }
+
+    outOfBoundsSystem.update(entities);
     animatedTextureSystem.update(entities, dt);
+    animationSystem.update(entities, dt);
     impactCleanupSystem.update(entities, dt);
     destroySystem.update(entities);
 
     gameModel.elapsedTime = thisTime;
 
-    if (entities.getEntitiesWith<SpaceShip>().empty()) {
-        gameModel.state = GameState::GAME_OVER;
+    if (gameModel.state == GameState::GAME_OVER_TRANSITION) {
+        gameModel.timeSinceGameOver += dt;
+
+        if (gameModel.timeSinceGameOver > 1500) {
+            gameModel.state = GameState::GAME_OVER;
+        }
     } else if (entities.getEntitiesWith<Asteroid>().empty()) {
         gameModel.state = GameState::WAVE_OVER;
     }
@@ -126,14 +138,6 @@ void handleWaveOver() {
 }
 
 void handleMenu() {
-    if (keyboardState.isKeyPressed('1')) {
-        gameModel.difficulty = Difficulty::EASY;
-    }
-
-    if (keyboardState.isKeyPressed('2')) {
-        gameModel.difficulty = Difficulty::HARD;
-    }
-
     if (keyboardState.isKeyPressed(' ')) {
         entities.createWorld();
         gameModel.reset();
@@ -145,6 +149,7 @@ void handleGameOver() {
     keyboardState.clearPressedKeys();
     entities.destroyAll();
     gameModel.activeCamera = nullptr;
+    gameModel.timeSinceGameOver = 0;
     gameModel.state = GameState::PLAY_AGAIN;
 }
 

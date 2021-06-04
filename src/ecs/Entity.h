@@ -64,8 +64,8 @@ bool Entity::hasAny() {
 
 template<typename Component, typename... Args>
 void Entity::assign(Args &&... args) {
-    components[typeid(Component)] = static_cast<Component *>(new Component(
-            std::forward<Args>(args) ...));
+    components[typeid(Component)] = static_cast<Component *>(static_cast<Component *>(new Component(
+            std::forward<Args>(args) ...)));
 }
 
 template<typename Component, typename... Args>

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <Components/Geometry.h>
+#include "Components/Material.h"
 
 class ObjParser {
 

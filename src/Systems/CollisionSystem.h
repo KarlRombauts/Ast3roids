@@ -18,10 +18,6 @@ public:
 
     bool areSpheresIntersecting(Entity *entity1, Entity *entity2) const;
 
-    const bool areCircleAndLineIntersecting(Entity *circle, Entity *line) const;
-
-    void resolveCircleLineCollision(Entity *circle, Entity *line) const;
-
     void createImpacts(Entity *entity1, Entity *entity2) const;
 
     bool intersectingWithArenaWall(Entity *pEntity);

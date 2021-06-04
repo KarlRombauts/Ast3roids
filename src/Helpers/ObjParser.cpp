@@ -4,6 +4,7 @@
 #include "ObjParser.h"
 #include "Normals.h"
 #include "MaterialParser.h"
+#include "Components/Material.h"
 
 Geometry ObjParser::parse(std::string filepath) {
     geometry = Geometry();
@@ -38,15 +39,9 @@ Geometry ObjParser::parse(std::string filepath) {
         objFile.close();
     }
 
-//    normaliseNormals();
     return geometry;
 }
 
-void ObjParser::normaliseNormals() {
-    for (Vector3 &normal: geometry.normals) {
-        normal = normal.normalize();
-    }
-}
 
 void ObjParser::parseLine(std::string &_line) {
     std::stringstream line(_line);

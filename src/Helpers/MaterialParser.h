@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <Components/Geometry.h>
+#include "Components/Material.h"
 
 class MaterialParser {
     std::string mtlFilePath;

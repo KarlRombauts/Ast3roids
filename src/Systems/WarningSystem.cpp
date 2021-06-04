@@ -1,4 +1,5 @@
 #include <iostream>
+#include <Components/Material.h>
 #include "WarningSystem.h"
 #include "../Components/Impact.h"
 #include "../Components/SpaceShip.h"
@@ -8,7 +9,8 @@
 
 void WarningSystem::update(EntityManager &entities) {
     for(Entity *wall: entities.getEntitiesWith<Wall>()) {
-        wall->assign<Color>(0.3, 0.3, 0.3);
+        Material* material = wall->get<Material>();
+        material->setEmission(0.2, 0.2, 0.2);
     }
 
     for (Entity *entity: entities.getEntitiesWith<Impact, BoundingCircle>()) {
@@ -16,7 +18,8 @@ void WarningSystem::update(EntityManager &entities) {
 
         for (Entity *otherEntity: otherEntities) {
             if (otherEntity->has<Wall>()) {
-                otherEntity->assign<Color>(1, 0, 0);
+                Material* material = otherEntity->get<Material>();
+                material->setEmission(1, 0, 0);
             }
         }
     }

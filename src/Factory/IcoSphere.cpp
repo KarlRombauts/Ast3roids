@@ -1,9 +1,9 @@
 #include "IcoSphere.h"
+#include "Components/Material.h"
 #include <vector>
 #include <Vector3.h>
 #include <cmath>
 #include <Helpers/Normals.h>
-#include <Helpers/TextureLoader.h>
 
 Geometry IcoSphere::create(int subdivisions, Material *material) {
     double t = (1.0 + sqrt(5.0)) / 2.0;

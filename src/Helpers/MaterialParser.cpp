@@ -4,6 +4,7 @@
 
 #include "MaterialParser.h"
 #include "TextureLoader.h"
+#include "Components/Material.h"
 #include <fstream>
 #include <sstream>
 #include <Helpers.h>

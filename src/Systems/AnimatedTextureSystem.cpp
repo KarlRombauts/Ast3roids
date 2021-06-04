@@ -5,9 +5,16 @@
 #include <Components/AnimatedTexture.h>
 #include <Components/Geometry.h>
 #include <Components/Destroy.h>
+#include <Components/Light.h>
 #include "AnimatedTextureSystem.h"
 
 void AnimatedTextureSystem::update(EntityManager &entities, double dt) {
+
+    if (timeSinceLastFrame < 1000 / 40) {
+        timeSinceLastFrame += dt;
+        return;
+    }
+
     for (Entity *entity: entities.getEntitiesWith<AnimatedTexture, Geometry>()) {
         AnimatedTexture *animTex = entity->get<AnimatedTexture>();
 
@@ -27,5 +34,6 @@ void AnimatedTextureSystem::update(EntityManager &entities, double dt) {
 
         animTex->rowOffset = currentIndex / animTex->cols;
         animTex->colOffset = currentIndex % animTex->cols;
+        timeSinceLastFrame = 0;
     }
 }

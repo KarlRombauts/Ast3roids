@@ -1,3 +1,4 @@
+#include <Components/Position.h>
 #include "AsteroidSystem.h"
 #include "../Globals.h"
 
@@ -10,18 +11,18 @@ void AsteroidSystem::startWave(EntityManager &entities, int waveCount) {
 }
 
 void AsteroidSystem::launchAsteroidAtSpaceShip(EntityManager &entities, Entity *spaceShip) const {
-//    int radius = randInt(gameConfig.ASTEROID_MIN_START_RADIUS, gameConfig.ASTEROID_MAX_START_RADIUS);
-//    Entity *asteroid = entities.createAsteroid(radius);
-//    Vector3 asteroidPosition = Vector3::polar(randf(0, 360), gameModel.worldCoordinates.distanceToCorner());
-//    asteroid->get<Position>()->position = asteroidPosition;
-//    asteroid->assign<OutsideArena>();
-//
-//    if (spaceShip) {
-//        Vector3 spaceShipPosition = spaceShip->get<Position>()->position;
-//        double speed = randf(gameConfig.ASTEROID_MIN_SPEED, gameConfig.ASTEROID_MAX_SPEED);
-//        const Vector3 velocity = (spaceShipPosition - asteroidPosition).normalize().scale(speed);
-//        asteroid->get<Kinematics>()->velocity = velocity;
-//    }
+    int radius = randInt(gameConfig.ASTEROID_MIN_START_RADIUS, gameConfig.ASTEROID_MAX_START_RADIUS);
+    Entity *asteroid = entities.createAsteroid(radius);
+    Vector3 asteroidPosition = Vector3::random(200);
+    asteroid->assign<Position>(asteroidPosition);
+    asteroid->assign<OutsideArena>();
+
+    if (spaceShip) {
+        Vector3 &spaceShipPosition = spaceShip->get<Position>()->position;
+        double speed = randf(gameConfig.ASTEROID_MIN_SPEED, gameConfig.ASTEROID_MAX_SPEED);
+        const Vector3 velocity = Vector3::fromTo(asteroidPosition, spaceShipPosition).normalize().scale(speed);
+        asteroid->get<Kinematics>()->velocity = velocity;
+    }
 }
 
 void update(EntityManager &entities) {

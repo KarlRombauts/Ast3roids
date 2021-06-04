@@ -33,7 +33,7 @@ void DamageSystem::handleDeath(EntityManager &entities, Entity *entity, Entity *
         double size = entity->get<Asteroid>()->size;
         Vector3 p1 = entity->get<Position>()->position;
         Vector3 v = entity->get<Kinematics>()->velocity;
-        entities.createExplosion(p1, size * 5);
+        entities.createExplosion(p1, size * 2.5);
 
         if (entity->has<SplitOnDeath>()) {
             Vector3 randVector = Vector3::random(1);

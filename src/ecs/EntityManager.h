@@ -52,7 +52,7 @@ public:
 
     Entity *createSkybox();
 
-    void createExplosion(const Vector3 &postion, double scale);
+    Entity * createExplosion(const Vector3 &postion, double scale);
 };
 
 template<typename... Components>
