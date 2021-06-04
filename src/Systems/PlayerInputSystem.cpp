@@ -1,5 +1,7 @@
 #include <Components/Camera.h>
 #include <Components/Position.h>
+#include <GameModel.h>
+#include <Components/SmoothFollow.h>
 #include "PlayerInputSystem.h"
 #include "../Globals.h"
 #include "../Components/PlayerInput.h"
@@ -11,59 +13,44 @@
 #include "../Components/Rotation.h"
 
 void PlayerInputSystem::update(EntityManager &entities, double dt) {
-    for(Entity* entity: entities.getEntitiesWith<Camera, Rotation, Position>()) {
-        Vector3 &position = entity->get<Position>()->position;
-        Quaternion &rotation = entity->get<Rotation>()->rotation;
-    }
-
     for(Entity* entity: entities.getEntitiesWith<Position, Rotation, Kinematics, Geometry, PlayerInput, SpaceShip>()) {
         Vector3 &position = entity->get<Position>()->position;
         Geometry *geometry = entity->get<Geometry>();
         Quaternion &rotation = entity->get<Rotation>()->rotation;
+        Vector3 &acceleration = entity->get<Kinematics>()->acceleration;
+        Vector3 &velocity = entity->get<Kinematics>()->velocity;
 
         if (keyboardState.isKeyPressed('k')) {
-            Vector3 localMove = Vector3::down() * 10 * dt / 1000;
-            position += rotation * localMove;
+            Vector3 &cameraOffset = gameModel.activeCamera->get<SmoothFollow>()->relativeOffset;
+            if (cameraOffset.magnitude() < 40) {
+                cameraOffset += cameraOffset.normalize();
+            }
         }
 
         if (keyboardState.isKeyPressed('i')) {
-            Vector3 localMove = Vector3::up() * 10 * dt / 1000;
-            position += rotation * localMove;
+            Vector3 &cameraOffset = gameModel.activeCamera->get<SmoothFollow>()->relativeOffset;
+            if (cameraOffset.magnitude() > 10) {
+                cameraOffset -= cameraOffset.normalize();
+            }
         }
 
         if (keyboardState.isKeyPressed('a')) {
-            rotation *= Quaternion::angleAxis(180 * dt / 1000, Vector3::forward());
+            rotation *= Quaternion::angleAxis(gameConfig.PLAYER_TURN_SPEED * dt / 1000, Vector3::forward());
         }
 
         if (keyboardState.isKeyPressed('d')) {
-            rotation *= Quaternion::angleAxis(-180 * dt / 1000, Vector3::forward());
+            rotation *= Quaternion::angleAxis(-gameConfig.PLAYER_TURN_SPEED * dt / 1000, Vector3::forward());
         }
 
         if (keyboardState.isKeyPressed('w')) {
-            Vector3 localMove = Vector3::back() * 10 * dt / 1000;
+            Vector3 force = Vector3::back() * gameConfig.PLAYER_SPEED * dt / 1000;
+            acceleration += rotation * force;
 
-            geometry->shapes[0].rotation = Quaternion::slerp(
-                    geometry->shapes[0].rotation,
-                    Quaternion::angleAxis(20, Vector3::forward()), 0.1);
-            geometry->shapes[2].rotation = Quaternion::slerp(
-                    geometry->shapes[2].rotation,
-                    Quaternion::angleAxis(-20, Vector3::forward()), 0.1);
-
-            position += rotation * localMove;
+            openWings(geometry);
         }
 
         if (!keyboardState.isKeyPressed('w')) {
-            geometry->shapes[0].rotation = Quaternion::slerp(
-                    geometry->shapes[0].rotation,
-                    Quaternion::angleAxis(0, Vector3::forward()), 0.1);
-            geometry->shapes[2].rotation = Quaternion::slerp(
-                    geometry->shapes[2].rotation,
-                    Quaternion::angleAxis(0, Vector3::forward()), 0.1);
-        }
-
-        if (keyboardState.isKeyPressed('s')) {
-            Vector3 localMove = Vector3::back() * 10 * dt / 1000;
-            position += rotation * localMove;
+            closeWings(geometry);
         }
 
 //        if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
@@ -89,4 +76,22 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
             entity->assign<FiringBullet>();
         }
     }
+}
+
+void PlayerInputSystem::closeWings(Geometry *geometry) {
+    geometry->shapes[0].rotation = Quaternion::slerp(
+            geometry->shapes[0].rotation,
+            Quaternion::angleAxis(0, Vector3::forward()), 0.1);
+    geometry->shapes[2].rotation = Quaternion::slerp(
+            geometry->shapes[2].rotation,
+            Quaternion::angleAxis(0, Vector3::forward()), 0.1);
+}
+
+void PlayerInputSystem::openWings(Geometry *geometry) {
+    geometry->shapes[0].rotation = Quaternion::slerp(
+            geometry->shapes[0].rotation,
+            Quaternion::angleAxis(20, Vector3::forward()), 0.1);
+    geometry->shapes[2].rotation = Quaternion::slerp(
+            geometry->shapes[2].rotation,
+            Quaternion::angleAxis(-20, Vector3::forward()), 0.1);
 }

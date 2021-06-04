@@ -6,12 +6,17 @@
 #define UNTITLED_PLAYERINPUTSYSTEM_H
 
 
+#include <Components/Geometry.h>
 #include "System.h"
 
 class PlayerInputSystem : public System {
 
 public:
     void update(EntityManager &entities, double dt) override;
+
+    void openWings(Geometry *geometry);
+
+    void closeWings(Geometry *geometry);
 };
 
 

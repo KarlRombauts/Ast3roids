@@ -10,7 +10,7 @@ struct GameConfig {
     char PLAYER_LEFT = 'a';
     char PLAYER_RIGHT = 'd';
     char PLAYER_SHOOT = ' ';
-    double PLAYER_SPEED = 75;
+    double PLAYER_SPEED = 1000;
     double PLAYER_TURN_SPEED = 180; // Degrees per second
 
     int PLAYER_FIRING_RATE = 200; // Bullets per second
