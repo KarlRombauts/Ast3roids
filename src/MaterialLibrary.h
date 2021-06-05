@@ -12,6 +12,7 @@ public:
     Material *GLOW_PARTICLE;
     Material *BULLET;
     Material *EXPLOSION;
+    Material *IMPACT;
 
     void init();
 };

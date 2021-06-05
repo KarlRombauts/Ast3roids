@@ -7,15 +7,10 @@
 
 void BulletCleanupSystem::update(EntityManager &entities, double dt) {
     for (Entity *bullet: entities.getEntitiesWith<Impact, Bullet>()) {
-        std::vector<Entity *> otherEntities = bullet->get<Impact>()->entities;
+        for (Entity *impactEntity: bullet->get<Impact>()->entities) {
+            if (impactEntity->has<SpaceShip>()) continue;
+            if (impactEntity->get<Collision>()->type == CollisionType::TRIGGER) continue;
 
-        for (Entity *otherEntity: otherEntities) {
-            if (otherEntity->has<SpaceShip>()) {
-                continue;
-            }
-            if (otherEntity->get<Collision>()->type == CollisionType::TRIGGER) {
-                continue;
-            }
             bullet->assign<Destroy>();
             return;
         }

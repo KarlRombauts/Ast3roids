@@ -6,10 +6,10 @@
 #include <Helpers.h>
 #include <GameModel.h>
 #include <Components/SmoothFollow.h>
-#include "RayCastingSystem.h"
+#include "MouseLookSystem.h"
 
 void MouseLookSystem::update(EntityManager &entities, double dt) {
-    for (Entity *entity: entities.getEntitiesWith<Camera, Position, Rotation>()) {
+    for (Entity *entity: entities.getEntitiesWith<Camera, SmoothFollow, Position, Rotation>()) {
         Vector3 &position = entity->get<Position>()->position;
         Quaternion &rotation = entity->get<Rotation>()->rotation;
 
@@ -17,16 +17,14 @@ void MouseLookSystem::update(EntityManager &entities, double dt) {
         mouseNorm.x = map(mouseState.position.x, {0, gameModel.width}, {-1, 1});
         mouseNorm.y = map(mouseState.position.y, {0, gameModel.height}, {-1, 1});
 
-        if (entity->has<SmoothFollow>()) {
-            Entity *target = entity->get<SmoothFollow>()->entity;
+        Entity *target = entity->get<SmoothFollow>()->entity;
 
-            if (target->has<Rotation>()) {
-                Quaternion &targetRotation = target->get<Rotation>()->rotation;
+        if (target->has<Rotation>()) {
+            Quaternion &targetRotation = target->get<Rotation>()->rotation;
 
-                double t = -gameConfig.MOUSE_SENSITIVITY * dt / 1000;
-                targetRotation *= Quaternion::angleAxis(t * mouseNorm.y, Vector3::left());
-                targetRotation *= Quaternion::angleAxis(t * mouseNorm.x, Vector3::up());
-            }
+            double t = -gameConfig.MOUSE_SENSITIVITY * dt / 1000;
+            targetRotation *= Quaternion::angleAxis(t * mouseNorm.y, Vector3::left());
+            targetRotation *= Quaternion::angleAxis(t * mouseNorm.x, Vector3::up());
         }
     }
 }

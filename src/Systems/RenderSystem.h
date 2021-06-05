@@ -22,7 +22,7 @@ public:
 
     void drawHealthBars(Entity *entity) const;
 
-    void drawShape(Entity *entity) const;
+    void drawGeometry(Entity *entity) const;
 
     void drawLine(Entity *entity) const;
 
@@ -33,7 +33,7 @@ public:
 
     void drawScore();
 
-    void drawEntities(EntityManager &entities);
+    void renderEntities(EntityManager &entities);
 
     void drawDifficulty();
 
@@ -45,7 +45,7 @@ public:
 
     void drawEntity(Entity *entity);
 
-    void drawTransparentEntities(EntityManager &entities);
+    void renderTransparentEntities(EntityManager &entities);
 
     void applyTransformations(Entity *entity);
 
@@ -76,6 +76,17 @@ public:
     void renderLight(Entity *entity, int i) const;
 
     void renderLights(EntityManager &entities) const;
+
+    void setTextureCoordinates(Entity *entity, const Face &face,
+                               const Geometry *geometry, int vertIndex) const;
+
+    void drawStartScreen();
+
+    void drawGameOver();
+
+    void renderMainGame(EntityManager &entities);
+
+    void drawControls();
 };
 
 

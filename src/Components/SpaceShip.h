@@ -1,13 +1,13 @@
 #ifndef UNTITLED_SPACESHIP_H
 #define UNTITLED_SPACESHIP_H
 
+#include <ecs/Component.h>
 
 struct SpaceShip: public Component {
-    SpaceShip(int fireRate, int thrust): lastFire(0), fireRate(fireRate), thrust(thrust) {};
+    SpaceShip(int fireRate) : lastFire(0), fireRate(fireRate) {};
 
     int lastFire;
-    int fireRate; // milliseconds
-    double thrust;
+    int fireRate;
 };
 
 #endif //UNTITLED_SPACESHIP_H

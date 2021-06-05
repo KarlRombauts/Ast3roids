@@ -12,8 +12,15 @@ class DamageSystem {
 public:
     void update(EntityManager &entities);
 
-    void handleDeath(EntityManager &entities, Entity *entity,
-                     Entity *otherEntity) const;
+
+private:
+    void splitAsteroid(EntityManager &entities, Entity *asteroid, const Vector3 &splitDir);
+
+    void handleDeath(EntityManager &entities, Entity *entity, Entity *otherEntity);
+
+    void createExplosion(EntityManager &entities, Entity *asteroid);
+
+    Vector3 calculateSplitDirection(Entity *impactObject) const;
 };
 
 

@@ -46,6 +46,8 @@ struct GameConfig {
     std::string TEXTURE_DIR = "./Assets/Textures";
     int MOUSE_SENSITIVITY = 100;
     double CAMERA_STIFFNESS = 3;
+    double MAX_CAMERA_DISTANCE = 40;
+    double MIN_CAMERA_DISTANCE = 10;
 };
 
 

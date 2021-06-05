@@ -15,7 +15,7 @@ void MaterialLibrary::init() {
     BULLET->setDiffuse(0,0,0);
     BULLET->setAmbient(0,0,0);
     BULLET->setEmission(1, 1, 1);
-    BULLET->textureId = TextureLoader::load(gameConfig.TEXTURE_DIR + "/fireball_green.png");
+    BULLET->textureId = TextureLoader::load(gameConfig.TEXTURE_DIR + "/fireball_green_ani.png");
 
     EXPLOSION = new Material();
     EXPLOSION->setSpecular(0,0,0);

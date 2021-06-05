@@ -1,7 +1,3 @@
-//
-// Created by Karl Rombauts on 10/4/21.
-//
-
 #ifndef UNTITLED_BULLETCLEANUPSYSTEM_H
 #define UNTITLED_BULLETCLEANUPSYSTEM_H
 

@@ -10,11 +10,8 @@ void SmoothFollowSystem::update(EntityManager &entities, double dt) {
         Entity * target = follower->get<SmoothFollow>()->entity;
         Vector3 &relativeOffset = follower->get<SmoothFollow>()->relativeOffset;
 
-
-        if (!target->has<Position, Rotation>()) {
-            // Target cannot be followed
-            continue;
-        }
+        // Target cannot be followed
+        if (!target->has<Position, Rotation>()) continue;
 
         Vector3 &currentPosition = follower->get<Position>()->position;
         Quaternion &currentRotation = follower->get<Rotation>()->rotation;

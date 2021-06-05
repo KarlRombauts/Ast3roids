@@ -1,7 +1,3 @@
-//
-// Created by Karl Rombauts on 10/4/21.
-//
-
 #ifndef UNTITLED_IMPACTCLEANUPSYSTEM_H
 #define UNTITLED_IMPACTCLEANUPSYSTEM_H
 

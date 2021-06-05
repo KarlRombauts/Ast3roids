@@ -1,6 +1,9 @@
 #ifndef STARFOX_SCALE_H
 #define STARFOX_SCALE_H
 
+#include <ecs/Component.h>
+#include <Vector3.h>
+
 struct Scale : public Component {
     explicit Scale(): scale(1, 1, 1) {}
 

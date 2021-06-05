@@ -10,7 +10,7 @@
 void WarningSystem::update(EntityManager &entities) {
     for(Entity *wall: entities.getEntitiesWith<Wall>()) {
         Material* material = wall->get<Material>();
-        material->setEmission(0.2, 0.2, 0.2);
+        material->setEmission(0.1, 0.1, 0.1);
     }
 
     for (Entity *entity: entities.getEntitiesWith<Impact, BoundingCircle>()) {

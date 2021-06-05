@@ -20,9 +20,4 @@ struct CircleCollision: public Component {
     CircleCollision(double radius) : radius(radius) {}
 };
 
-struct LineCollision: public Component {
-    Line *line;
-    LineCollision(Line *line) : line(line) {}
-};
-
 #endif //UNTITLED_COLLISION_H

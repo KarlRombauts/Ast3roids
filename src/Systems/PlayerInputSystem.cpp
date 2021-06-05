@@ -22,55 +22,34 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
 
         if (keyboardState.isKeyPressed('k')) {
             Vector3 &cameraOffset = gameModel.activeCamera->get<SmoothFollow>()->relativeOffset;
-            if (cameraOffset.magnitude() < 40) {
-                cameraOffset += cameraOffset.normalize();
+            if (cameraOffset.magnitude() < gameConfig.MAX_CAMERA_DISTANCE) {
+                cameraOffset += cameraOffset.normalize() * 50 *  dt / 1000;
             }
         }
 
         if (keyboardState.isKeyPressed('i')) {
             Vector3 &cameraOffset = gameModel.activeCamera->get<SmoothFollow>()->relativeOffset;
-            if (cameraOffset.magnitude() > 10) {
-                cameraOffset -= cameraOffset.normalize();
+            if (cameraOffset.magnitude() > gameConfig.MIN_CAMERA_DISTANCE) {
+                cameraOffset -= cameraOffset.normalize() * 50 * dt / 1000;
             }
         }
 
-        if (keyboardState.isKeyPressed('a')) {
+        if (keyboardState.isKeyPressed(gameConfig.PLAYER_LEFT)) {
             rotation *= Quaternion::angleAxis(gameConfig.PLAYER_TURN_SPEED * dt / 1000, Vector3::forward());
         }
 
-        if (keyboardState.isKeyPressed('d')) {
+        if (keyboardState.isKeyPressed(gameConfig.PLAYER_RIGHT)) {
             rotation *= Quaternion::angleAxis(-gameConfig.PLAYER_TURN_SPEED * dt / 1000, Vector3::forward());
         }
 
-        if (keyboardState.isKeyPressed('w')) {
+        if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
             Vector3 force = Vector3::back() * gameConfig.PLAYER_SPEED * dt / 1000;
             acceleration += rotation * force;
 
             openWings(geometry);
-        }
-
-        if (!keyboardState.isKeyPressed('w')) {
+        } else {
             closeWings(geometry);
         }
-
-//        if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
-//            kinematics->acceleration = Vector3::polar(Position->rotation, spaceShip->thrust);
-
-            // Create exhaust particle system
-//            Entity* particles = entities.create();
-//
-//            Vector3 initialVelocity = kinematics->acceleration.scale(-1) * dt / 1000;
-//            particles->assign<ParticleSource>(
-//                    initialVelocity,
-//                    5,
-//                    gameConfig.EXHAUST_PARTICLE_RATE,
-//                    gameConfig.EXHAUST_PARTICLE_DECAY);
-//
-//            // Offset particles
-//            Position particlesPosition = *position;
-//            particlesPosition.position += kinematics->acceleration.normalize().scale(-3);
-//            particles->assign<Position>(particlesPosition);
-//        }
 
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_SHOOT)) {
             entity->assign<FiringBullet>();

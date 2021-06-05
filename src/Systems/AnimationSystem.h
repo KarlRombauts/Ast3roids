@@ -1,7 +1,3 @@
-//
-// Created by Karl Rombauts on 4/6/21.
-//
-
 #ifndef STARFOX_ANIMATIONSYSTEM_H
 #define STARFOX_ANIMATIONSYSTEM_H
 

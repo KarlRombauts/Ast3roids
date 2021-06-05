@@ -1,10 +1,5 @@
-//
-// Created by Karl Rombauts on 16/4/21.
-//
-
 #ifndef UNTITLED_ASTEROIDSYSTEM_H
 #define UNTITLED_ASTEROIDSYSTEM_H
-
 
 #include "../ecs/EntityManager.h"
 #include "../GameModel.h"
@@ -19,6 +14,8 @@ private:
     void launchAsteroidAtSpaceShip(EntityManager &entities, Entity *spaceShip) const;
 public:
     void startWave(EntityManager &entities, int waveCount);
+
+    Vector3 calculateAsteroidVelocity(Entity *spaceShip, Vector3 &asteroidPosition) const;
 };
 
 

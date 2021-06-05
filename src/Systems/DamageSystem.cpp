@@ -1,3 +1,5 @@
+#include <Factory/ImpactFactory.h>
+#include <Factory/ExplosionFactory.h>
 #include "DamageSystem.h"
 #include "../Components/Impact.h"
 #include "../Components/Damage.h"
@@ -10,17 +12,19 @@
 #include "../GameModel.h"
 #include "../Components/Destroy.h"
 #include "../Globals.h"
+#include "Factory/AsteroidFactory.h"
 
 void DamageSystem::update(EntityManager &entities) {
     for(Entity* entity: entities.getEntitiesWith<Impact, Health>()) {
-        Health *health = entity->get<Health>();
+        int &health = entity->get<Health>()->health;
 
+        // Loop over impacts
         for (Entity* otherEntity: entity->get<Impact>()->entities) {
             if (otherEntity->has<Damage>()) {
-               health->health -= otherEntity->get<Damage>()->damage;
+               health -= otherEntity->get<Damage>()->damage;
             }
 
-            if (health->health <= 0) {
+            if (health <= 0) {
                 handleDeath(entities, entity, otherEntity);
                 break;
             }
@@ -28,40 +32,50 @@ void DamageSystem::update(EntityManager &entities) {
     }
 }
 
-void DamageSystem::handleDeath(EntityManager &entities, Entity *entity, Entity *otherEntity) const {
+void DamageSystem::handleDeath(EntityManager &entities, Entity *entity, Entity *otherEntity) {
     if (entity->has<Asteroid, Position>()) {
-        double size = entity->get<Asteroid>()->size;
-        Vector3 p1 = entity->get<Position>()->position;
-        Vector3 v = entity->get<Kinematics>()->velocity;
-        entities.createExplosion(p1, size * 2.5);
-
         if (entity->has<SplitOnDeath>()) {
-            Vector3 randVector = Vector3::random(1);
-            Vector3 bulletVelocity = otherEntity->get<Kinematics>()->velocity;
-            Vector3 splitDir = bulletVelocity.cross(randVector).cross(bulletVelocity).normalize();
-
-            if (size >= 2) {
-                Entity *asteroid1 = entities.createAsteroid(size / 1.5);
-                Entity *asteroid2 = entities.createAsteroid(size / 1.5);
-
-                asteroid1->get<Position>()->position = p1 + splitDir.scale(size / 1.25);
-                asteroid1->get<Kinematics>()->velocity = (v + splitDir.scale(v.magnitude())).normalize().scale(v.magnitude());;
-
-                asteroid2->get<Position>()->position = p1 - splitDir.scale(size / 1.25);
-                asteroid2->get<Kinematics>()->velocity = (v - splitDir.scale(v.magnitude())).normalize().scale(v.magnitude());
-            }
+            splitAsteroid(entities, entity, calculateSplitDirection(otherEntity));
         }
-    }
 
-    if (entity->has<Asteroid>()) {
-        // Create particle emitter
-        double size = entity->get<Asteroid>()->size;
-        Entity* particles = entities.create();
-        particles->assign<ParticleSource>(Vector3(0, 0, 0), 20, size * 5, gameConfig.EXPLOSION_DECAY_RATE);
-        particles->assign<Position>(*entity->get<Position>());
-        // Increment Score
+        createExplosion(entities, entity);
         gameModel.score++;
     }
 
     entity->assign<Destroy>();
+}
+
+Vector3 DamageSystem::calculateSplitDirection(Entity *impactObject) const {
+    Vector3 randVector = Vector3::random(1);
+    Vector3 bulletVelocity = impactObject->get<Kinematics>()->velocity;
+    Vector3 splitDir = bulletVelocity.cross(randVector).cross(bulletVelocity).normalize();
+    return splitDir;
+}
+
+void DamageSystem::createExplosion(EntityManager &entities, Entity *asteroid) {
+    double size = asteroid->get<Asteroid>()->size;
+    Vector3 p1 = asteroid->get<Position>()->position;
+
+    // Explosion Texture
+    ExplosionFactory::create(entities, p1, size * 2.5);
+
+    // Particles
+    Entity* particles = entities.create();
+    particles->assign<ParticleSource>(Vector3(0, 0, 0), 20, size * 5, gameConfig.EXPLOSION_DECAY_RATE);
+    particles->assign<Position>(p1);
+}
+
+void DamageSystem::splitAsteroid(EntityManager &entities, Entity *asteroid, const Vector3 &splitDir) {
+    double size = asteroid->get<Asteroid>()->size;
+    Vector3 p1 = asteroid->get<Position>()->position;
+    Vector3 v = asteroid->get<Kinematics>()->velocity;
+
+    Entity *asteroid1 = AsteroidFactory::create(entities, size / 1.5);
+    Entity *asteroid2 = AsteroidFactory::create(entities, size / 1.5);
+
+    asteroid1->get<Position>()->position = p1 + splitDir.scale(size / 1.25);
+    asteroid1->get<Kinematics>()->velocity = (v + splitDir.scale(v.magnitude())).normalize().scale(v.magnitude());
+
+    asteroid2->get<Position>()->position = p1 - splitDir.scale(size / 1.25);
+    asteroid2->get<Kinematics>()->velocity = (v - splitDir.scale(v.magnitude())).normalize().scale(v.magnitude());
 }

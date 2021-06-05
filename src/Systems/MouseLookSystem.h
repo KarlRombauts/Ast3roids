@@ -1,5 +1,5 @@
-#ifndef STARFOX_RAYCASTINGSYSTEM_H
-#define STARFOX_RAYCASTINGSYSTEM_H
+#ifndef STARFOX_MOUSELOOKSYSTEM_H
+#define STARFOX_MOUSELOOKSYSTEM_H
 
 
 #include <ecs/EntityManager.h>
@@ -9,4 +9,4 @@ struct MouseLookSystem {
 };
 
 
-#endif //STARFOX_RAYCASTINGSYSTEM_H
+#endif //STARFOX_MOUSELOOKSYSTEM_H

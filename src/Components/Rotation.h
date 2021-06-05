@@ -15,7 +15,7 @@ struct Rotation: public Component {
      * Initialises the rotation to a specific quaternion
      * @param rotation the quaternion that specifies the rotation
      */
-    Rotation(Quaternion &rotation): rotation(rotation) {}
+    Rotation(const Quaternion &rotation): rotation(rotation) {}
 
     Quaternion rotation;
 };

@@ -1,5 +1,5 @@
 #include <cstdlib>
-#include <Systems/RayCastingSystem.h>
+#include <Systems/MouseLookSystem.h>
 #include <Systems/SmoothFollowSystem.h>
 #include <Systems/LookAtSystem.h>
 #include <Systems/AnimatedTextureSystem.h>
@@ -23,9 +23,8 @@
 #include "Systems/OutOfBoundsSystem.h"
 #include "Systems/ShipImpactSystem.h"
 #include "Systems/ParticleSystem.h"
-#include "Systems/BlackHoleSystem.h"
 #include "Systems/DestroySystem.h"
-#include "Systems/RayCastingSystem.h"
+#include "Systems/MouseLookSystem.h"
 #include <filesystem>
 
 EntityManager entities;
@@ -44,7 +43,6 @@ AnimatedTextureSystem animatedTextureSystem;
 AnimationSystem animationSystem;
 ShipImpactSystem shipImpactSystem;
 ParticleSystem particleSystem;
-BlackHoleSystem blackHoleSystem;
 DestroySystem destroySystem;
 MouseLookSystem mouseLookSystem;
 SmoothFollowSystem smoothFollowSystem;
@@ -101,10 +99,10 @@ void handleGamePlay() {
     firingSystem.update(entities, dt);
     lookAtSystem.update(entities);
     collisionSystem.update(entities, dt);
+    damageSystem.update(entities);
     particleSystem.update(entities, dt);
     physicsSystem.update(entities, dt);
     warningSystem.update(entities);
-    damageSystem.update(entities);
     bulletCleanupSystem.update(entities, dt);
 
     if (gameModel.state == GameState::PLAYING) {

@@ -12,19 +12,24 @@ class CollisionSystem: public System {
 public:
     void update(EntityManager &entities, double dt) override;
 
-public:
-    void resolveCircleCircleCollision(EntityManager &entities, Entity *entity1,
-                                      Entity *entity2);
-
+private:
     bool areSpheresIntersecting(Entity *entity1, Entity *entity2) const;
 
     void createImpacts(Entity *entity1, Entity *entity2) const;
 
     bool intersectingWithArenaWall(Entity *pEntity);
 
-    void handleArenaWallCollision(Entity *entity) const;
+    void resolveArenaWallCollision(Entity *entity) const;
 
     void createArenaImpacts(Entity *entity) const;
+
+    Vector3 calculateNewVelocity(Vector3 p1, Vector3 p2, Vector3 v1, Vector3 v2, double m1, double m2) const;
+
+    void wallCollisionDynamicResolution(Entity *entity) const;
+
+    void wallCollisionStaticResolution(Vector3 &position, double radius) const;
+
+    void resolveCircleCircleCollision(Entity *entity1, Entity *entity2);
 };
 
 

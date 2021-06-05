@@ -3,7 +3,7 @@
 #include <GameModel.h>
 #include <Components/LookAt.h>
 #include <Components/Transparency.h>
-#include <Factory/PlaneFactory.h>
+#include <Factory/Primatives/PlaneFactory.h>
 #include <Globals.h>
 #include "ParticleSystem.h"
 #include "../Components/ParticleSource.h"
@@ -11,7 +11,6 @@
 #include "../Components/Particle.h"
 #include "../Components/Kinematics.h"
 #include "../Helpers.h"
-#include "../Components/Collision.h"
 #include "../Components/Destroy.h"
 #include "Components/Scale.h"
 
