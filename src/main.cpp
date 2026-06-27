@@ -7,6 +7,9 @@
 #include "OpenGL.h"
 #include "Platform/Window.h"
 #include "Platform/Time.h"
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
 #include "Globals.h"
 #include "GameModel.h"
 #include "ecs/EntityManager.h"
@@ -211,6 +214,19 @@ void handleEvent(const SDL_Event &event, bool &running) {
     }
 }
 
+static bool running = true;
+
+// One iteration of the game loop. On the web, the browser drives this via
+// requestAnimationFrame; natively we call it in a while loop.
+void mainLoopFrame() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        handleEvent(event, running);
+    }
+    idle();
+    display();
+}
+
 int main(int argc, char **argv) {
     if (!window.create("Asteroids", 600, 600)) {
         return EXIT_FAILURE;
@@ -219,16 +235,14 @@ int main(int argc, char **argv) {
     reshape(600, 600);
     init();
 
-    bool running = true;
+#ifdef __EMSCRIPTEN__
+    // 0 fps = use requestAnimationFrame; 1 = simulate an infinite loop.
+    emscripten_set_main_loop(mainLoopFrame, 0, 1);
+#else
     while (running) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            handleEvent(event, running);
-        }
-        idle();
-        display();
+        mainLoopFrame();
     }
-
     window.destroy();
+#endif
     return EXIT_SUCCESS;
 }

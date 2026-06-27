@@ -3,11 +3,6 @@ set(SOURCES Factory/ImpactFactory.cpp Factory/ImpactFactory.h Factory/ExplosionF
 
 set(GL_SILENCE_DEPRECATION)
 
-find_package(OpenGL REQUIRED)
-
-include_directories(${OPENGL_INCLUDE_DIRS})
-link_libraries(${OPENGL_LIBRARIES})
-
 #file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 
 # Shared sources go in both the executable and the test library.
@@ -19,15 +14,34 @@ set(SOURCES ${SOURCES})
 # not in the static lib the tests link against.
 add_executable(${BINARY}_run main.cpp ${SOURCES} Platform/Window.cpp Platform/Window.h)
 
-add_library(${BINARY}_lib STATIC ${SOURCES})
+if (EMSCRIPTEN)
+    # SDL2 + WebGL2/GLES3 come from Emscripten; assets/shaders are baked into the
+    # virtual filesystem, and main() runs via emscripten_set_main_loop.
+    target_compile_options(${BINARY}_run PRIVATE -sUSE_SDL=2 -sFULL_ES3)
+    target_link_options(${BINARY}_run PRIVATE
+            -sUSE_SDL=2 -sFULL_ES3 -sMAX_WEBGL_VERSION=2 -sMIN_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH=1
+            "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/Assets@/Assets"
+            "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/Shaders@/Shaders")
+    set_target_properties(${BINARY}_run PROPERTIES SUFFIX ".html")
+else()
+    find_package(OpenGL REQUIRED)
+    include_directories(${OPENGL_INCLUDE_DIRS})
 
-add_custom_target(copy_assets
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Assets ${CMAKE_CURRENT_BINARY_DIR}/Assets)
-add_dependencies(${BINARY}_run copy_assets)
+    # The static lib (for tests) mirrors the executable's shared sources. It
+    # links OpenGL PUBLIC-ly so the test executable resolves the GL symbols some
+    # of those sources (e.g. TextureLoader) reference.
+    add_library(${BINARY}_lib STATIC ${SOURCES})
+    target_link_libraries(${BINARY}_lib PUBLIC ${OPENGL_LIBRARIES})
 
-add_custom_target(copy_shaders
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Shaders ${CMAKE_CURRENT_BINARY_DIR}/Shaders)
-add_dependencies(${BINARY}_run copy_shaders)
+    # Copy assets/shaders next to the native binary so the relative paths resolve.
+    add_custom_target(copy_assets
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Assets ${CMAKE_CURRENT_BINARY_DIR}/Assets)
+    add_dependencies(${BINARY}_run copy_assets)
 
-target_link_libraries(${BINARY}_run PUBLIC ${OPENGL_LIBRARIES} SDL2::SDL2)
+    add_custom_target(copy_shaders
+            COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Shaders ${CMAKE_CURRENT_BINARY_DIR}/Shaders)
+    add_dependencies(${BINARY}_run copy_shaders)
+
+    target_link_libraries(${BINARY}_run PUBLIC ${OPENGL_LIBRARIES} SDL2::SDL2)
+endif()
 

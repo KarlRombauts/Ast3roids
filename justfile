@@ -32,12 +32,17 @@ rebuild: clean build
 
 emsdk_env := "~/emsdk/emsdk_env.sh"
 
+# Build the full game to WebAssembly (output in build-web/src/StarFox_run.html)
+wasm:
+    source {{emsdk_env}} && emcmake cmake -S . -B build-web && cmake --build build-web -j
+
 # Build the toolchain smoke test (standalone WebGL2 clear screen) to build-web-smoke/
 wasm-smoke:
     source {{emsdk_env}} && mkdir -p build-web-smoke && \
         emcc web/smoke.cpp -o build-web-smoke/index.html \
         -sUSE_SDL=2 -sFULL_ES3 -sMAX_WEBGL_VERSION=2 -sMIN_WEBGL_VERSION=2
 
-# Serve a built web directory locally (default: the smoke test) at http://localhost:8000
-serve dir="build-web-smoke":
+# Serve a built web directory locally at http://localhost:8000
+# (the game is at /StarFox_run.html). Default serves the full game build.
+serve dir="build-web/src":
     cd {{dir}} && python3 -m http.server 8000

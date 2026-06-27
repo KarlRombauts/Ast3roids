@@ -4,7 +4,7 @@
 #include <utility>
 #include <vector>
 #include <Vector3.h>
-#include <OpenGL/OpenGL.h>
+#include <OpenGL.h>
 #include <ecs/Component.h>
 #include <Vector2.h>
 #include "Helpers/StbImage.h"
