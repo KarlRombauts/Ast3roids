@@ -33,6 +33,10 @@ public:
     void parseTexture(std::string &string);
 
     void parseEmission(std::string &string);
+
+    void parseSpecMap(std::string &string);
+
+    void parseNormalMap(std::string &string);
 };
 
 

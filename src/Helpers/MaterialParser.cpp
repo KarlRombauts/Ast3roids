@@ -48,6 +48,10 @@ void MaterialParser::parseLine(std::string &_line) {
         parseEmission(_line);
     } else if (token == "map_Kd") {
         parseTexture(_line);
+    } else if (token == "map_Ks") {
+        parseSpecMap(_line);
+    } else if (token == "map_Bump" || token == "bump") {
+        parseNormalMap(_line);
     }
 
 }
@@ -137,5 +141,32 @@ void MaterialParser::parseTexture(std::string &string) {
     std::string path = getDirFromPath(mtlFilePath) + '/' + filepath;
     material->textureId = TextureLoader::load(path);
     line >> token;
+}
+
+// map_Ks / map_Bump can carry options (e.g. "-bm 1.0 file.png"), so take the
+// last whitespace-separated token as the filename.
+static std::string lastToken(const std::string &string) {
+    std::stringstream line(string);
+    std::string token, last;
+    while (line >> token) {
+        last = token;
+    }
+    return last;
+}
+
+void MaterialParser::parseSpecMap(std::string &string) {
+    std::string filepath = lastToken(string);
+    if (filepath.empty()) {
+        return;
+    }
+    materials.back()->specTextureId = TextureLoader::load(getDirFromPath(mtlFilePath) + '/' + filepath);
+}
+
+void MaterialParser::parseNormalMap(std::string &string) {
+    std::string filepath = lastToken(string);
+    if (filepath.empty()) {
+        return;
+    }
+    materials.back()->normalTextureId = TextureLoader::load(getDirFromPath(mtlFilePath) + '/' + filepath);
 }
 

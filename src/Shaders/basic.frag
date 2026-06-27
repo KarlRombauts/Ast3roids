@@ -19,6 +19,9 @@ uniform sampler2D uTexture;
 uniform int uHasTexture;
 uniform int uUnlit; // 1 = show the texture fullbright (e.g. the skybox)
 
+uniform sampler2D uSpecMap;
+uniform int uHasSpecMap; // per-pixel specular intensity (map_Ks)
+
 // Sprite-sheet animation: pick a sub-tile of the texture. Defaults (0,0)/(1,1)
 // select the whole texture.
 uniform vec2 uUvOffset;
@@ -51,6 +54,14 @@ void main() {
     vec3 N = normalize(vWorldNormal);
     vec3 V = normalize(uViewPos - vWorldPos);
 
+    vec3 specMap = (uHasSpecMap == 1) ? texture(uSpecMap, uv).rgb : vec3(1.0);
+
+    // The scene light is dim, so scale up specular to let the spec map's shiny
+    // areas (window glass, metal) glint. SHININESS_SCALE tightens the highlight
+    // (the materials' Ns is only ~10, too broad for glass).
+    const float SPECULAR_STRENGTH = 1.8;
+    const float SHININESS_SCALE = 6.0;
+
     // Accumulate the full Phong colour first...
     vec3 lit = uMatEmission + uGlobalAmbient * uMatAmbient;
 
@@ -63,8 +74,8 @@ void main() {
         vec3 diffuse = uLights[i].diffuse * uMatDiffuse * diff;
 
         vec3 R = reflect(-L, N);
-        float spec = pow(max(dot(V, R), 0.0), uShininess);
-        vec3 specular = uLights[i].specular * uMatSpecular * spec;
+        float spec = pow(max(dot(V, R), 0.0), uShininess * SHININESS_SCALE);
+        vec3 specular = uLights[i].specular * uMatSpecular * specMap * spec * SPECULAR_STRENGTH;
 
         lit += atten * (ambient + diffuse + specular);
     }

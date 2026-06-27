@@ -28,6 +28,22 @@ void RenderSystem::ensureInitialised() {
     }
     shader.loadFromFiles("Shaders/basic.vert", "Shaders/basic.frag");
     glowMesh.upload(PlaneFactory::create(nullptr));
+
+    // 1x1 white texture used as a fallback so sampler units are never bound to
+    // an empty texture (which triggers driver warnings / undefined sampling).
+    unsigned char white[4] = {255, 255, 255, 255};
+    glGenTextures(1, &whiteTexture);
+    glBindTexture(GL_TEXTURE_2D, whiteTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, white);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // Seed every sampler unit with a valid texture up front.
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, whiteTexture);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, whiteTexture);
+
     initialised = true;
 }
 
@@ -56,8 +72,15 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     Vector3 &camPos = gameModel.activeCamera->get<Position>()->position;
 
     shader.use();
-    shader.setInt("uTexture", 0); // sampler reads from texture unit 0
+    shader.setInt("uTexture", 0);  // diffuse on texture unit 0
+    shader.setInt("uSpecMap", 1);  // spec map on texture unit 1
     shader.setInt("uUnlit", 0);
+
+    // Seed the spec-map unit with a valid texture so the skybox/glow draws (which
+    // never bind it) don't leave the sampler pointed at an empty unit.
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, whiteTexture);
+    glActiveTexture(GL_TEXTURE0);
     shader.setVec3("uViewPos", camPos.x, camPos.y, camPos.z);
     shader.setVec3("uGlobalAmbient", 0.2f, 0.2f, 0.2f);
 
@@ -171,7 +194,11 @@ void RenderSystem::drawEntity(Entity *entity) {
 
         shader.setInt("uHasTexture", m.textureId != 0 ? 1 : 0);
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, m.textureId);
+        glBindTexture(GL_TEXTURE_2D, m.textureId != 0 ? m.textureId : whiteTexture);
+
+        shader.setInt("uHasSpecMap", m.specTextureId != 0 ? 1 : 0);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, m.specTextureId != 0 ? m.specTextureId : whiteTexture);
     });
 }
 
@@ -223,14 +250,19 @@ void RenderSystem::drawEngineGlow(Entity *ship) {
                         * Matrix4::fromQuaternion(rotation);
 
     Quaternion &camRot = gameModel.activeCamera->get<Rotation>()->rotation;
+    Geometry *geometry = ship->get<Geometry>();
 
-    // Engine exhaust positions in model-local space (centroids of the model's
-    // engine-glow faces).
-    static const Vector3 engineOffsets[4] = {
-            Vector3(-3.861, -1.911, 8.363),
-            Vector3(-3.861, 1.911, 8.363),
-            Vector3(3.860, -1.911, 8.363),
-            Vector3(3.860, 1.911, 8.363),
+    // Engine exhaust positions in model-local space, each tagged with the wing
+    // shape it belongs to, so the glow follows the wing as it opens/closes.
+    struct EngineGlow {
+        int shape;
+        Vector3 offset;
+    };
+    static const EngineGlow engines[4] = {
+            {0, Vector3(-3.861, -1.911, 8.363)},
+            {0, Vector3(3.860, 1.911, 8.363)},
+            {2, Vector3(-3.861, 1.911, 8.363)},
+            {2, Vector3(3.860, -1.911, 8.363)},
     };
 
     shader.setInt("uUnlit", 1);
@@ -241,10 +273,23 @@ void RenderSystem::drawEngineGlow(Entity *ship) {
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, glowTexture);
 
-    float size = (float) thrust * 4.0f;
-    for (const Vector3 &offset : engineOffsets) {
-        // Place at the world-space engine position, billboarded to face the camera.
-        Vector3 world = shipModel.transformPoint(offset);
+    float size = (float) thrust * 1.5f;
+    for (const EngineGlow &engine : engines) {
+        // Apply the wing's shape transform so the glow tracks the open wings.
+        Matrix4 engineSpace = shipModel;
+        if (engine.shape >= 0 && engine.shape < (int) geometry->shapes.size()) {
+            const Shape &shape = geometry->shapes[engine.shape];
+            engineSpace = shipModel
+                          * Matrix4::translation(shape.position)
+                          * Matrix4::scale(shape.scale)
+                          * Matrix4::fromQuaternion(shape.rotation);
+        }
+        // Nudge the glow back along the exhaust (+z) so the flat billboard sits
+        // just behind the nacelle opening instead of clipping into it.
+        Vector3 pushed(engine.offset.x, engine.offset.y, engine.offset.z + 0.4);
+        Vector3 world = engineSpace.transformPoint(pushed);
+
+        // Billboard the glow quad to face the camera.
         Matrix4 model = Matrix4::translation(world)
                         * Matrix4::fromQuaternion(camRot)
                         * Matrix4::scale(Vector3(size, size, size));

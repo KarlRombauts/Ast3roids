@@ -29,7 +29,8 @@ private:
 
     bool initialised = false;
     Shader shader;
-    Mesh glowMesh; // a unit quad reused for every engine-glow billboard
+    Mesh glowMesh;          // a unit quad reused for every engine-glow billboard
+    GLuint whiteTexture = 0; // 1x1 white, bound to map units that have no texture
 };
 
 #endif //UNTITLED_RENDERSYSTEM_H

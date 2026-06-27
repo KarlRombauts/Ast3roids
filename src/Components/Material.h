@@ -22,6 +22,8 @@ struct Material : public Component {
     GLfloat emission[4];
     GLfloat shininess;
     unsigned int textureId;
+    unsigned int specTextureId = 0;   // map_Ks: per-pixel specular intensity
+    unsigned int normalTextureId = 0; // map_Bump: normal/height map (Stage 2)
 
     void setEmission(GLfloat r, GLfloat g, GLfloat b) {
         emission[0] = r;
