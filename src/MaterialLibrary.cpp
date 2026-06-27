@@ -4,11 +4,12 @@
 
 void MaterialLibrary::init() {
     ASTEROID = new Material();
-    ASTEROID->setSpecular(1,1,1);
+    ASTEROID->setSpecular(0.2,0.2,0.2);
+    ASTEROID->shininess = 8;
     ASTEROID->setDiffuse(0.8,0.8,0.8);
     ASTEROID->setAmbient(1,1,1);
     ASTEROID->setEmission(0, 0, 0);
-    ASTEROID->textureId = TextureLoader::load(gameConfig.TEXTURE_DIR + "/asteroid.jpg");
+    ASTEROID->textureId = TextureLoader::load(gameConfig.TEXTURE_DIR + "/asteroid-2.jpg");
 
     BULLET = new Material();
     BULLET->setSpecular(0,0,0);

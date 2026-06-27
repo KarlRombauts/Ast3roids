@@ -5,8 +5,12 @@
 #include <Components/Asteroid.h>
 #include <Components/Position.h>
 #include <Components/Rotation.h>
-#include <Factory/Primatives/IcoSphere.h>
+#include <Factory/Primatives/UVSphere.h>
 #include <Helpers/NoiseDistortion.h>
+#include <Helpers/Normals.h>
+#include <map>
+#include <tuple>
+#include <cmath>
 #include <Components/Collision.h>
 #include <Components/Health.h>
 #include <Components/Kinematics.h>
@@ -49,13 +53,47 @@ void AsteroidFactory::setKinematics(Entity *asteroid, double radius) {
     asteroid->assign<Kinematics>(kinematics);
 }
 
+// Average normals across vertices that share a position. The UV sphere
+// duplicates its seam column and pole vertices (for the UVs); without this they
+// each average only half their triangle fan and leave a lighting crease.
+static void weldNormals(Geometry &geometry) {
+    if (geometry.normals.size() != geometry.vertices.size()) {
+        return;
+    }
+    auto key = [](const Vector3 &p) {
+        return std::make_tuple((long long) std::llround(p.x * 1000),
+                               (long long) std::llround(p.y * 1000),
+                               (long long) std::llround(p.z * 1000));
+    };
+    std::map<std::tuple<long long, long long, long long>, Vector3> summed;
+    for (size_t i = 0; i < geometry.vertices.size(); i++) {
+        Vector3 &acc = summed[key(geometry.vertices[i])];
+        acc.x += geometry.normals[i].x;
+        acc.y += geometry.normals[i].y;
+        acc.z += geometry.normals[i].z;
+    }
+    for (size_t i = 0; i < geometry.vertices.size(); i++) {
+        geometry.normals[i] = summed[key(geometry.vertices[i])].normalize();
+    }
+}
+
 void AsteroidFactory::setGeometry(Entity *asteroid, double radius) {
-    int subdivisions = getSubdivisions(radius);
+    int detail = getSubdivisions(radius);
+    int rings = detail * 28;
+    int segments = detail * 56;
 
-    Geometry geometry = IcoSphere::create(subdivisions,
-                                          materialLibrary.ASTEROID);
+    Geometry geometry = UVSphere::create(rings, segments, materialLibrary.ASTEROID);
 
-    distortMesh(geometry.vertices, 0.4, 0.5);
+    // Layered Perlin displacement at increasing frequency: big lumps, then
+    // medium bumps, then fine surface roughness.
+    distortMesh(geometry.vertices, 0.40, 0.5);
+    distortMesh(geometry.vertices, 0.18, 1.4);
+    distortMesh(geometry.vertices, 0.07, 2.8);
+
+    // Recompute normals so the lit surface follows the new bumps, then weld the
+    // duplicated seam/pole vertices back together.
+    Normals::recalculate(geometry);
+    weldNormals(geometry);
 
     asteroid->assign<Geometry>(geometry);
 }

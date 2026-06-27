@@ -11,7 +11,7 @@ link_libraries(${OPENGL_LIBRARIES})
 #file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 
 # Shared sources go in both the executable and the test library.
-list(APPEND SOURCES Matrix4.cpp Matrix4.h Render/Shader.cpp Render/Shader.h Render/Mesh.cpp Render/Mesh.h Platform/Time.cpp Platform/Time.h)
+list(APPEND SOURCES Matrix4.cpp Matrix4.h Render/Shader.cpp Render/Shader.h Render/Mesh.cpp Render/Mesh.h Platform/Time.cpp Platform/Time.h Factory/Primatives/UVSphere.cpp Factory/Primatives/UVSphere.h)
 
 set(SOURCES ${SOURCES})
 
