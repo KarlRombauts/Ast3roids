@@ -23,6 +23,8 @@ uniform sampler2D uSpecMap;
 uniform int uHasSpecMap; // per-pixel specular intensity (map_Ks)
 
 uniform vec3 uColor; // flat tint (e.g. the wireframe walls); default white = no-op
+uniform int uFog;        // 1 = fade unlit output to black with distance (the grid)
+uniform vec2 uFogRange;  // (near, far) distances for the fade
 
 // Sprite-sheet animation: pick a sub-tile of the texture. Defaults (0,0)/(1,1)
 // select the whole texture.
@@ -49,7 +51,14 @@ void main() {
 
     // Unlit surfaces (skybox, walls) show the texture directly, no lighting.
     if (uUnlit == 1) {
-        fragColor = vec4(tex * uColor, texSample.a);
+        vec3 c = tex * uColor;
+        if (uFog == 1) {
+            // Fade toward black with distance so the grid recedes into space.
+            float dist = length(uViewPos - vWorldPos);
+            float fade = clamp((uFogRange.y - dist) / (uFogRange.y - uFogRange.x), 0.0, 1.0);
+            c *= fade;
+        }
+        fragColor = vec4(c, texSample.a);
         return;
     }
 

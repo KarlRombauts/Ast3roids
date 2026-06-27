@@ -10,7 +10,7 @@
 void WarningSystem::update(EntityManager &entities) {
     for(Entity *wall: entities.getEntitiesWith<Wall>()) {
         Material* material = wall->get<Material>();
-        material->setEmission(0.4, 0.4, 0.4); // faint white
+        material->setEmission(0.18, 0.42, 0.62); // faint cool blue (pops against the red skybox)
     }
 
     for (Entity *entity: entities.getEntitiesWith<Impact, BoundingCircle>()) {

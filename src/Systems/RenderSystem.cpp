@@ -80,6 +80,7 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     shader.setInt("uSpecMap", 1);  // spec map on texture unit 1
     shader.setInt("uUnlit", 0);
     shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
+    shader.setInt("uFog", 0);
 
     // Seed the spec-map unit with a valid texture so the skybox/glow draws (which
     // never bind it) don't leave the sampler pointed at an empty unit.
@@ -87,7 +88,7 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     glBindTexture(GL_TEXTURE_2D, whiteTexture);
     glActiveTexture(GL_TEXTURE0);
     shader.setVec3("uViewPos", camPos.x, camPos.y, camPos.z);
-    shader.setVec3("uGlobalAmbient", 0.2f, 0.2f, 0.2f);
+    shader.setVec3("uGlobalAmbient", 0.32f, 0.32f, 0.34f);
 
     // Upload each light's data once per frame (positions/colours/attenuation).
     std::vector<Entity *> lights = entities.getEntitiesWith<Light, Position>();
@@ -336,6 +337,8 @@ void RenderSystem::drawWalls(EntityManager &entities) {
     shader.setInt("uHasTexture", 0);
     shader.setVec2("uUvOffset", 0.0f, 0.0f);
     shader.setVec2("uUvScale", 1.0f, 1.0f);
+    shader.setInt("uFog", 1);
+    shader.setVec2("uFogRange", 40.0f, 250.0f);
 
     for (Entity *wall : walls) {
         if (!wall->has<WallMesh>()) {
