@@ -163,6 +163,13 @@ void handleMenu() {
 extern "C" EMSCRIPTEN_KEEPALIVE void web_press_space() {
     keyboardState.setPressedKey(' ');
 }
+
+// Called from the canvas mousemove listener (shell.html) with the cursor
+// position normalized to [-1,1] from the canvas rect. Bypasses Emscripten's
+// unreliable SDL mouse coordinates so steering stays centered at any aspect/DPR.
+extern "C" EMSCRIPTEN_KEEPALIVE void web_set_aim(float x, float y) {
+    mouseState.aim = {(double) x, (double) y};
+}
 #endif
 
 void handleGameOver() {

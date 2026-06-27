@@ -14,8 +14,17 @@ void MouseLookSystem::update(EntityManager &entities, double dt) {
         Quaternion &rotation = entity->get<Rotation>()->rotation;
 
         Vector2 mouseNorm;
+#ifdef __EMSCRIPTEN__
+        // Emscripten's SDL2 mouse coordinates are unreliable on a non-square /
+        // HiDPI canvas (the Y axis is scaled against canvas width, not height),
+        // which leaves a constant offset that makes the ship circle. On web we
+        // instead take a normalized [-1,1] aim computed in JS from the canvas
+        // rect (see web_set_aim / shell.html), which is correct at any aspect/DPR.
+        mouseNorm = mouseState.aim;
+#else
         mouseNorm.x = map(mouseState.position.x, {0, gameModel.width}, {-1, 1});
         mouseNorm.y = map(mouseState.position.y, {0, gameModel.height}, {-1, 1});
+#endif
 
         Entity *target = entity->get<SmoothFollow>()->entity;
 

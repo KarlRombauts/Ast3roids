@@ -8,6 +8,7 @@ struct MouseState {
     bool rightMouseDown;
     Vector2 position;
     Vector2 drag;
+    Vector2 aim; // normalized steering input in [-1,1], set from JS on web
 
     MouseState();
 

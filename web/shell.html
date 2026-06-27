@@ -164,6 +164,21 @@
       }
     }
 
+    // Steering: feed the engine a normalized [-1,1] aim computed from the canvas
+    // rect. This is correct at any aspect ratio / devicePixelRatio, unlike
+    // Emscripten's SDL mouse coordinates. Canvas center -> (0,0) = no turn.
+    function setAim(nx, ny) {
+      if (Module && Module._web_set_aim) Module._web_set_aim(nx, ny);
+    }
+    canvas.addEventListener('mousemove', function (e) {
+      var r = canvas.getBoundingClientRect();
+      var nx = (e.clientX - r.left) / r.width * 2 - 1;
+      var ny = (e.clientY - r.top) / r.height * 2 - 1;
+      setAim(Math.max(-1, Math.min(1, nx)), Math.max(-1, Math.min(1, ny)));
+    });
+    // Cursor off the canvas -> fly straight instead of holding the last turn.
+    canvas.addEventListener('mouseleave', function () { setAim(0, 0); });
+
     var Module = {
       canvas: canvas,
       print: function (t) { console.log(t); },
