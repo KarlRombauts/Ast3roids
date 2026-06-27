@@ -17,6 +17,7 @@ in vec2 vUV;
 
 uniform sampler2D uTexture;
 uniform int uHasTexture;
+uniform int uUnlit; // 1 = show the texture fullbright (e.g. the skybox)
 
 // Sprite-sheet animation: pick a sub-tile of the texture. Defaults (0,0)/(1,1)
 // select the whole texture.
@@ -40,6 +41,13 @@ void main() {
     vec2 uv = (vUV + uUvOffset) * uUvScale;
     vec4 texSample = (uHasTexture == 1) ? texture(uTexture, uv) : vec4(1.0);
     vec3 tex = texSample.rgb;
+
+    // Unlit surfaces (the skybox) show the texture directly, no lighting.
+    if (uUnlit == 1) {
+        fragColor = vec4(tex, texSample.a);
+        return;
+    }
+
     vec3 N = normalize(vWorldNormal);
     vec3 V = normalize(uViewPos - vWorldPos);
 

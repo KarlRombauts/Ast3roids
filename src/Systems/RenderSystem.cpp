@@ -9,6 +9,7 @@
 #include <Components/Light.h>
 #include <Components/Transparency.h>
 #include <Components/AnimatedTexture.h>
+#include <Components/Skybox.h>
 #include <algorithm>
 #include <string>
 
@@ -51,7 +52,7 @@ void RenderSystem::update(EntityManager &entities, double dt) {
 
     shader.use();
     shader.setInt("uTexture", 0); // sampler reads from texture unit 0
-    shader.setMat4("uViewProj", viewProj);
+    shader.setInt("uUnlit", 0);
     shader.setVec3("uViewPos", camPos.x, camPos.y, camPos.z);
     shader.setVec3("uGlobalAmbient", 0.2f, 0.2f, 0.2f);
 
@@ -69,6 +70,11 @@ void RenderSystem::update(EntityManager &entities, double dt) {
         shader.setVec3(base + "specular", light->specular[0], light->specular[1], light->specular[2]);
         shader.setFloat(base + "attenuation", (float) light->attenuation);
     }
+
+    // Background first (it sets its own rotation-only view), then restore the
+    // full view-projection for the world.
+    drawSkybox(entities);
+    shader.setMat4("uViewProj", viewProj);
 
     // Opaque pass: write depth as usual.
     for (Entity *entity : entities.getEntitiesWith<Position, Rotation, Scale, Geometry>()) {
@@ -132,4 +138,38 @@ void RenderSystem::drawEntity(Entity *entity) {
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m.textureId);
     });
+}
+
+void RenderSystem::drawSkybox(EntityManager &entities) {
+    std::vector<Entity *> skyboxes = entities.getEntitiesWith<Skybox, Geometry>();
+    if (skyboxes.empty()) {
+        return;
+    }
+    Entity *skybox = skyboxes[0];
+
+    // Rotation-only view: the skybox follows the camera's orientation but never
+    // its position, so it stays centred on the camera and looks infinitely far.
+    Quaternion &camRot = gameModel.activeCamera->get<Rotation>()->rotation;
+    shader.setMat4("uViewProj", gameModel.projection * Matrix4::fromQuaternion(camRot.conjugate()));
+    shader.setMat4("uModel", Matrix4::identity());
+    shader.setVec2("uUvOffset", 0.0f, 0.0f);
+    shader.setVec2("uUvScale", 1.0f, 1.0f);
+    shader.setInt("uUnlit", 1);
+
+    // Drawn first with depth testing off, so everything else renders over it.
+    glDisable(GL_DEPTH_TEST);
+
+    if (!skybox->has<RenderMesh>()) {
+        skybox->assign<RenderMesh>();
+        skybox->get<RenderMesh>()->mesh.upload(*skybox->get<Geometry>());
+    }
+    skybox->get<RenderMesh>()->mesh.draw([this](const Material *material) {
+        GLuint textureId = (material != nullptr) ? material->textureId : 0;
+        shader.setInt("uHasTexture", textureId != 0 ? 1 : 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, textureId);
+    });
+
+    glEnable(GL_DEPTH_TEST);
+    shader.setInt("uUnlit", 0);
 }

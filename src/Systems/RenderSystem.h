@@ -20,6 +20,9 @@ private:
     // Draws one entity (assumes the shared shader/camera/light uniforms are set).
     void drawEntity(Entity *entity);
 
+    // Draws the skybox centred on the camera (rotation-only view), unlit.
+    void drawSkybox(EntityManager &entities);
+
     bool initialised = false;
     Shader shader;
 };
