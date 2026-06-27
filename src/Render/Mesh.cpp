@@ -43,21 +43,22 @@ void Mesh::upload(const Geometry &geometry) {
         }
     };
 
-    // Collect the distinct materials in first-seen order.
-    std::vector<const Material *> materials;
+    // Collect the distinct (shape, material) groups in first-seen order. Grouping
+    // by shape lets each shape be drawn with its own (possibly animated) transform.
+    std::vector<std::pair<int, const Material *>> groups;
     for (const Face &face : geometry.faces) {
-        if (std::find(materials.begin(), materials.end(), face.material) == materials.end()) {
-            materials.push_back(face.material);
+        std::pair<int, const Material *> key = {face.shapeIndex, face.material};
+        if (std::find(groups.begin(), groups.end(), key) == groups.end()) {
+            groups.push_back(key);
         }
     }
 
-    // Append each material's faces as one contiguous range so it can be drawn
-    // in a single call with that material's texture bound.
-    for (const Material *material : materials) {
+    // Append each group's faces as one contiguous range.
+    for (const auto &group : groups) {
         GLint start = (GLint) (data.size() / 8);
         GLsizei count = 0;
         for (const Face &face : geometry.faces) {
-            if (face.material != material) {
+            if (face.shapeIndex != group.first || face.material != group.second) {
                 continue;
             }
             for (int i = 0; i < 3; i++) {
@@ -65,7 +66,7 @@ void Mesh::upload(const Geometry &geometry) {
             }
             count += 3;
         }
-        submeshes.push_back({material, start, count});
+        submeshes.push_back({group.first, group.second, start, count});
     }
 
     glGenVertexArrays(1, &vao);
@@ -86,10 +87,10 @@ void Mesh::upload(const Geometry &geometry) {
     glBindVertexArray(0);
 }
 
-void Mesh::draw(const std::function<void(const Material *)> &bindMaterial) const {
+void Mesh::draw(const std::function<void(const SubMesh &)> &setup) const {
     glBindVertexArray(vao);
     for (const SubMesh &sub : submeshes) {
-        bindMaterial(sub.material);
+        setup(sub);
         glDrawArrays(GL_TRIANGLES, sub.start, sub.count);
     }
     glBindVertexArray(0);

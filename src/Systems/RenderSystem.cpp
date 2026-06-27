@@ -1,6 +1,9 @@
 #include "RenderSystem.h"
 #include "../OpenGL.h"
 #include "../GameModel.h"
+#include "../Globals.h"
+#include "../MaterialLibrary.h"
+#include <Factory/Primatives/PlaneFactory.h>
 #include <Components/Position.h>
 #include <Components/Rotation.h>
 #include <Components/Scale.h>
@@ -10,6 +13,7 @@
 #include <Components/Transparency.h>
 #include <Components/AnimatedTexture.h>
 #include <Components/Skybox.h>
+#include <Components/SpaceShip.h>
 #include <algorithm>
 #include <string>
 
@@ -23,6 +27,7 @@ void RenderSystem::ensureInitialised() {
         return;
     }
     shader.loadFromFiles("Shaders/basic.vert", "Shaders/basic.frag");
+    glowMesh.upload(PlaneFactory::create(nullptr));
     initialised = true;
 }
 
@@ -91,6 +96,15 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     for (Entity *entity : entities.getEntitiesWith<Position, Rotation, Scale, Geometry, Transparency>()) {
         drawEntity(entity);
     }
+
+    // Engine glow on top, additive (alpha-weighted) so it brightens whatever is
+    // behind it like a real light bloom.
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    for (Entity *ship : entities.getEntitiesWith<SpaceShip, Position, Rotation, Scale>()) {
+        drawEngineGlow(ship);
+    }
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     glDepthMask(GL_TRUE);
 }
 
@@ -101,10 +115,11 @@ void RenderSystem::drawEntity(Entity *entity) {
 
     // Model matrix places the object in the world. Read right-to-left, a
     // vertex is rotated, then scaled, then translated into position.
-    Matrix4 model = Matrix4::translation(position)
-                    * Matrix4::scale(scale)
-                    * Matrix4::fromQuaternion(rotation);
-    shader.setMat4("uModel", model);
+    Matrix4 entityModel = Matrix4::translation(position)
+                          * Matrix4::scale(scale)
+                          * Matrix4::fromQuaternion(rotation);
+
+    Geometry *geometry = entity->get<Geometry>();
 
     // Sprite-sheet animation (e.g. the explosion) shifts the UVs to one tile;
     // everything else uses the whole texture.
@@ -121,17 +136,37 @@ void RenderSystem::drawEntity(Entity *entity) {
     // owned by the entity and freed when the entity is destroyed.
     if (!entity->has<RenderMesh>()) {
         entity->assign<RenderMesh>();
-        entity->get<RenderMesh>()->mesh.upload(*entity->get<Geometry>());
+        entity->get<RenderMesh>()->mesh.upload(*geometry);
     }
 
-    // Draw each material group with its texture and lighting properties.
-    entity->get<RenderMesh>()->mesh.draw([this](const Material *material) {
-        const Material &m = (material != nullptr) ? *material : DEFAULT_MATERIAL;
+    // Thrusting boosts the ship's emission. Only the engine-glow material has
+    // non-zero emission, so this lights up just the engines.
+    float emissionScale = 1.0f;
+    if (entity->has<SpaceShip>()) {
+        emissionScale = 1.0f + (float) entity->get<SpaceShip>()->thrust * 1.5f;
+    }
 
+    // Draw each (shape, material) group. The shape transform is read fresh each
+    // frame, so animating a shape (e.g. the X-Wing wings) moves it.
+    entity->get<RenderMesh>()->mesh.draw([&](const Mesh::SubMesh &sub) {
+        Matrix4 model = entityModel;
+        if (sub.shapeIndex >= 0 && sub.shapeIndex < (int) geometry->shapes.size()) {
+            const Shape &shape = geometry->shapes[sub.shapeIndex];
+            model = entityModel
+                    * Matrix4::translation(shape.position)
+                    * Matrix4::scale(shape.scale)
+                    * Matrix4::fromQuaternion(shape.rotation);
+        }
+        shader.setMat4("uModel", model);
+
+        const Material &m = (sub.material != nullptr) ? *sub.material : DEFAULT_MATERIAL;
         shader.setVec3("uMatAmbient", m.ambient[0], m.ambient[1], m.ambient[2]);
         shader.setVec3("uMatDiffuse", m.diffuse[0], m.diffuse[1], m.diffuse[2]);
         shader.setVec3("uMatSpecular", m.specular[0], m.specular[1], m.specular[2]);
-        shader.setVec3("uMatEmission", m.emission[0], m.emission[1], m.emission[2]);
+        shader.setVec3("uMatEmission",
+                       m.emission[0] * emissionScale,
+                       m.emission[1] * emissionScale,
+                       m.emission[2] * emissionScale);
         shader.setFloat("uShininess", m.shininess);
 
         shader.setInt("uHasTexture", m.textureId != 0 ? 1 : 0);
@@ -163,13 +198,59 @@ void RenderSystem::drawSkybox(EntityManager &entities) {
         skybox->assign<RenderMesh>();
         skybox->get<RenderMesh>()->mesh.upload(*skybox->get<Geometry>());
     }
-    skybox->get<RenderMesh>()->mesh.draw([this](const Material *material) {
-        GLuint textureId = (material != nullptr) ? material->textureId : 0;
+    skybox->get<RenderMesh>()->mesh.draw([this](const Mesh::SubMesh &sub) {
+        GLuint textureId = (sub.material != nullptr) ? sub.material->textureId : 0;
         shader.setInt("uHasTexture", textureId != 0 ? 1 : 0);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureId);
     });
 
     glEnable(GL_DEPTH_TEST);
+    shader.setInt("uUnlit", 0);
+}
+
+void RenderSystem::drawEngineGlow(Entity *ship) {
+    double thrust = ship->get<SpaceShip>()->thrust;
+    if (thrust < 0.01) {
+        return;
+    }
+
+    Vector3 &position = ship->get<Position>()->position;
+    Vector3 &scale = ship->get<Scale>()->scale;
+    Quaternion &rotation = ship->get<Rotation>()->rotation;
+    Matrix4 shipModel = Matrix4::translation(position)
+                        * Matrix4::scale(scale)
+                        * Matrix4::fromQuaternion(rotation);
+
+    Quaternion &camRot = gameModel.activeCamera->get<Rotation>()->rotation;
+
+    // Engine exhaust positions in model-local space (centroids of the model's
+    // engine-glow faces).
+    static const Vector3 engineOffsets[4] = {
+            Vector3(-3.861, -1.911, 8.363),
+            Vector3(-3.861, 1.911, 8.363),
+            Vector3(3.860, -1.911, 8.363),
+            Vector3(3.860, 1.911, 8.363),
+    };
+
+    shader.setInt("uUnlit", 1);
+    shader.setVec2("uUvOffset", 0.0f, 0.0f);
+    shader.setVec2("uUvScale", 1.0f, 1.0f);
+    GLuint glowTexture = materialLibrary.GLOW_PARTICLE->textureId;
+    shader.setInt("uHasTexture", glowTexture != 0 ? 1 : 0);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, glowTexture);
+
+    float size = (float) thrust * 4.0f;
+    for (const Vector3 &offset : engineOffsets) {
+        // Place at the world-space engine position, billboarded to face the camera.
+        Vector3 world = shipModel.transformPoint(offset);
+        Matrix4 model = Matrix4::translation(world)
+                        * Matrix4::fromQuaternion(camRot)
+                        * Matrix4::scale(Vector3(size, size, size));
+        shader.setMat4("uModel", model);
+        glowMesh.draw([](const Mesh::SubMesh &) {});
+    }
+
     shader.setInt("uUnlit", 0);
 }

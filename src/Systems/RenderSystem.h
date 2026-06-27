@@ -3,6 +3,7 @@
 
 #include "System.h"
 #include "../Render/Shader.h"
+#include "../Render/Mesh.h"
 #include "../Matrix4.h"
 
 // Task 3: render every opaque entity that has a Geometry through the shader
@@ -23,8 +24,12 @@ private:
     // Draws the skybox centred on the camera (rotation-only view), unlit.
     void drawSkybox(EntityManager &entities);
 
+    // Draws additive glow billboards at the ship's engines, sized by thrust.
+    void drawEngineGlow(Entity *ship);
+
     bool initialised = false;
     Shader shader;
+    Mesh glowMesh; // a unit quad reused for every engine-glow billboard
 };
 
 #endif //UNTITLED_RENDERSYSTEM_H

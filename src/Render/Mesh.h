@@ -16,6 +16,7 @@ class Material;
 class Mesh {
 public:
     struct SubMesh {
+        int shapeIndex;          // which Geometry shape these faces belong to
         const Material *material;
         GLint start;
         GLsizei count;
@@ -28,9 +29,10 @@ public:
 
     void upload(const Geometry &geometry);
 
-    // Draws the mesh one material-group at a time, calling bindMaterial(material)
-    // before each group so the caller can bind that material's texture.
-    void draw(const std::function<void(const Material *)> &bindMaterial) const;
+    // Draws the mesh one (shape, material) group at a time, calling setup(sub)
+    // before each group so the caller can apply that shape's transform and bind
+    // that material's texture.
+    void draw(const std::function<void(const SubMesh &)> &setup) const;
 
 private:
     GLuint vao = 0;

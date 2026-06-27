@@ -11,6 +11,7 @@
 #include "../Components/FiringBullet.h"
 #include "../Components/ParticleSource.h"
 #include "../Components/Rotation.h"
+#include "../Helpers.h"
 
 void PlayerInputSystem::update(EntityManager &entities, double dt) {
     for(Entity* entity: entities.getEntitiesWith<Position, Rotation, Kinematics, Geometry, PlayerInput, SpaceShip>()) {
@@ -42,13 +43,16 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
             rotation *= Quaternion::angleAxis(-gameConfig.PLAYER_TURN_SPEED * dt / 1000, Vector3::forward());
         }
 
+        double &thrust = entity->get<SpaceShip>()->thrust;
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
             Vector3 force = Vector3::back() * gameConfig.PLAYER_SPEED * dt / 1000;
             acceleration += rotation * force;
 
             openWings(geometry);
+            thrust = lerp(thrust, 1.0, 0.1); // ramp engines up
         } else {
             closeWings(geometry);
+            thrust = lerp(thrust, 0.0, 0.1); // ease engines down
         }
 
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_SHOOT)) {
