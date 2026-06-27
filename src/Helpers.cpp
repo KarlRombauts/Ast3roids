@@ -5,10 +5,16 @@
 #include <regex>
 
 double randf(double min, double max) {
+    if (max <= min) {
+        return min;
+    }
     return min + (rand() / (RAND_MAX / (max - min)));
 }
 
 int randInt(int min, int max) {
+    if (max <= min) {
+        return min;
+    }
     return min + rand() % (max - min);
 }
 
@@ -34,6 +40,9 @@ std::string formatTime(int msElapsedTime) {
 double map(double value, std::pair<double, double> input, std::pair<double, double> output) {
     double valueNorm = value - input.first;
     double inputUpperNorm = input.second - input.first;
+    if (inputUpperNorm == 0) {
+        return output.first;
+    }
     double normPosition = valueNorm / inputUpperNorm;
 
     double outputUpperNorm = output.second - output.first;
@@ -47,7 +56,11 @@ int countWords(const std::string& strString)
     int nSpaces = 0;
     unsigned int i = 0;
 
-    while(isspace(strString.at(i))) {
+    if (strString.empty()) {
+        return 0;
+    }
+
+    while(i < strString.length() && isspace(strString.at(i))) {
         i++;
     }
 

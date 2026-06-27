@@ -15,7 +15,7 @@
 
 class EntityManager {
 private:
-    unsigned int nextId;
+    unsigned int nextId = 0;
     std::unordered_map<unsigned int, Entity*> entities;
 
 public:

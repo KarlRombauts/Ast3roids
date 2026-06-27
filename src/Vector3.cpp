@@ -72,7 +72,11 @@ double Vector3::dot(const Vector3 &vector) const {
 }
 
 Vector3 Vector3::normalize() {
-    return *this / magnitude();
+    double mag = magnitude();
+    if (mag == 0) {
+        return Vector3();
+    }
+    return *this / mag;
 }
 
 void Vector3::operator*=(const double &scalar) {

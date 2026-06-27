@@ -87,6 +87,15 @@ public:
     void renderMainGame(EntityManager &entities);
 
     void drawControls();
+
+    void updateFps();
+
+    void drawFps();
+
+private:
+    unsigned int frameCount = 0;
+    int lastFpsUpdateTime = 0;
+    double currentFps = 0;
 };
 
 

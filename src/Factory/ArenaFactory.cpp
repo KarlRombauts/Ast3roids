@@ -40,6 +40,7 @@ Entity *ArenaFactory::createWall(EntityManager &entities, ArenaWall side) {
         case ArenaWall::BACK:
             return createGridPlane(wall, {-l, -l, -l}, {-l, l, -l}, {l, l, -l}, {l, -l, -l});
     }
+    return wall; // unreachable: all ArenaWall cases are handled above
 }
 
 

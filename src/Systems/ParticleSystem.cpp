@@ -30,7 +30,8 @@ void ParticleSystem::update(EntityManager &entities, double dt) {
 
         particle->size = lerp(particle->size, particle->deathSize, decayRate);
 
-        particleEntity->assign<Scale>(particle->size);
+        // Mutate the existing Scale rather than reallocating a component every frame.
+        particleEntity->get<Scale>()->scale = Vector3(particle->size, particle->size, particle->size);
 
         if (particle->size < 0.1) {
             particleEntity->assign<Destroy>();
@@ -53,8 +54,9 @@ void ParticleSystem::emitParticle(EntityManager &entities, Entity *emitterEntity
     particleEntity->assign<Scale>(particle.size);
     particleEntity->assign<Rotation>();
 
-    Geometry geometry = PlaneFactory::create(materialLibrary.GLOW_PARTICLE);
-    particleEntity->assign<Geometry>(geometry);
+    // Every glow particle uses an identical plane, so build it once and reuse it.
+    static const Geometry particlePlane = PlaneFactory::create(materialLibrary.GLOW_PARTICLE);
+    particleEntity->assign<Geometry>(particlePlane);
 
     particleEntity->assign<LookAt>(gameModel.activeCamera);
     particleEntity->assign<Transparency>();

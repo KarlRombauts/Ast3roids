@@ -114,11 +114,17 @@ void ObjParser::parseTriangleFace(const std::string &line) {
     TriangleIndices uvIndices;
     int vn1, vn2, vn3; // Normals
 
-    sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d",
+    int matched = sscanf(line.c_str(), "f %d/%d/%d %d/%d/%d %d/%d/%d",
            &vertIndices.v1, &uvIndices.v1, &vn1,
            &vertIndices.v2, &uvIndices.v2, &vn2,
            &vertIndices.v3, &uvIndices.v3, &vn3
     );
+
+    if (matched != 9) {
+        // Only the `v/vt/vn` triangle format is supported; skip anything else
+        // rather than indexing vectors with uninitialised values.
+        return;
+    }
 
     vertIndices.v1--;
     vertIndices.v2--;
@@ -128,9 +134,18 @@ void ObjParser::parseTriangleFace(const std::string &line) {
     uvIndices.v2--;
     uvIndices.v3--;
 
-    geometry.normals[vertIndices.v1] += normalVectors[vn1 - 1];
-    geometry.normals[vertIndices.v2] += normalVectors[vn2 - 1];
-    geometry.normals[vertIndices.v3] += normalVectors[vn3 - 1];
+    // Accumulate the vertex normal only when both indices are in range, so a
+    // malformed/out-of-range face can't read or write out of bounds.
+    auto accumulateNormal = [&](int vertIndex, int normalIndex) {
+        if (vertIndex >= 0 && vertIndex < (int) geometry.normals.size() &&
+            normalIndex >= 0 && normalIndex < (int) normalVectors.size()) {
+            geometry.normals[vertIndex] += normalVectors[normalIndex];
+        }
+    };
+
+    accumulateNormal(vertIndices.v1, vn1 - 1);
+    accumulateNormal(vertIndices.v2, vn2 - 1);
+    accumulateNormal(vertIndices.v3, vn3 - 1);
 
     geometry.faces.emplace_back(vertIndices, uvIndices, currentMaterial, geometry.shapes.size() - 1);
 }

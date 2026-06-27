@@ -58,7 +58,11 @@ double Vector2::dot(Vector2 vector) {
 }
 
 Vector2 Vector2::normalize() {
-    return *this / magnitude();
+    double mag = magnitude();
+    if (mag == 0) {
+        return Vector2();
+    }
+    return *this / mag;
 }
 
 Vector2 Vector2::perpendicular() {

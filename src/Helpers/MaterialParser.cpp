@@ -33,6 +33,9 @@ void MaterialParser::parseLine(std::string &_line) {
 
     if (token == "newmtl") {
         parseName(_line);
+    } else if (materials.empty()) {
+        // A property before any `newmtl` has no material to attach to; ignore it.
+        return;
     } else if (token == "Ns") {
         parseShininess(_line);
     } else if (token == "Ka") {

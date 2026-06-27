@@ -20,20 +20,6 @@
 #include <Components/AnimatedTexture.h>
 #include <Components/Light.h>
 
-bool compareZDepth(Entity *a, Entity *b) {
-    Quaternion camRotation = gameModel.activeCamera->get<Rotation>()->rotation;
-    Vector3 camPosition = gameModel.activeCamera->get<Position>()->position;
-    Vector3 camForward = camRotation * Vector3::forward();
-
-    Vector3 posA = a->get<Position>()->position;
-    Vector3 posB = b->get<Position>()->position;
-
-    double distA = Vector3::fromTo(camPosition, posA).dot(camForward);
-    double distB = Vector3::fromTo(camPosition, posB).dot(camForward);
-
-    return distA < distB;
-}
-
 void RenderSystem::update(EntityManager &entities, double dt) {
     glLoadIdentity();
 
@@ -51,6 +37,35 @@ void RenderSystem::update(EntityManager &entities, double dt) {
             renderMainGame(entities);
             break;
     }
+
+    updateFps();
+    drawFps();
+}
+
+void RenderSystem::updateFps() {
+    int now = glutGet(GLUT_ELAPSED_TIME);
+
+    // First frame: just start the timing window, no sample yet.
+    if (lastFpsUpdateTime == 0) {
+        lastFpsUpdateTime = now;
+        return;
+    }
+
+    frameCount++;
+    int elapsed = now - lastFpsUpdateTime;
+
+    // Recompute the displayed value at most twice a second so it stays readable.
+    if (elapsed >= 500) {
+        currentFps = frameCount * 1000.0 / elapsed;
+        frameCount = 0;
+        lastFpsUpdateTime = now;
+    }
+}
+
+void RenderSystem::drawFps() {
+    glColor3f(1, 1, 1);
+    renderString(10, 20, "FPS: " + std::to_string((int) currentFps),
+                 TextAlignment::LEFT, GLUT_BITMAP_HELVETICA_18);
 }
 
 void RenderSystem::renderMainGame(EntityManager &entities) {
@@ -141,12 +156,19 @@ void RenderSystem::renderEntities(EntityManager &entities) {
 
 void RenderSystem::renderTransparentEntities(EntityManager &entities) {
     std::vector<Entity *> transparentEntities = entities.getEntitiesWith<Position, Rotation, Scale, Transparency>();
-    std::sort(transparentEntities.begin(), transparentEntities.end(),
-              compareZDepth);
 
+    // Transparent billboards must still depth-test against opaque geometry, but
+    // must NOT write depth themselves - otherwise their (partly invisible) quads
+    // occlude each other and produce rectangular cut-out artifacts.
+    //
+    // No back-to-front sort: with depth writes disabled every transparent
+    // fragment blends, and the heavily-overlapping sprites (glow particles) are
+    // all the same colour, so draw order makes no visible difference here.
+    glDepthMask(GL_FALSE);
     for (Entity *entity: transparentEntities) {
         drawEntity(entity);
     }
+    glDepthMask(GL_TRUE);
 }
 
 void RenderSystem::drawEntity(Entity *entity) {

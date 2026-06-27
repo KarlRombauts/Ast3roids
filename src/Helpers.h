@@ -6,6 +6,8 @@
 #define UNTITLED_HELPERS_H
 
 #include <string>
+#include <vector>
+#include <utility>
 
 double randf(double min, double max);
 

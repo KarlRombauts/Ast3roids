@@ -15,6 +15,11 @@ unsigned int TextureLoader::load(std::string filepath) {
     stbi_set_flip_vertically_on_load(true);
     unsigned char *data = stbi_load(filepath.c_str(), &width, &height, &components, STBI_rgb_alpha);
 
+    if (data == nullptr) {
+        // Missing or unreadable image: don't cache, return 0 (no texture).
+        return 0;
+    }
+
     unsigned int id;
     glPushAttrib(GL_TEXTURE_BIT);
         glGenTextures(1, &id);
@@ -26,7 +31,8 @@ unsigned int TextureLoader::load(std::string filepath) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
     glPopAttrib();
 
-    delete data;
+    // stbi_load allocates with malloc, so it must be freed with stbi_image_free, not delete.
+    stbi_image_free(data);
 
     textures.insert({filepath, id});
     return id;

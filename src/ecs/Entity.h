@@ -64,15 +64,21 @@ bool Entity::hasAny() {
 
 template<typename Component, typename... Args>
 void Entity::assign(Args &&... args) {
-    components[typeid(Component)] = static_cast<Component *>(static_cast<Component *>(new Component(
-            std::forward<Args>(args) ...)));
+    auto it = components.find(typeid(Component));
+    if (it != components.end()) {
+        delete it->second;
+    }
+    components[typeid(Component)] = new Component(std::forward<Args>(args) ...);
 }
 
 template<typename Component, typename... Args>
 void Entity::remove() {
-    Component *component = get<Component>();
-    components.erase(typeid(Component));
-    delete component;
+    auto it = components.find(typeid(Component));
+    if (it == components.end()) {
+        return;
+    }
+    delete it->second;
+    components.erase(it);
 }
 
 template<typename Component>

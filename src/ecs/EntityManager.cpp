@@ -47,7 +47,7 @@
 
 Entity *EntityManager::create() {
     unsigned int id = nextId;
-    entities.insert(std::make_pair<int, Entity *>(nextId, new Entity(id)));
+    entities.emplace(id, new Entity(id));
     nextId++;
     return entities.at(id);
 }
