@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AST3ROIDS — WebGL / WebAssembly</title>
+  <style>
+    :root { --accent: #4aa3ff; --accent-dim: #2b6cb0; }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; height: 100%;
+      background: radial-gradient(1200px 800px at 50% -10%, #10131f 0%, #05060a 60%, #000 100%);
+      color: #cdd6e6;
+      font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+      -webkit-font-smoothing: antialiased;
+    }
+    body { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; gap: 18px; padding: 24px; }
+
+    h1.brand {
+      margin: 0; font-size: 28px; letter-spacing: 0.5em; font-weight: 800;
+      color: #eef3ff; text-indent: 0.5em;
+      text-shadow: 0 0 18px rgba(74,163,255,0.55);
+    }
+    .subtitle { margin: -8px 0 4px; font-size: 12px; letter-spacing: 0.25em; color: #6b7690; text-transform: uppercase; }
+
+    /* Game frame */
+    #stage {
+      position: relative; width: 600px; height: 600px; max-width: 92vw; max-height: 92vw;
+      border: 1px solid rgba(74,163,255,0.35);
+      border-radius: 10px; overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(0,0,0,0.6), 0 20px 60px rgba(0,0,0,0.6), inset 0 0 60px rgba(74,163,255,0.06);
+    }
+    #canvas { display: block; width: 100%; height: 100%; background: #000; outline: none; }
+
+    /* Fullscreen */
+    #fs-btn {
+      position: absolute; bottom: 10px; right: 10px; z-index: 5;
+      pointer-events: auto; cursor: pointer; width: 32px; height: 32px; padding: 0;
+      font-size: 15px; line-height: 1; color: #cdd6e6;
+      background: rgba(10,14,22,0.55); border: 1px solid rgba(74,163,255,0.3); border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s ease, border-color .15s ease;
+    }
+    #fs-btn:hover { background: rgba(20,28,44,0.85); border-color: rgba(74,163,255,0.6); }
+    #stage:fullscreen, #stage:-webkit-full-screen {
+      width: 100%; height: 100%; max-width: none; max-height: none; border: none; border-radius: 0;
+    }
+
+    /* HUD */
+    #hud {
+      position: absolute; inset: 0; pointer-events: none;
+      display: none; padding: 12px 14px; font-size: 13px; letter-spacing: 0.08em;
+      color: #dfe7f5; text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+    }
+    #hud.show { display: block; }
+    #hud .row { display: flex; justify-content: space-between; }
+    #hud .center { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); }
+    #hud b { color: var(--accent); font-weight: 700; }
+
+    /* Menu overlay */
+    #menu {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 16px; text-align: center;
+      background: radial-gradient(60% 60% at 50% 45%, rgba(5,8,16,0.55), rgba(2,3,6,0.86));
+      backdrop-filter: blur(2px);
+    }
+    #menu.hidden { display: none; }
+    #menu .title { font-size: 40px; letter-spacing: 0.18em; font-weight: 800; color: #fff; text-shadow: 0 0 24px rgba(74,163,255,0.6); }
+    #menu .msg { font-size: 14px; color: #9fb0cc; }
+    #menu .score { font-size: 15px; color: #cdd6e6; }
+    button.play {
+      pointer-events: auto; cursor: pointer; margin-top: 6px;
+      font: inherit; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: #eaf2ff; background: linear-gradient(180deg, var(--accent), var(--accent-dim));
+      border: none; border-radius: 8px; padding: 12px 28px;
+      box-shadow: 0 6px 20px rgba(74,163,255,0.35); transition: transform .08s ease, box-shadow .15s ease;
+    }
+    button.play:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(74,163,255,0.5); }
+    button.play:active { transform: translateY(0); }
+
+    .controls { font-size: 12px; color: #6b7690; letter-spacing: 0.06em; text-align: center; max-width: 600px; line-height: 1.7; }
+    .controls kbd { color: #b9c6de; background: #161b28; border: 1px solid #29324a; border-radius: 4px; padding: 1px 6px; }
+    footer { font-size: 11px; color: #424b5e; letter-spacing: 0.1em; text-align: center; }
+    footer a { color: #6b7690; text-decoration: none; border-bottom: 1px solid #2a3346; }
+    footer a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+  </style>
+</head>
+<body>
+  <h1 class="brand">AST3ROIDS</h1>
+  <div class="subtitle">C++ · WebAssembly · WebGL2</div>
+
+  <div id="stage">
+    <canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()" width="600" height="600"></canvas>
+
+    <div id="hud">
+      <div class="row">
+        <span>SCORE <b id="hud-score">0</b></span>
+        <span>TIME <b id="hud-time">0:00</b></span>
+      </div>
+      <div class="center">WAVE <b id="hud-wave">1</b></div>
+    </div>
+
+    <div id="menu">
+      <div class="title">AST3ROIDS</div>
+      <div class="msg" id="menu-msg">Press <kbd>SPACE</kbd> to start</div>
+      <div class="score" id="menu-score"></div>
+      <button class="play" onclick="startGame()">Play</button>
+    </div>
+
+    <button id="fs-btn" onclick="toggleFullscreen()" title="Fullscreen">&#x26F6;</button>
+  </div>
+
+  <div class="controls">
+    <kbd>F</kbd> thrust &nbsp; <kbd>A</kbd>/<kbd>D</kbd> roll &nbsp; <kbd>Mouse</kbd> aim &nbsp;
+    <kbd>Space</kbd> fire &nbsp; <kbd>I</kbd>/<kbd>K</kbd> camera
+  </div>
+  <footer>
+    Originally a desktop OpenGL game — renderer rewritten to WebGL2 and compiled to WASM.
+    &nbsp;·&nbsp;
+    <a href="https://github.com/KarlRombauts/Ast3roids" target="_blank" rel="noopener">View source on GitHub&nbsp;&#8599;</a>
+  </footer>
+
+  <script>
+    var canvas = document.getElementById('canvas');
+    var menuEl = document.getElementById('menu');
+    var hudEl = document.getElementById('hud');
+
+    function fmtTime(ms) {
+      var s = Math.max(0, Math.floor(ms / 1000));
+      return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+    }
+
+    // Game states (match GameState enum order in GameModel.h)
+    var ST = { GAME_OVER: 0, WAVE_OVER: 1, PLAYING: 2, START: 3, PLAY_AGAIN: 4, GAME_OVER_TRANSITION: 5 };
+
+    // Called every frame from C++ via EM_ASM.
+    function gameUpdate(state, score, wave, timeMs) {
+      var inMenu = (state === ST.START || state === ST.PLAY_AGAIN || state === ST.GAME_OVER);
+      menuEl.classList.toggle('hidden', !inMenu);
+      hudEl.classList.toggle('show', !inMenu);
+
+      if (state === ST.GAME_OVER) {
+        document.querySelector('#menu .title').textContent = 'GAME OVER';
+        document.getElementById('menu-msg').innerHTML = 'Press <kbd>SPACE</kbd> to play again';
+        document.getElementById('menu-score').textContent = 'Final score: ' + score;
+      } else if (inMenu) {
+        document.querySelector('#menu .title').textContent = 'AST3ROIDS';
+        document.getElementById('menu-msg').innerHTML = 'Press <kbd>SPACE</kbd> to start';
+        document.getElementById('menu-score').textContent = '';
+      }
+
+      document.getElementById('hud-score').textContent = score;
+      document.getElementById('hud-wave').textContent = wave;
+      document.getElementById('hud-time').textContent = fmtTime(timeMs);
+    }
+
+    // Play button -> tell the WASM module to act on SPACE.
+    function startGame() {
+      canvas.focus();
+      if (Module && Module._web_press_space) Module._web_press_space();
+    }
+
+    function toggleFullscreen() {
+      var stage = document.getElementById('stage');
+      var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
+      if (!fsEl) {
+        (stage.requestFullscreen || stage.webkitRequestFullscreen || function () {}).call(stage);
+      } else {
+        (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document);
+      }
+    }
+
+    // Steering: feed the engine a normalized [-1,1] aim computed from the canvas
+    // rect. This is correct at any aspect ratio / devicePixelRatio, unlike
+    // Emscripten's SDL mouse coordinates. Canvas center -> (0,0) = no turn.
+    function setAim(nx, ny) {
+      if (Module && Module._web_set_aim) Module._web_set_aim(nx, ny);
+    }
+    canvas.addEventListener('mousemove', function (e) {
+      var r = canvas.getBoundingClientRect();
+      var nx = (e.clientX - r.left) / r.width * 2 - 1;
+      var ny = (e.clientY - r.top) / r.height * 2 - 1;
+      setAim(Math.max(-1, Math.min(1, nx)), Math.max(-1, Math.min(1, ny)));
+    });
+    // Cursor off the canvas -> fly straight instead of holding the last turn.
+    canvas.addEventListener('mouseleave', function () { setAim(0, 0); });
+
+    var Module = {
+      canvas: canvas,
+      print: function (t) { console.log(t); },
+      printErr: function (t) { console.error(t); },
+    };
+  </script>
+  <script async type="text/javascript" src="StarFox_run.js"></script>
+</body>
+</html>
