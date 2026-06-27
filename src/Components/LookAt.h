@@ -9,8 +9,9 @@
 #include <ecs/Entity.h>
 
 struct LookAt : Component {
-    LookAt(Entity *target) : target(target) {}
+    LookAt(Entity *target, double roll = 0) : target(target), roll(roll) {}
     Entity *target;
+    double roll; // extra rotation (radians) about the view axis, for variety
 };
 
 

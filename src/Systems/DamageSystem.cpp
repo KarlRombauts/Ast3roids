@@ -22,6 +22,11 @@ void DamageSystem::update(EntityManager &entities) {
         for (Entity* otherEntity: entity->get<Impact>()->entities) {
             if (otherEntity->has<Damage>()) {
                health -= otherEntity->get<Damage>()->damage;
+
+               // Show a hit flash where the bullet struck the asteroid.
+               if (entity->has<Asteroid>() && otherEntity->has<Position>()) {
+                   ImpactFactory::create(entities, otherEntity->get<Position>()->position);
+               }
             }
 
             if (health <= 0) {

@@ -4,8 +4,8 @@
 
 void MaterialLibrary::init() {
     ASTEROID = new Material();
-    ASTEROID->setSpecular(0.2,0.2,0.2);
-    ASTEROID->shininess = 8;
+    ASTEROID->setSpecular(0.03,0.03,0.03); // almost matte rock
+    ASTEROID->shininess = 4;
     ASTEROID->setDiffuse(0.8,0.8,0.8);
     ASTEROID->setAmbient(1,1,1);
     ASTEROID->setEmission(0, 0, 0);
@@ -31,6 +31,13 @@ void MaterialLibrary::init() {
     GLOW_PARTICLE->setAmbient(0,0,0);
     GLOW_PARTICLE->setEmission(1, 1, 1);
     GLOW_PARTICLE->textureId = TextureLoader::load(gameConfig.TEXTURE_DIR + "/glow-particle.png");
+
+    IMPACT = new Material();
+    IMPACT->setSpecular(0,0,0);
+    IMPACT->setDiffuse(0,0,0);
+    IMPACT->setAmbient(0,0,0);
+    IMPACT->setEmission(1, 1, 1);
+    IMPACT->textureId = TextureLoader::load(gameConfig.TEXTURE_DIR + "/impact_green.png");
 }
 
 MaterialLibrary materialLibrary;

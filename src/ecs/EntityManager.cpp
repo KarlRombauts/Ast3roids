@@ -70,13 +70,14 @@ void EntityManager::createWorld() {
     gameModel.activeCamera = camera;
     camera->assign<SmoothFollow>(spaceShip, Vector3(0, 5, 20));
 
-    // A single "sun" in space: one warm directional key light placed far away
-    // (with constant attenuation) so it lights the ship consistently as it flies.
-    // The shadowed side is filled by the scene's directionless global ambient
-    // (set in RenderSystem) rather than a fake second light.
+    // The key light is the sun you can actually see in the skybox: its disc sits
+    // dead-centre on the front face, i.e. far away in -z (slightly up). Placing
+    // the light there (with constant attenuation, so it acts directional) makes
+    // the lighting match the visible sun. The shadowed side is filled by the
+    // scene's directionless global ambient (set in RenderSystem), not a 2nd light.
     Entity *keyLight = create();
-    keyLight->assign<Position>(Vector3(800, 1600, 1200));
-    keyLight->assign<Light>(1.05, 0.98, 0.85);
+    keyLight->assign<Position>(Vector3(0, 150, -1500));
+    keyLight->assign<Light>(1.05, 1.0, 0.9);
 
 //    for (int i = 0; i < 30; i++) {
 //        AsteroidFactory::create(*this, randf(6, 20));

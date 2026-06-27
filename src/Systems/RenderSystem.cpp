@@ -11,6 +11,7 @@
 #include <Components/RenderMesh.h>
 #include <Components/Light.h>
 #include <Components/Transparency.h>
+#include <Components/Additive.h>
 #include <Components/AnimatedTexture.h>
 #include <Components/Skybox.h>
 #include <Components/SpaceShip.h>
@@ -127,12 +128,18 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     // instead of punching holes in each other.
     glDepthMask(GL_FALSE);
     for (Entity *entity : entities.getEntitiesWith<Position, Rotation, Scale, Geometry, Transparency>()) {
+        if (entity->has<Additive>()) {
+            continue;
+        }
         drawEntity(entity);
     }
 
-    // Engine glow on top, additive (alpha-weighted) so it brightens whatever is
-    // behind it like a real light bloom.
+    // Additive effects on top (hit sparks, engine glow) so they brighten
+    // whatever is behind them like a real light bloom.
     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    for (Entity *entity : entities.getEntitiesWith<Position, Rotation, Scale, Geometry, Transparency, Additive>()) {
+        drawEntity(entity);
+    }
     for (Entity *ship : entities.getEntitiesWith<SpaceShip, Position, Rotation, Scale>()) {
         drawEngineGlow(ship);
     }
