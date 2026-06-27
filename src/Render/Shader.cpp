@@ -1,5 +1,18 @@
 #include "Shader.h"
 #include <iostream>
+#include <fstream>
+#include <sstream>
+
+static std::string readFile(const std::string &path) {
+    std::ifstream file(path);
+    if (!file) {
+        std::cerr << "Failed to open shader file: " << path << std::endl;
+        return "";
+    }
+    std::stringstream buffer;
+    buffer << file.rdbuf();
+    return buffer.str();
+}
 
 #ifdef __EMSCRIPTEN__
 static const char *VERSION_HEADER = "#version 300 es\nprecision highp float;\n";
@@ -27,7 +40,13 @@ GLuint Shader::compile(GLenum type, const std::string &source) {
     return shader;
 }
 
-bool Shader::loadFromSource(const std::string &vertexSource, const std::string &fragmentSource) {
+bool Shader::loadFromFiles(const std::string &vertexPath, const std::string &fragmentPath) {
+    std::string vertexSource = readFile(vertexPath);
+    std::string fragmentSource = readFile(fragmentPath);
+    if (vertexSource.empty() || fragmentSource.empty()) {
+        return false;
+    }
+
     GLuint vert = compile(GL_VERTEX_SHADER, vertexSource);
     GLuint frag = compile(GL_FRAGMENT_SHADER, fragmentSource);
     if (vert == 0 || frag == 0) {

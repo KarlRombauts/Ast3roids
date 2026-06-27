@@ -3,11 +3,10 @@
 
 #include "System.h"
 #include "../Render/Shader.h"
-#include "../Render/Mesh.h"
+#include "../Matrix4.h"
 
-// Task 2: minimal shader-based renderer. Draws a single test mesh to prove the
-// GLES3/core pipeline (Shader + VBO/VAO + Matrix4 MVP). Real entity/scene
-// rendering is rebuilt on top of this in Tasks 3-6.
+// Task 3: render every opaque entity that has a Geometry through the shader
+// pipeline, using the real camera (view) and perspective (projection).
 class RenderSystem : public System {
 public:
     void update(EntityManager &entities, double dt) override;
@@ -15,9 +14,11 @@ public:
 private:
     void ensureInitialised();
 
+    // The camera's view matrix = inverse of the camera's world transform.
+    Matrix4 viewMatrix() const;
+
     bool initialised = false;
     Shader shader;
-    Mesh testMesh;
 };
 
 #endif //UNTITLED_RENDERSYSTEM_H

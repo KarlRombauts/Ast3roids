@@ -10,7 +10,9 @@
 // web), so the same shader body works for both GL 3.3 core and WebGL2/GLES3.
 class Shader {
 public:
-    bool loadFromSource(const std::string &vertexSource, const std::string &fragmentSource);
+    // Loads, compiles and links a vertex + fragment shader from files. The files
+    // contain no #version line; the right one is prepended per platform.
+    bool loadFromFiles(const std::string &vertexPath, const std::string &fragmentPath);
     void use() const;
     void setMat4(const std::string &name, const Matrix4 &matrix) const;
     void setInt(const std::string &name, int value) const;

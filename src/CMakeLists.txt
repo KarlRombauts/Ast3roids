@@ -25,5 +25,9 @@ add_custom_target(copy_assets
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Assets ${CMAKE_CURRENT_BINARY_DIR}/Assets)
 add_dependencies(${BINARY}_run copy_assets)
 
+add_custom_target(copy_shaders
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Shaders ${CMAKE_CURRENT_BINARY_DIR}/Shaders)
+add_dependencies(${BINARY}_run copy_shaders)
+
 target_link_libraries(${BINARY}_run PUBLIC ${OPENGL_LIBRARIES} SDL2::SDL2)
 
