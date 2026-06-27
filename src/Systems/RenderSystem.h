@@ -27,6 +27,9 @@ private:
     // Draws additive glow billboards at the ship's engines, sized by thrust.
     void drawEngineGlow(Entity *ship);
 
+    // Draws the arena's wireframe walls.
+    void drawWalls(EntityManager &entities);
+
     bool initialised = false;
     Shader shader;
     Mesh glowMesh;          // a unit quad reused for every engine-glow billboard

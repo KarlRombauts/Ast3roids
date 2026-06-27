@@ -22,6 +22,8 @@ uniform int uUnlit; // 1 = show the texture fullbright (e.g. the skybox)
 uniform sampler2D uSpecMap;
 uniform int uHasSpecMap; // per-pixel specular intensity (map_Ks)
 
+uniform vec3 uColor; // flat tint (e.g. the wireframe walls); default white = no-op
+
 // Sprite-sheet animation: pick a sub-tile of the texture. Defaults (0,0)/(1,1)
 // select the whole texture.
 uniform vec2 uUvOffset;
@@ -45,9 +47,9 @@ void main() {
     vec4 texSample = (uHasTexture == 1) ? texture(uTexture, uv) : vec4(1.0);
     vec3 tex = texSample.rgb;
 
-    // Unlit surfaces (the skybox) show the texture directly, no lighting.
+    // Unlit surfaces (skybox, walls) show the texture directly, no lighting.
     if (uUnlit == 1) {
-        fragColor = vec4(tex, texSample.a);
+        fragColor = vec4(tex * uColor, texSample.a);
         return;
     }
 
@@ -82,5 +84,5 @@ void main() {
 
     // ...then modulate by the texture (old GL_MODULATE behaviour). Emissive
     // textured sprites become texture*1.0 = the texture itself (a glow).
-    fragColor = vec4(tex * lit, texSample.a);
+    fragColor = vec4(tex * lit * uColor, texSample.a);
 }

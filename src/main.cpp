@@ -67,6 +67,14 @@ void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderSystem.update(entities, 0);
     window.swap();
+
+#ifdef __EMSCRIPTEN__
+    // Push state to the HTML overlay (score/wave/time + menu visibility).
+    EM_ASM({
+        if (typeof gameUpdate === 'function') { gameUpdate($0, $1, $2, $3); }
+    }, (int) gameModel.state, gameModel.score, gameModel.waveCount,
+       gameModel.elapsedTime - gameModel.resetTime);
+#endif
 }
 
 static void idle() {
@@ -144,8 +152,17 @@ void handleMenu() {
         entities.createWorld();
         gameModel.reset();
         gameModel.state = GameState::PLAYING;
+        // Drop the space so it isn't read as "fire" on the first gameplay frame.
+        keyboardState.clearPressedKeys();
     }
 }
+
+#ifdef __EMSCRIPTEN__
+// Called from the HTML Play button so it acts like pressing space.
+extern "C" EMSCRIPTEN_KEEPALIVE void web_press_space() {
+    keyboardState.setPressedKey(' ');
+}
+#endif
 
 void handleGameOver() {
     keyboardState.clearPressedKeys();

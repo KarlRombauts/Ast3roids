@@ -14,6 +14,10 @@
 #include <Components/AnimatedTexture.h>
 #include <Components/Skybox.h>
 #include <Components/SpaceShip.h>
+#include <Components/Wall.h>
+#include <Components/Plane.h>
+#include <Components/WallMesh.h>
+#include <Helpers.h>
 #include <algorithm>
 #include <string>
 
@@ -75,6 +79,7 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     shader.setInt("uTexture", 0);  // diffuse on texture unit 0
     shader.setInt("uSpecMap", 1);  // spec map on texture unit 1
     shader.setInt("uUnlit", 0);
+    shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
 
     // Seed the spec-map unit with a valid texture so the skybox/glow draws (which
     // never bind it) don't leave the sampler pointed at an empty unit.
@@ -111,6 +116,8 @@ void RenderSystem::update(EntityManager &entities, double dt) {
         }
         drawEntity(entity);
     }
+
+    drawWalls(entities);
 
     // Transparent pass: still depth-test against the opaque scene, but don't
     // write depth, so overlapping sprites (glow particles, explosions) blend
@@ -297,5 +304,54 @@ void RenderSystem::drawEngineGlow(Entity *ship) {
         glowMesh.draw([](const Mesh::SubMesh &) {});
     }
 
+    shader.setInt("uUnlit", 0);
+}
+
+// Builds the wireframe grid (vertical + horizontal lines) spanning a plane's corners.
+static std::vector<Vector3> buildGridLines(const Plane &plane) {
+    const int numLines = 10;
+    std::vector<Vector3> points;
+    for (int i = 0; i <= numLines; i++) {
+        double t = (double) i / numLines;
+        points.push_back(Vector3::lerp(plane.bottomLeft, plane.bottomRight, t));
+        points.push_back(Vector3::lerp(plane.topLeft, plane.topRight, t));
+    }
+    for (int i = 0; i <= numLines; i++) {
+        double t = (double) i / numLines;
+        points.push_back(Vector3::lerp(plane.bottomLeft, plane.topLeft, t));
+        points.push_back(Vector3::lerp(plane.bottomRight, plane.topRight, t));
+    }
+    return points;
+}
+
+void RenderSystem::drawWalls(EntityManager &entities) {
+    std::vector<Entity *> walls = entities.getEntitiesWith<Wall, Plane, Position, Rotation, Scale>();
+    if (walls.empty()) {
+        return;
+    }
+
+    // Faint blue wireframe, unlit, untextured.
+    shader.setInt("uUnlit", 1);
+    shader.setInt("uHasTexture", 0);
+    shader.setVec2("uUvOffset", 0.0f, 0.0f);
+    shader.setVec2("uUvScale", 1.0f, 1.0f);
+    shader.setVec3("uColor", 0.25f, 0.5f, 0.9f);
+
+    for (Entity *wall : walls) {
+        if (!wall->has<WallMesh>()) {
+            wall->assign<WallMesh>();
+            wall->get<WallMesh>()->mesh.upload(buildGridLines(*wall->get<Plane>()));
+        }
+
+        Vector3 &position = wall->get<Position>()->position;
+        Vector3 &scale = wall->get<Scale>()->scale;
+        Quaternion &rotation = wall->get<Rotation>()->rotation;
+        shader.setMat4("uModel", Matrix4::translation(position)
+                                 * Matrix4::scale(scale)
+                                 * Matrix4::fromQuaternion(rotation));
+        wall->get<WallMesh>()->mesh.draw();
+    }
+
+    shader.setVec3("uColor", 1.0f, 1.0f, 1.0f);
     shader.setInt("uUnlit", 0);
 }
