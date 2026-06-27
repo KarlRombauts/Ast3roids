@@ -80,7 +80,9 @@
 
     .controls { font-size: 12px; color: #6b7690; letter-spacing: 0.06em; text-align: center; max-width: 600px; line-height: 1.7; }
     .controls kbd { color: #b9c6de; background: #161b28; border: 1px solid #29324a; border-radius: 4px; padding: 1px 6px; }
-    footer { font-size: 11px; color: #424b5e; letter-spacing: 0.1em; }
+    footer { font-size: 11px; color: #424b5e; letter-spacing: 0.1em; text-align: center; }
+    footer a { color: #6b7690; text-decoration: none; border-bottom: 1px solid #2a3346; }
+    footer a:hover { color: var(--accent); border-bottom-color: var(--accent); }
   </style>
 </head>
 <body>
@@ -112,7 +114,11 @@
     <kbd>F</kbd> thrust &nbsp; <kbd>A</kbd>/<kbd>D</kbd> roll &nbsp; <kbd>Mouse</kbd> aim &nbsp;
     <kbd>Space</kbd> fire &nbsp; <kbd>I</kbd>/<kbd>K</kbd> camera
   </div>
-  <footer>Originally a desktop OpenGL game — renderer rewritten to WebGL2 and compiled to WASM.</footer>
+  <footer>
+    Originally a desktop OpenGL game — renderer rewritten to WebGL2 and compiled to WASM.
+    &nbsp;·&nbsp;
+    <a href="https://github.com/KarlRombauts/Ast3roids" target="_blank" rel="noopener">View source on GitHub&nbsp;&#8599;</a>
+  </footer>
 
   <script>
     var canvas = document.getElementById('canvas');

@@ -27,4 +27,5 @@ src/StarFox_run
 # IDE / tooling / OS cruft
 .idea/
 .serena/
+.claude/
 .DS_Store

@@ -1,2 +1,2 @@
 #!/bin/sh
-make
+make StarFox_run
