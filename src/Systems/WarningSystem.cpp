@@ -10,7 +10,7 @@
 void WarningSystem::update(EntityManager &entities) {
     for(Entity *wall: entities.getEntitiesWith<Wall>()) {
         Material* material = wall->get<Material>();
-        material->setEmission(0.1, 0.1, 0.1);
+        material->setEmission(0.4, 0.4, 0.4); // faint white
     }
 
     for (Entity *entity: entities.getEntitiesWith<Impact, BoundingCircle>()) {

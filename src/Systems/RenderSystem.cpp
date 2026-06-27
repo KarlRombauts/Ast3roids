@@ -330,18 +330,21 @@ void RenderSystem::drawWalls(EntityManager &entities) {
         return;
     }
 
-    // Faint blue wireframe, unlit, untextured.
+    // Unlit, untextured wireframe. The colour is the wall's material emission,
+    // which WarningSystem drives: faint white normally, red as the ship nears.
     shader.setInt("uUnlit", 1);
     shader.setInt("uHasTexture", 0);
     shader.setVec2("uUvOffset", 0.0f, 0.0f);
     shader.setVec2("uUvScale", 1.0f, 1.0f);
-    shader.setVec3("uColor", 0.25f, 0.5f, 0.9f);
 
     for (Entity *wall : walls) {
         if (!wall->has<WallMesh>()) {
             wall->assign<WallMesh>();
             wall->get<WallMesh>()->mesh.upload(buildGridLines(*wall->get<Plane>()));
         }
+
+        Material *material = wall->get<Material>();
+        shader.setVec3("uColor", material->emission[0], material->emission[1], material->emission[2]);
 
         Vector3 &position = wall->get<Position>()->position;
         Vector3 &scale = wall->get<Scale>()->scale;

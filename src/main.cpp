@@ -9,6 +9,7 @@
 #include "Platform/Time.h"
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
+#include <emscripten/html5.h>
 #endif
 #include "Globals.h"
 #include "GameModel.h"
@@ -233,9 +234,35 @@ void handleEvent(const SDL_Event &event, bool &running) {
 
 static bool running = true;
 
+#ifdef __EMSCRIPTEN__
+// Keep the canvas's drawing buffer (and the GL viewport / projection aspect) in
+// sync with its displayed CSS size, so the render never stretches and fullscreen
+// works. Multiplied by the device pixel ratio for crisp output on HiDPI screens.
+static void syncCanvasSize() {
+    double cssW = 0, cssH = 0;
+    emscripten_get_element_css_size("#canvas", &cssW, &cssH);
+    double dpr = emscripten_get_device_pixel_ratio();
+    int w = (int) (cssW * dpr);
+    int h = (int) (cssH * dpr);
+    if (w <= 0 || h <= 0) {
+        return;
+    }
+    static int lastW = 0, lastH = 0;
+    if (w != lastW || h != lastH) {
+        lastW = w;
+        lastH = h;
+        emscripten_set_canvas_element_size("#canvas", w, h);
+        reshape(w, h);
+    }
+}
+#endif
+
 // One iteration of the game loop. On the web, the browser drives this via
 // requestAnimationFrame; natively we call it in a while loop.
 void mainLoopFrame() {
+#ifdef __EMSCRIPTEN__
+    syncCanvasSize();
+#endif
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         handleEvent(event, running);
