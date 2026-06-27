@@ -1,5 +1,6 @@
 #include "Mesh.h"
-#include <vector>
+#include <Components/Material.h>
+#include <algorithm>
 
 Mesh::~Mesh() {
     if (vbo != 0) {
@@ -18,33 +19,54 @@ void Mesh::upload(const Geometry &geometry) {
     bool hasNormals = !geometry.normals.empty();
     bool hasUvs = !geometry.uvs.empty();
 
+    auto emitVertex = [&](const Face &face, int i) {
+        const Vector3 &v = geometry.vertices[face.vertIndices[i]];
+        data.push_back((float) v.x);
+        data.push_back((float) v.y);
+        data.push_back((float) v.z);
+
+        if (hasNormals) {
+            const Vector3 &n = geometry.normals[face.vertIndices[i]];
+            data.push_back((float) n.x);
+            data.push_back((float) n.y);
+            data.push_back((float) n.z);
+        } else {
+            data.push_back(0); data.push_back(0); data.push_back(0);
+        }
+
+        if (hasUvs) {
+            const Vector2 &uv = geometry.uvs[face.uvIndices[i]];
+            data.push_back((float) uv.x);
+            data.push_back((float) uv.y);
+        } else {
+            data.push_back(0); data.push_back(0);
+        }
+    };
+
+    // Collect the distinct materials in first-seen order.
+    std::vector<const Material *> materials;
     for (const Face &face : geometry.faces) {
-        for (int i = 0; i < 3; i++) {
-            const Vector3 &v = geometry.vertices[face.vertIndices[i]];
-            data.push_back((float) v.x);
-            data.push_back((float) v.y);
-            data.push_back((float) v.z);
-
-            if (hasNormals) {
-                const Vector3 &n = geometry.normals[face.vertIndices[i]];
-                data.push_back((float) n.x);
-                data.push_back((float) n.y);
-                data.push_back((float) n.z);
-            } else {
-                data.push_back(0); data.push_back(0); data.push_back(0);
-            }
-
-            if (hasUvs) {
-                const Vector2 &uv = geometry.uvs[face.uvIndices[i]];
-                data.push_back((float) uv.x);
-                data.push_back((float) uv.y);
-            } else {
-                data.push_back(0); data.push_back(0);
-            }
+        if (std::find(materials.begin(), materials.end(), face.material) == materials.end()) {
+            materials.push_back(face.material);
         }
     }
 
-    vertexCount = (GLsizei) (geometry.faces.size() * 3);
+    // Append each material's faces as one contiguous range so it can be drawn
+    // in a single call with that material's texture bound.
+    for (const Material *material : materials) {
+        GLint start = (GLint) (data.size() / 8);
+        GLsizei count = 0;
+        for (const Face &face : geometry.faces) {
+            if (face.material != material) {
+                continue;
+            }
+            for (int i = 0; i < 3; i++) {
+                emitVertex(face, i);
+            }
+            count += 3;
+        }
+        submeshes.push_back({material, start, count});
+    }
 
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
@@ -64,8 +86,11 @@ void Mesh::upload(const Geometry &geometry) {
     glBindVertexArray(0);
 }
 
-void Mesh::draw() const {
+void Mesh::draw(const std::function<void(const Material *)> &bindMaterial) const {
     glBindVertexArray(vao);
-    glDrawArrays(GL_TRIANGLES, 0, vertexCount);
+    for (const SubMesh &sub : submeshes) {
+        bindMaterial(sub.material);
+        glDrawArrays(GL_TRIANGLES, sub.start, sub.count);
+    }
     glBindVertexArray(0);
 }

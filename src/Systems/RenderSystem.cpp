@@ -53,21 +53,19 @@ void RenderSystem::update(EntityManager &entities, double dt) {
 
         shader.setMat4("uMVP", gameModel.projection * view * model);
 
-        Geometry *geometry = entity->get<Geometry>();
-        GLuint textureId = 0;
-        if (!geometry->materials.empty() && geometry->materials[0] != nullptr) {
-            textureId = geometry->materials[0]->textureId;
-        }
-        shader.setInt("uHasTexture", textureId != 0 ? 1 : 0);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureId);
-
         // Upload the mesh to the GPU the first time we see this entity; it is
         // owned by the entity and freed when the entity is destroyed.
         if (!entity->has<RenderMesh>()) {
             entity->assign<RenderMesh>();
-            entity->get<RenderMesh>()->mesh.upload(*geometry);
+            entity->get<RenderMesh>()->mesh.upload(*entity->get<Geometry>());
         }
-        entity->get<RenderMesh>()->mesh.draw();
+
+        // Draw each material group with its own texture bound.
+        entity->get<RenderMesh>()->mesh.draw([this](const Material *material) {
+            GLuint textureId = (material != nullptr) ? material->textureId : 0;
+            shader.setInt("uHasTexture", textureId != 0 ? 1 : 0);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, textureId);
+        });
     }
 }
