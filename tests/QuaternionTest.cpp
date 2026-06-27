@@ -341,7 +341,3 @@ TEST(QuaternionTest, Normalise_1) {
         EXPECT_NEAR(p.magnitude(), 1, error);
     }
 }
-
-TEST(QuaternionTest, Angle0) {
-   Quaternion q = Quaternion
-}

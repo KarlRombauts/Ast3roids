@@ -12,11 +12,14 @@ link_libraries(${OPENGL_LIBRARIES})
 
 #file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 
-list(APPEND SOURCES Platform/Window.cpp Platform/Window.h)
+# Shared sources go in both the executable and the test library.
+list(APPEND SOURCES Matrix4.cpp Matrix4.h)
 
 set(SOURCES ${SOURCES})
 
-add_executable(${BINARY}_run main.cpp ${SOURCES})
+# Platform/Window pulls in SDL2 and is app-only, so it lives on the executable,
+# not in the static lib the tests link against.
+add_executable(${BINARY}_run main.cpp ${SOURCES} Platform/Window.cpp Platform/Window.h)
 
 add_library(${BINARY}_lib STATIC ${SOURCES})
 
