@@ -4,11 +4,17 @@
 #include <SDL.h>
 #include <emscripten.h>
 #include <GLES3/gl3.h>
+#include <cmath>
 
 static SDL_Window *window = nullptr;
 
 static void frame() {
-    glClearColor(0.10f, 0.12f, 0.18f, 1.0f);
+    // Animated clear color so it's unmistakably live (not just a dark static frame).
+    float t = SDL_GetTicks() / 1000.0f;
+    float r = 0.5f + 0.5f * std::sin(t);
+    float g = 0.5f + 0.5f * std::sin(t + 2.0f);
+    float b = 0.5f + 0.5f * std::sin(t + 4.0f);
+    glClearColor(r, g, b, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     SDL_GL_SwapWindow(window);
 }
