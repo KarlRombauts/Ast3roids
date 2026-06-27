@@ -17,6 +17,9 @@ private:
     // The camera's view matrix = inverse of the camera's world transform.
     Matrix4 viewMatrix() const;
 
+    // Draws one entity (assumes the shared shader/camera/light uniforms are set).
+    void drawEntity(Entity *entity);
+
     bool initialised = false;
     Shader shader;
 };

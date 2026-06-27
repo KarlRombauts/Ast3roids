@@ -17,6 +17,7 @@ public:
     void setMat4(const std::string &name, const Matrix4 &matrix) const;
     void setInt(const std::string &name, int value) const;
     void setFloat(const std::string &name, float value) const;
+    void setVec2(const std::string &name, float x, float y) const;
     void setVec3(const std::string &name, float x, float y, float z) const;
 
     GLuint id() const { return program; }

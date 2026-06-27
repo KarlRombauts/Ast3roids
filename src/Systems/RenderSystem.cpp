@@ -7,6 +7,8 @@
 #include <Components/Material.h>
 #include <Components/RenderMesh.h>
 #include <Components/Light.h>
+#include <Components/Transparency.h>
+#include <Components/AnimatedTexture.h>
 #include <algorithm>
 #include <string>
 
@@ -68,39 +70,66 @@ void RenderSystem::update(EntityManager &entities, double dt) {
         shader.setFloat(base + "attenuation", (float) light->attenuation);
     }
 
+    // Opaque pass: write depth as usual.
     for (Entity *entity : entities.getEntitiesWith<Position, Rotation, Scale, Geometry>()) {
-        Vector3 &position = entity->get<Position>()->position;
-        Vector3 &scale = entity->get<Scale>()->scale;
-        Quaternion &rotation = entity->get<Rotation>()->rotation;
-
-        // Model matrix places the object in the world. Read right-to-left, a
-        // vertex is rotated, then scaled, then translated into position.
-        Matrix4 model = Matrix4::translation(position)
-                        * Matrix4::scale(scale)
-                        * Matrix4::fromQuaternion(rotation);
-
-        shader.setMat4("uModel", model);
-
-        // Upload the mesh to the GPU the first time we see this entity; it is
-        // owned by the entity and freed when the entity is destroyed.
-        if (!entity->has<RenderMesh>()) {
-            entity->assign<RenderMesh>();
-            entity->get<RenderMesh>()->mesh.upload(*entity->get<Geometry>());
+        if (entity->has<Transparency>()) {
+            continue;
         }
-
-        // Draw each material group with its texture and lighting properties.
-        entity->get<RenderMesh>()->mesh.draw([this](const Material *material) {
-            const Material &m = (material != nullptr) ? *material : DEFAULT_MATERIAL;
-
-            shader.setVec3("uMatAmbient", m.ambient[0], m.ambient[1], m.ambient[2]);
-            shader.setVec3("uMatDiffuse", m.diffuse[0], m.diffuse[1], m.diffuse[2]);
-            shader.setVec3("uMatSpecular", m.specular[0], m.specular[1], m.specular[2]);
-            shader.setVec3("uMatEmission", m.emission[0], m.emission[1], m.emission[2]);
-            shader.setFloat("uShininess", m.shininess);
-
-            shader.setInt("uHasTexture", m.textureId != 0 ? 1 : 0);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, m.textureId);
-        });
+        drawEntity(entity);
     }
+
+    // Transparent pass: still depth-test against the opaque scene, but don't
+    // write depth, so overlapping sprites (glow particles, explosions) blend
+    // instead of punching holes in each other.
+    glDepthMask(GL_FALSE);
+    for (Entity *entity : entities.getEntitiesWith<Position, Rotation, Scale, Geometry, Transparency>()) {
+        drawEntity(entity);
+    }
+    glDepthMask(GL_TRUE);
+}
+
+void RenderSystem::drawEntity(Entity *entity) {
+    Vector3 &position = entity->get<Position>()->position;
+    Vector3 &scale = entity->get<Scale>()->scale;
+    Quaternion &rotation = entity->get<Rotation>()->rotation;
+
+    // Model matrix places the object in the world. Read right-to-left, a
+    // vertex is rotated, then scaled, then translated into position.
+    Matrix4 model = Matrix4::translation(position)
+                    * Matrix4::scale(scale)
+                    * Matrix4::fromQuaternion(rotation);
+    shader.setMat4("uModel", model);
+
+    // Sprite-sheet animation (e.g. the explosion) shifts the UVs to one tile;
+    // everything else uses the whole texture.
+    if (entity->has<AnimatedTexture>()) {
+        AnimatedTexture *anim = entity->get<AnimatedTexture>();
+        shader.setVec2("uUvOffset", (float) anim->colOffset, (float) anim->rowOffset);
+        shader.setVec2("uUvScale", 1.0f / (float) anim->cols, 1.0f / (float) anim->rows);
+    } else {
+        shader.setVec2("uUvOffset", 0.0f, 0.0f);
+        shader.setVec2("uUvScale", 1.0f, 1.0f);
+    }
+
+    // Upload the mesh to the GPU the first time we see this entity; it is
+    // owned by the entity and freed when the entity is destroyed.
+    if (!entity->has<RenderMesh>()) {
+        entity->assign<RenderMesh>();
+        entity->get<RenderMesh>()->mesh.upload(*entity->get<Geometry>());
+    }
+
+    // Draw each material group with its texture and lighting properties.
+    entity->get<RenderMesh>()->mesh.draw([this](const Material *material) {
+        const Material &m = (material != nullptr) ? *material : DEFAULT_MATERIAL;
+
+        shader.setVec3("uMatAmbient", m.ambient[0], m.ambient[1], m.ambient[2]);
+        shader.setVec3("uMatDiffuse", m.diffuse[0], m.diffuse[1], m.diffuse[2]);
+        shader.setVec3("uMatSpecular", m.specular[0], m.specular[1], m.specular[2]);
+        shader.setVec3("uMatEmission", m.emission[0], m.emission[1], m.emission[2]);
+        shader.setFloat("uShininess", m.shininess);
+
+        shader.setInt("uHasTexture", m.textureId != 0 ? 1 : 0);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m.textureId);
+    });
 }
