@@ -70,16 +70,13 @@ void EntityManager::createWorld() {
     gameModel.activeCamera = camera;
     camera->assign<SmoothFollow>(spaceShip, Vector3(0, 5, 20));
 
-    // Key + fill lighting. Placed far away (with constant attenuation) so they
-    // behave like directional "sun" lights, keeping the ship lit consistently as
-    // it flies around. Warm key from above-front, cooler fill from behind-below.
+    // A single "sun" in space: one warm directional key light placed far away
+    // (with constant attenuation) so it lights the ship consistently as it flies.
+    // The shadowed side is filled by the scene's directionless global ambient
+    // (set in RenderSystem) rather than a fake second light.
     Entity *keyLight = create();
     keyLight->assign<Position>(Vector3(800, 1600, 1200));
-    keyLight->assign<Light>(0.95, 0.9, 0.78);
-
-    Entity *fillLight = create();
-    fillLight->assign<Position>(Vector3(-1000, -300, -1100));
-    fillLight->assign<Light>(0.32, 0.38, 0.5);
+    keyLight->assign<Light>(1.05, 0.98, 0.85);
 
 //    for (int i = 0; i < 30; i++) {
 //        AsteroidFactory::create(*this, randf(6, 20));

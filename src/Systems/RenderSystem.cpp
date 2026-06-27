@@ -88,7 +88,9 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     glBindTexture(GL_TEXTURE_2D, whiteTexture);
     glActiveTexture(GL_TEXTURE0);
     shader.setVec3("uViewPos", camPos.x, camPos.y, camPos.z);
-    shader.setVec3("uGlobalAmbient", 0.32f, 0.32f, 0.34f);
+    // Directionless fill for the side facing away from the sun. Slightly cool to
+    // suggest starlight/nebula bounce against the warm key light.
+    shader.setVec3("uGlobalAmbient", 0.40f, 0.42f, 0.48f);
 
     // Upload each light's data once per frame (positions/colours/attenuation).
     std::vector<Entity *> lights = entities.getEntitiesWith<Light, Position>();
