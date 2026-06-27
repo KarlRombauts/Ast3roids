@@ -1,6 +1,7 @@
 # Build directories
 /build-local/
 /build-web/
+/build-web-smoke/
 /cmake-build-debug
 /cmake-build-debug-2/
 /CMakeFiles

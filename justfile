@@ -26,3 +26,18 @@ clean:
 
 # Clean, reconfigure, and build from scratch
 rebuild: clean build
+
+# --- WebAssembly (Emscripten) ---
+# Requires the emsdk environment: `source ~/emsdk/emsdk_env.sh`
+
+emsdk_env := "~/emsdk/emsdk_env.sh"
+
+# Build the toolchain smoke test (standalone WebGL2 clear screen) to build-web-smoke/
+wasm-smoke:
+    source {{emsdk_env}} && mkdir -p build-web-smoke && \
+        emcc web/smoke.cpp -o build-web-smoke/index.html \
+        -sUSE_SDL=2 -sFULL_ES3 -sMAX_WEBGL_VERSION=2 -sMIN_WEBGL_VERSION=2
+
+# Serve a built web directory locally (default: the smoke test) at http://localhost:8000
+serve dir="build-web-smoke":
+    cd {{dir}} && python3 -m http.server 8000
