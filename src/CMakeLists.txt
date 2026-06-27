@@ -12,6 +12,8 @@ link_libraries(${OPENGL_LIBRARIES})
 
 #file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 
+list(APPEND SOURCES Platform/Window.cpp Platform/Window.h)
+
 set(SOURCES ${SOURCES})
 
 add_executable(${BINARY}_run main.cpp ${SOURCES})
@@ -22,5 +24,5 @@ add_custom_target(copy_assets
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Assets ${CMAKE_CURRENT_BINARY_DIR}/Assets)
 add_dependencies(${BINARY}_run copy_assets)
 
-target_link_libraries(${BINARY}_run PUBLIC ${OPENGL_LIBRARIES} ${GLUT_LIBRARY})
+target_link_libraries(${BINARY}_run PUBLIC ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} SDL2::SDL2)
 

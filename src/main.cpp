@@ -5,6 +5,7 @@
 #include <Systems/AnimatedTextureSystem.h>
 #include <Systems/AnimationSystem.h>
 #include "OpenGL.h"
+#include "Platform/Window.h"
 #include "Globals.h"
 #include "GameModel.h"
 #include "ecs/EntityManager.h"
@@ -27,6 +28,7 @@
 #include "Systems/MouseLookSystem.h"
 #include <filesystem>
 
+Window window;
 EntityManager entities;
 RenderSystem renderSystem;
 CollisionSystem collisionSystem;
@@ -60,7 +62,7 @@ void handleGamePlay();
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderSystem.update(entities, 0);
-    glutSwapBuffers();
+    window.swap();
 }
 
 static void idle() {
@@ -80,8 +82,6 @@ static void idle() {
             handleGamePlay();
             break;
     }
-
-    glutPostRedisplay();
 }
 
 void handleGamePlay() {
@@ -168,58 +168,75 @@ void reshape(int w, int h) {
     gameModel.resizeScreen(w, h);
 }
 
-void onKeyPress(unsigned char key, int x, int y) {
-    keyboardState.setPressedKey(key);
-    switch (key) {
-        case 27:
-        case 'q':
-            exit(EXIT_SUCCESS);
-        default:
+// Translate one SDL event into the existing keyboard/mouse state. The GLUT
+// button/state encoding (left=0/right=2, down=0/up=1) is preserved so
+// MouseState/PlayerInput need no changes.
+void handleEvent(const SDL_Event &event, bool &running) {
+    switch (event.type) {
+        case SDL_QUIT:
+            running = false;
+            break;
+        case SDL_KEYDOWN: {
+            SDL_Keycode sym = event.key.keysym.sym;
+            if (sym == SDLK_ESCAPE || sym == SDLK_q) {
+                running = false;
+            } else if (sym >= 0 && sym < 256) {
+                keyboardState.setPressedKey((char) sym);
+            }
+            break;
+        }
+        case SDL_KEYUP: {
+            SDL_Keycode sym = event.key.keysym.sym;
+            if (sym >= 0 && sym < 256) {
+                keyboardState.releaseKey((unsigned char) sym);
+            }
+            break;
+        }
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP: {
+            int glutButton = event.button.button == SDL_BUTTON_RIGHT ? 2 : 0;
+            int glutState = event.type == SDL_MOUSEBUTTONDOWN ? 0 : 1;
+            mouseState.onMouseButton(glutButton, glutState, event.button.x, event.button.y);
+            break;
+        }
+        case SDL_MOUSEMOTION:
+            if (event.motion.state & (SDL_BUTTON_LMASK | SDL_BUTTON_RMASK)) {
+                mouseState.onMouseDrag(event.motion.x, event.motion.y);
+            } else {
+                mouseState.onMouseMove(event.motion.x, event.motion.y);
+            }
+            break;
+        case SDL_WINDOWEVENT:
+            if (event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                reshape(event.window.data1, event.window.data2);
+            }
             break;
     }
 }
 
-void onKeyRelease(unsigned char key, int x, int y) {
-    keyboardState.releaseKey(key);
-}
-
-void onMouseButton(int btn, int state, int x, int y) {
-    mouseState.onMouseButton(btn, state, x, y);
-}
-
-
-void onMouseMove(int x, int y) {
-    mouseState.onMouseMove(x, y);
-}
-
-
-void onMouseDrag(int x, int y) {
-    mouseState.onMouseDrag(x, y);
-}
-
 int main(int argc, char **argv) {
+    // GLUT is still initialised purely for its bitmap fonts (on-screen text);
+    // it no longer owns the window or loop. Text moves to a DOM overlay in Task 7,
+    // at which point GLUT is removed entirely.
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-//    glEnable(GL_DEPTH_TEST);
-    glutInitWindowSize(600, 600);
-    glutCreateWindow("Asteroids");
-    reshape(500, 600);
+
+    if (!window.create("Asteroids", 600, 600)) {
+        return EXIT_FAILURE;
+    }
+
+    reshape(600, 600);
     init();
 
-    glutIdleFunc(idle);
-    glutDisplayFunc(display);
-    glutReshapeFunc(reshape);
+    bool running = true;
+    while (running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            handleEvent(event, running);
+        }
+        idle();
+        display();
+    }
 
-    // Keyboard Callbacks
-    glutKeyboardFunc(onKeyPress);
-    glutKeyboardUpFunc(onKeyRelease);
-
-    // Mouse Callbacks
-    glutMouseFunc(onMouseButton);
-    glutMotionFunc(onMouseDrag);
-    glutPassiveMotionFunc(onMouseMove);
-
-
-    // Let glut takeover
-    glutMainLoop();
+    window.destroy();
+    return EXIT_SUCCESS;
 }
