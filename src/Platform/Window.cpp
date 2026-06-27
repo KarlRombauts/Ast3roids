@@ -12,9 +12,15 @@ bool Window::create(const std::string &title, int width, int height) {
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
-    // Task 0a keeps the legacy/compatibility context so the existing
-    // fixed-function renderer keeps working under SDL. Task 2 switches this to a
-    // GLES3/core context once the shader pipeline is in.
+    // Request a GL 3.3 core context (matches WebGL2/GLES3 feature-wise). macOS
+    // only grants core profiles with the forward-compatible flag set.
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+#ifdef __APPLE__
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+#endif
+
     window = SDL_CreateWindow(title.c_str(),
                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                               width, height,

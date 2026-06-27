@@ -3,6 +3,7 @@
 
 #include "Coordinates.h"
 #include "Arena.h"
+#include "Matrix4.h"
 
 enum class GameState {
     GAME_OVER,
@@ -38,6 +39,7 @@ struct GameModel {
     int width;
     int height;
     double aspectRatio;
+    Matrix4 projection;
     CoordinateSpace worldCoordinates;
 
     void resizeWorld(double aspectRatio);

@@ -1,4 +1,4 @@
-#include <GLUT/glut.h>
+#include <Platform/Time.h>
 #include <Components/Rotation.h>
 #include <Factory/BulletFactory.h>
 #include "FiringSystem.h"
@@ -14,7 +14,7 @@ void FiringSystem::update(EntityManager &entities, double dt) {
         int &fireRate = spaceShip->get<SpaceShip>()->fireRate;
         int &lastFire = spaceShip->get<SpaceShip>()->lastFire;
 
-        int thisTime = glutGet(GLUT_ELAPSED_TIME);
+        int thisTime = Time::millis();
 
         int timeSinceLastFire = thisTime - lastFire;
         if (timeSinceLastFire > fireRate) {

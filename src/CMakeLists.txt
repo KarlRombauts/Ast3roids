@@ -5,15 +5,13 @@ set(GL_SILENCE_DEPRECATION)
 
 find_package(OpenGL REQUIRED)
 
-find_package(GLUT REQUIRED)
-
-include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS})
+include_directories(${OPENGL_INCLUDE_DIRS})
 link_libraries(${OPENGL_LIBRARIES})
 
 #file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 
 # Shared sources go in both the executable and the test library.
-list(APPEND SOURCES Matrix4.cpp Matrix4.h)
+list(APPEND SOURCES Matrix4.cpp Matrix4.h Render/Shader.cpp Render/Shader.h Render/Mesh.cpp Render/Mesh.h Platform/Time.cpp Platform/Time.h)
 
 set(SOURCES ${SOURCES})
 
@@ -27,5 +25,5 @@ add_custom_target(copy_assets
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_LIST_DIR}/Assets ${CMAKE_CURRENT_BINARY_DIR}/Assets)
 add_dependencies(${BINARY}_run copy_assets)
 
-target_link_libraries(${BINARY}_run PUBLIC ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES} SDL2::SDL2)
+target_link_libraries(${BINARY}_run PUBLIC ${OPENGL_LIBRARIES} SDL2::SDL2)
 

@@ -9,9 +9,8 @@ if (APPLE)
 endif()
 
 find_package(OpenGL REQUIRED)
-find_package(GLUT REQUIRED)
 find_package(SDL2 REQUIRED)
-include_directories(${OPENGL_INCLUDE_DIRS} ${GLUT_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
+include_directories(${OPENGL_INCLUDE_DIRS} ${SDL2_INCLUDE_DIRS})
 
 include_directories(src)
 

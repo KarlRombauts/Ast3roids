@@ -6,6 +6,7 @@
 #include <Systems/AnimationSystem.h>
 #include "OpenGL.h"
 #include "Platform/Window.h"
+#include "Platform/Time.h"
 #include "Globals.h"
 #include "GameModel.h"
 #include "ecs/EntityManager.h"
@@ -85,7 +86,7 @@ static void idle() {
 }
 
 void handleGamePlay() {
-    int thisTime = glutGet(GLUT_ELAPSED_TIME);
+    int thisTime = Time::millis();
     int dt = thisTime - gameModel.elapsedTime;
 
     // if more than 100ms have passed between frames, skip updating to ensure
@@ -152,14 +153,10 @@ void handleGameOver() {
 }
 
 void init() {
-    glMatrixMode(GL_MODELVIEW);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
     glClearColor(0, 0, 0, 0);
-    glShadeModel(GL_SMOOTH);
     materialLibrary.init();
 }
 
@@ -215,11 +212,6 @@ void handleEvent(const SDL_Event &event, bool &running) {
 }
 
 int main(int argc, char **argv) {
-    // GLUT is still initialised purely for its bitmap fonts (on-screen text);
-    // it no longer owns the window or loop. Text moves to a DOM overlay in Task 7,
-    // at which point GLUT is removed entirely.
-    glutInit(&argc, argv);
-
     if (!window.create("Asteroids", 600, 600)) {
         return EXIT_FAILURE;
     }

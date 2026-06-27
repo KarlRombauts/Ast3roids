@@ -1,22 +1,12 @@
 #include <cmath>
 #include "GameModel.h"
-#include "OpenGL.h"
 #include "Globals.h"
 
 GameModel gameModel;
 
 void GameModel::resizeWorld(double aspectRatio) {
     this->aspectRatio = aspectRatio;
-    glMatrixMode (GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(60, aspectRatio, 0.1, 10000);
-
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    glutPostRedisplay();
+    projection = Matrix4::perspective(60, aspectRatio, 0.1, 10000);
 }
 
 bool GameModel::isSphereFullyInsideArena(Vector3 pos, double radius) {
@@ -30,7 +20,7 @@ bool GameModel::isSphereFullyOutsideArena(Vector3 pos, double radius) {
 void GameModel::resizeScreen(int w, int h) {
     width = w;
     height = h;
-    GLdouble aspectRatio = (GLfloat) w / (GLfloat) h;
+    double aspectRatio = (double) w / (double) h;
     gameModel.resizeWorld(aspectRatio);
 }
 
