@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <title>AST3ROIDS — WebGL / WebAssembly</title>
   <style>
     :root { --accent: #4aa3ff; --accent-dim: #2b6cb0; }
@@ -83,6 +83,28 @@
     footer { font-size: 11px; color: #424b5e; letter-spacing: 0.1em; text-align: center; }
     footer a { color: #6b7690; text-decoration: none; border-bottom: 1px solid #2a3346; }
     footer a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+    button.play[disabled] { opacity: 0.5; cursor: default; box-shadow: none; filter: grayscale(0.4); }
+    #canvas { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+    /* Rotate-to-landscape nudge (mobile, app mode only) */
+    #rotate {
+      position: fixed; inset: 0; z-index: 30; display: none;
+      flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+      background: #05060a; color: #cdd6e6; text-align: center; padding: 24px;
+    }
+    #rotate .icon { font-size: 46px; animation: rot 2s ease-in-out infinite; }
+    @keyframes rot { 0%,100% { transform: rotate(0); } 50% { transform: rotate(90deg); } }
+
+    /* App (touch) mode: the stage fills the screen and the page chrome hides. */
+    body.app { padding: 0; gap: 0; overflow: hidden; }
+    body.app .brand, body.app .subtitle, body.app .controls, body.app footer { display: none; }
+    body.app #stage {
+      position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh;
+      max-width: none; max-height: none; border: none; border-radius: 0;
+    }
+    body.app.portrait #rotate { display: flex; }
+    body.app #fs-btn { display: none; }
   </style>
 </head>
 <body>
@@ -102,12 +124,17 @@
 
     <div id="menu">
       <div class="title">AST3ROIDS</div>
-      <div class="msg" id="menu-msg">Press <kbd>SPACE</kbd> to start</div>
+      <div class="msg" id="menu-msg">Loading…</div>
       <div class="score" id="menu-score"></div>
-      <button class="play" onclick="startGame()">Play</button>
+      <button class="play" id="play-btn" onclick="startGame()" disabled>Play</button>
     </div>
 
     <button id="fs-btn" onclick="toggleFullscreen()" title="Fullscreen">&#x26F6;</button>
+
+    <div id="rotate">
+      <div class="icon">&#x1F4F1;</div>
+      <div>Rotate your device to landscape</div>
+    </div>
   </div>
 
   <div class="controls">
@@ -124,7 +151,28 @@
     var canvas = document.getElementById('canvas');
     var menuEl = document.getElementById('menu');
     var hudEl = document.getElementById('hud');
+    var playBtn = document.getElementById('play-btn');
+    var stageEl = document.getElementById('stage');
 
+    // Touch-primary device? (coarse pointer + no hover). This deliberately
+    // excludes touch-capable laptops, which still steer with the mouse.
+    var isTouch = window.matchMedia('(pointer: coarse)').matches &&
+                  window.matchMedia('(hover: none)').matches;
+    // The game needs WebGL2 (iOS 15+). Detect up front so we can say so instead
+    // of showing a silent black canvas.
+    var hasWebGL2 = (function () {
+      try { return !!document.createElement('canvas').getContext('webgl2'); } catch (e) { return false; }
+    })();
+    var runtimeReady = false;
+
+    // --- tilt steering tuning (tweak if an axis feels reversed/swapped) ---
+    var TILT_RANGE = 30;        // degrees of tilt for full steering deflection
+    var TILT_SWAP = false;      // swap which tilt axis drives left/right vs up/down
+    var TILT_INVERT_X = false;  // flip left/right
+    var TILT_INVERT_Y = false;  // flip up/down
+    var ZOOM_SCALE = 0.06;      // slide pixels -> camera dolly (world units)
+
+    function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
     function fmtTime(ms) {
       var s = Math.max(0, Math.floor(ms / 1000));
       return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
@@ -133,19 +181,38 @@
     // Game states (match GameState enum order in GameModel.h)
     var ST = { GAME_OVER: 0, WAVE_OVER: 1, PLAYING: 2, START: 3, PLAY_AGAIN: 4, GAME_OVER_TRANSITION: 5 };
 
+    var startHint = isTouch
+      ? 'Tilt to steer · tap to shoot · slide to zoom'
+      : 'Press <kbd>SPACE</kbd> to start';
+
+    // Reflect load/support state on the menu before the game loop takes over.
+    function setReadyUI() {
+      if (!hasWebGL2) {
+        document.getElementById('menu-msg').innerHTML =
+          'This game needs <b>WebGL2</b>.<br>Update to iOS&nbsp;15+ or use a current browser.';
+        playBtn.style.display = 'none';
+        return;
+      }
+      if (!runtimeReady) return;
+      playBtn.disabled = false;
+      document.getElementById('menu-msg').innerHTML = startHint;
+    }
+
     // Called every frame from C++ via EM_ASM.
     function gameUpdate(state, score, wave, timeMs) {
+      if (!runtimeReady) { runtimeReady = true; setReadyUI(); } // loop is running -> ready
       var inMenu = (state === ST.START || state === ST.PLAY_AGAIN || state === ST.GAME_OVER);
       menuEl.classList.toggle('hidden', !inMenu);
       hudEl.classList.toggle('show', !inMenu);
 
       if (state === ST.GAME_OVER) {
         document.querySelector('#menu .title').textContent = 'GAME OVER';
-        document.getElementById('menu-msg').innerHTML = 'Press <kbd>SPACE</kbd> to play again';
+        document.getElementById('menu-msg').innerHTML =
+          isTouch ? 'Tap <b>Play</b> to play again' : 'Press <kbd>SPACE</kbd> to play again';
         document.getElementById('menu-score').textContent = 'Final score: ' + score;
       } else if (inMenu) {
         document.querySelector('#menu .title').textContent = 'AST3ROIDS';
-        document.getElementById('menu-msg').innerHTML = 'Press <kbd>SPACE</kbd> to start';
+        document.getElementById('menu-msg').innerHTML = startHint;
         document.getElementById('menu-score').textContent = '';
       }
 
@@ -154,42 +221,128 @@
       document.getElementById('hud-time').textContent = fmtTime(timeMs);
     }
 
-    // Play button -> tell the WASM module to act on SPACE.
+    // Play button.
     function startGame() {
+      if (!runtimeReady || !hasWebGL2) return;
       canvas.focus();
-      if (Module && Module._web_press_space) Module._web_press_space();
+      if (isTouch) {
+        enterAppMode();
+        if (!mobileInited) enableMobileControls(); // permission must be inside this gesture
+        if (Module._web_set_thrust) Module._web_set_thrust(1); // mobile auto-thrusts
+      }
+      if (Module._web_press_space) Module._web_press_space();
     }
 
     function toggleFullscreen() {
-      var stage = document.getElementById('stage');
       var fsEl = document.fullscreenElement || document.webkitFullscreenElement;
       if (!fsEl) {
-        (stage.requestFullscreen || stage.webkitRequestFullscreen || function () {}).call(stage);
+        (stageEl.requestFullscreen || stageEl.webkitRequestFullscreen || function () {}).call(stageEl);
       } else {
         (document.exitFullscreen || document.webkitExitFullscreen || function () {}).call(document);
       }
     }
 
-    // Steering: feed the engine a normalized [-1,1] aim computed from the canvas
-    // rect. This is correct at any aspect ratio / devicePixelRatio, unlike
-    // Emscripten's SDL mouse coordinates. Canvas center -> (0,0) = no turn.
-    function setAim(nx, ny) {
-      if (Module && Module._web_set_aim) Module._web_set_aim(nx, ny);
+    // ---- Desktop steering: cursor position -> normalized [-1,1] aim ----
+    function setAim(nx, ny) { if (Module && Module._web_set_aim) Module._web_set_aim(nx, ny); }
+    if (!isTouch) {
+      canvas.addEventListener('mousemove', function (e) {
+        var r = canvas.getBoundingClientRect();
+        var nx = (e.clientX - r.left) / r.width * 2 - 1;
+        var ny = (e.clientY - r.top) / r.height * 2 - 1;
+        setAim(clamp(nx, -1, 1), clamp(ny, -1, 1));
+      });
+      canvas.addEventListener('mouseleave', function () { setAim(0, 0); });
     }
-    canvas.addEventListener('mousemove', function (e) {
-      var r = canvas.getBoundingClientRect();
-      var nx = (e.clientX - r.left) / r.width * 2 - 1;
-      var ny = (e.clientY - r.top) / r.height * 2 - 1;
-      setAim(Math.max(-1, Math.min(1, nx)), Math.max(-1, Math.min(1, ny)));
+
+    // ---- Mobile: app-mode layout, tilt steering, touch fire/zoom ----
+    function enterAppMode() {
+      document.body.classList.add('app');
+      updatePortrait();
+      var rf = stageEl.requestFullscreen || stageEl.webkitRequestFullscreen;
+      if (rf) { try { rf.call(stageEl); } catch (e) {} }          // Android; iPhone ignores
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(function () {}); // best-effort
+      }
+    }
+
+    var mobileInited = false;
+    function enableMobileControls() {
+      mobileInited = true;
+      var DOE = window.DeviceOrientationEvent;
+      if (DOE && typeof DOE.requestPermission === 'function') {
+        DOE.requestPermission().then(function (s) { if (s === 'granted') attachTilt(); }).catch(function () {});
+      } else {
+        attachTilt(); // Android / older iOS: no permission gate
+      }
+      attachTouch();
+    }
+
+    var tiltBase = null;
+    function attachTilt() { window.addEventListener('deviceorientation', onTilt, true); }
+    function onTilt(e) {
+      if (e.beta === null && e.gamma === null) return;
+      var beta = e.beta || 0, gamma = e.gamma || 0;
+      if (!tiltBase) { tiltBase = { beta: beta, gamma: gamma }; return; } // calibrate neutral
+      var dRoll = gamma - tiltBase.gamma;  // left/right lean
+      var dPitch = beta - tiltBase.beta;   // forward/back lean
+      var sx = TILT_SWAP ? dPitch : dRoll;
+      var sy = TILT_SWAP ? dRoll : dPitch;
+      var nx = clamp(sx / TILT_RANGE, -1, 1) * (TILT_INVERT_X ? -1 : 1);
+      var ny = clamp(sy / TILT_RANGE, -1, 1) * (TILT_INVERT_Y ? -1 : 1);
+      setAim(nx, ny);
+    }
+
+    // Touch: a stationary touch fires (tap or hold); a moving touch zooms the camera.
+    var touchActive = false, touchMode = '', touchStartY = 0, lastY = 0, touchMoved = 0;
+    function attachTouch() {
+      canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+      canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+      canvas.addEventListener('touchend', onTouchEnd);
+      canvas.addEventListener('touchcancel', onTouchEnd);
+    }
+    function onTouchStart(e) {
+      e.preventDefault();
+      var t = e.changedTouches[0];
+      touchActive = true; touchMode = 'tap'; touchStartY = lastY = t.clientY; touchMoved = 0;
+      if (Module._web_set_shooting) Module._web_set_shooting(1);
+    }
+    function onTouchMove(e) {
+      e.preventDefault();
+      if (!touchActive) return;
+      var t = e.changedTouches[0];
+      var dy = t.clientY - lastY;
+      lastY = t.clientY;
+      touchMoved += Math.abs(t.clientY - touchStartY);
+      if (touchMode === 'tap' && touchMoved > 14) {  // it's a slide, not a tap: stop firing, zoom
+        touchMode = 'zoom';
+        if (Module._web_set_shooting) Module._web_set_shooting(0);
+      }
+      if (touchMode === 'zoom' && Module._web_zoom) {
+        Module._web_zoom(dy * ZOOM_SCALE);  // finger up -> closer, down -> further
+      }
+    }
+    function onTouchEnd() {
+      touchActive = false;
+      if (Module._web_set_shooting) Module._web_set_shooting(0);
+    }
+
+    function updatePortrait() {
+      if (!document.body.classList.contains('app')) return;
+      document.body.classList.toggle('portrait', window.matchMedia('(orientation: portrait)').matches);
+    }
+    window.addEventListener('resize', updatePortrait);
+    window.addEventListener('orientationchange', function () {
+      tiltBase = null;                       // recalibrate neutral after a rotation
+      setTimeout(updatePortrait, 250);
     });
-    // Cursor off the canvas -> fly straight instead of holding the last turn.
-    canvas.addEventListener('mouseleave', function () { setAim(0, 0); });
 
     var Module = {
       canvas: canvas,
+      onRuntimeInitialized: function () { runtimeReady = true; setReadyUI(); },
       print: function (t) { console.log(t); },
       printErr: function (t) { console.error(t); },
     };
+    setReadyUI(); // surface a WebGL2-unsupported message immediately if needed
   </script>
   {{{ SCRIPT }}}
 </body>

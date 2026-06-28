@@ -20,6 +20,7 @@
 #include "Systems/CollisionSystem.h"
 #include "Systems/FiringSystem.h"
 #include "Components/SpaceShip.h"
+#include "Components/SmoothFollow.h"
 #include "Systems/ImpactCleanupSystem.h"
 #include "Systems/DamageSystem.h"
 #include "Systems/BulletCleanupSystem.h"
@@ -170,6 +171,42 @@ extern "C" EMSCRIPTEN_KEEPALIVE void web_press_space() {
 extern "C" EMSCRIPTEN_KEEPALIVE void web_set_aim(float x, float y) {
     mouseState.aim = {(double) x, (double) y};
 }
+
+// Mobile has no separate thrust input, so the ship auto-thrusts: JS holds the
+// forward key down for the duration of a touch game.
+extern "C" EMSCRIPTEN_KEEPALIVE void web_set_thrust(int on) {
+    if (on) {
+        keyboardState.setPressedKey(gameConfig.PLAYER_FORWARD);
+    } else {
+        keyboardState.releaseKey(gameConfig.PLAYER_FORWARD);
+    }
+}
+
+// Mobile: tap/hold to fire.
+extern "C" EMSCRIPTEN_KEEPALIVE void web_set_shooting(int on) {
+    if (on) {
+        keyboardState.setPressedKey(gameConfig.PLAYER_SHOOT);
+    } else {
+        keyboardState.releaseKey(gameConfig.PLAYER_SHOOT);
+    }
+}
+
+// Mobile: slide to dolly the follow camera in/out (delta in world units).
+extern "C" EMSCRIPTEN_KEEPALIVE void web_zoom(float delta) {
+    Entity *cam = gameModel.activeCamera;
+    if (cam == nullptr || !cam->has<SmoothFollow>()) {
+        return;
+    }
+    Vector3 &off = cam->get<SmoothFollow>()->relativeOffset;
+    double mag = off.magnitude();
+    if (mag < 0.0001) {
+        return;
+    }
+    double next = mag + delta;
+    if (next < gameConfig.MIN_CAMERA_DISTANCE) next = gameConfig.MIN_CAMERA_DISTANCE;
+    if (next > gameConfig.MAX_CAMERA_DISTANCE) next = gameConfig.MAX_CAMERA_DISTANCE;
+    off = off.normalize() * next;
+}
 #endif
 
 void handleGameOver() {
@@ -248,7 +285,12 @@ static bool running = true;
 static void syncCanvasSize() {
     double cssW = 0, cssH = 0;
     emscripten_get_element_css_size("#canvas", &cssW, &cssH);
+    // Cap the pixel ratio: phones report 3x, which would allocate a huge buffer
+    // for little visible gain. 2x is plenty crisp and much cheaper to fill.
     double dpr = emscripten_get_device_pixel_ratio();
+    if (dpr > 2.0) {
+        dpr = 2.0;
+    }
     int w = (int) (cssW * dpr);
     int h = (int) (cssH * dpr);
     if (w <= 0 || h <= 0) {

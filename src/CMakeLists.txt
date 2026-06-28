@@ -20,7 +20,7 @@ if (EMSCRIPTEN)
     target_compile_options(${BINARY}_run PRIVATE -sUSE_SDL=2 -sFULL_ES3)
     target_link_options(${BINARY}_run PRIVATE
             -sUSE_SDL=2 -sFULL_ES3 -sMAX_WEBGL_VERSION=2 -sMIN_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH=1
-            "SHELL:-sEXPORTED_FUNCTIONS=['_main','_web_press_space','_web_set_aim']"
+            "SHELL:-sEXPORTED_FUNCTIONS=['_main','_web_press_space','_web_set_aim','_web_set_thrust','_web_set_shooting','_web_zoom']"
             "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/Assets@/Assets"
             "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/Shaders@/Shaders"
             "SHELL:--shell-file ${CMAKE_SOURCE_DIR}/web/shell.html")
