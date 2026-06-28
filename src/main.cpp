@@ -182,6 +182,11 @@ extern "C" EMSCRIPTEN_KEEPALIVE void web_set_thrust(int on) {
     }
 }
 
+// Mobile: bank the phone to roll the ship (normalized roll rate in [-1,1]).
+extern "C" EMSCRIPTEN_KEEPALIVE void web_set_roll(float r) {
+    mouseState.roll = (double) r;
+}
+
 // Mobile: tap/hold to fire.
 extern "C" EMSCRIPTEN_KEEPALIVE void web_set_shooting(int on) {
     if (on) {

@@ -43,6 +43,11 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
             rotation *= Quaternion::angleAxis(-gameConfig.PLAYER_TURN_SPEED * dt / 1000, Vector3::forward());
         }
 
+        // Mobile: proportional roll from banking the phone.
+        if (mouseState.roll != 0.0) {
+            rotation *= Quaternion::angleAxis(mouseState.roll * gameConfig.PLAYER_TURN_SPEED * dt / 1000, Vector3::forward());
+        }
+
         double &thrust = entity->get<SpaceShip>()->thrust;
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
             Vector3 force = Vector3::back() * gameConfig.PLAYER_SPEED * dt / 1000;
