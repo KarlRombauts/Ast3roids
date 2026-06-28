@@ -166,14 +166,16 @@
     var hasWebGL2 = (typeof WebGL2RenderingContext !== 'undefined');
     var runtimeReady = false;
 
-    // --- tilt steering tuning ---
-    var TILT_RANGE = 45;        // degrees of lean away from neutral for a full-strength turn
-    var TILT_DEADZONE = 0.12;   // fraction of the range near neutral that does nothing
-    var TILT_EXPONENT = 2.0;    // >1: gentle near neutral, progressively stronger as you lean further
-    var TILT_SMOOTH = 0.3;      // low-pass on the sensor (0..1, higher = snappier/noisier)
-    var TILT_SWAP = false;      // swap which tilt axis drives left/right vs up/down
-    var TILT_INVERT_X = false;  // flip left/right
-    var TILT_INVERT_Y = false;  // flip up/down
+    // --- aim/point steering tuning ---
+    // Steering comes from where the back of the phone points (its compass heading
+    // + up/down elevation), measured as deviation from your start orientation.
+    var YAW_RANGE = 40;         // deg of heading change (look left/right) for a full-strength turn
+    var PITCH_RANGE = 35;       // deg of elevation change (look up/down) for full strength
+    var TILT_DEADZONE = 0.1;    // fraction near the start direction that does nothing (fly straight)
+    var TILT_EXPONENT = 1.6;    // >1: gentle near neutral, progressively stronger as you look further
+    var TILT_SMOOTH = 0.25;     // low-pass smoothing (0..1, higher = snappier/noisier)
+    var TILT_INVERT_X = false;  // flip if looking right turns the ship left
+    var TILT_INVERT_Y = false;  // flip if looking up makes the ship dive
     var ZOOM_SCALE = 0.06;      // slide pixels -> camera dolly (world units)
 
     function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
@@ -186,7 +188,7 @@
     var ST = { GAME_OVER: 0, WAVE_OVER: 1, PLAYING: 2, START: 3, PLAY_AGAIN: 4, GAME_OVER_TRANSITION: 5 };
 
     var startHint = isTouch
-      ? 'Tilt to steer · tap to shoot · slide to zoom'
+      ? 'Aim the phone to steer · tap to shoot · slide to zoom'
       : 'Press <kbd>SPACE</kbd> to start';
 
     // Reflect load/support state on the menu before the game loop takes over.
@@ -285,11 +287,11 @@
       attachTouch();
     }
 
-    var tiltBase = null, sBeta = null, sGamma = null;
     function attachTilt() { window.addEventListener('deviceorientation', onTilt, true); }
-    // Map a normalized lean [-1,1] to a turn input: nothing inside the deadzone
-    // (so holding the start orientation flies straight), then a progressively
-    // stronger response the further you deviate.
+
+    // Map a normalized deviation [-1,1] to a turn input: nothing inside the
+    // deadzone (so holding the start direction flies straight), then a
+    // progressively stronger response the further you look.
     function tiltResponse(v) {
       var a = Math.abs(v);
       if (a <= TILT_DEADZONE) return 0;
@@ -297,19 +299,39 @@
       a = Math.pow(a, TILT_EXPONENT);
       return v < 0 ? -a : a;
     }
+
+    // Device->world rotation matrix from the orientation Euler angles (W3C ZXY).
+    var DEG = Math.PI / 180;
+    function orientationMatrix(alpha, beta, gamma) {
+      var x = beta * DEG, y = gamma * DEG, z = alpha * DEG;
+      var cX = Math.cos(x), cY = Math.cos(y), cZ = Math.cos(z);
+      var sX = Math.sin(x), sY = Math.sin(y), sZ = Math.sin(z);
+      return [
+        cZ * cY - sZ * sX * sY,  -cX * sZ,  cZ * sY + cY * sX * sZ, // row 0 (m11..m13)
+        cY * sZ + cZ * sX * sY,   cZ * cX,  sZ * sY - cZ * cY * sX, // row 1 (m21..m23)
+        -cX * sY,                 sX,       cX * cY                 // row 2 (m31..m33)
+      ];
+    }
+
+    var tiltBase = null, sDH = 0, sDE = 0; // calibrated start heading/elevation + smoothed deviations
     function onTilt(e) {
-      if (e.beta === null && e.gamma === null) return;
-      var beta = e.beta || 0, gamma = e.gamma || 0;
-      // low-pass the raw sensor to cut jitter
-      sBeta = (sBeta === null) ? beta : sBeta + TILT_SMOOTH * (beta - sBeta);
-      sGamma = (sGamma === null) ? gamma : sGamma + TILT_SMOOTH * (gamma - sGamma);
-      if (!tiltBase) { tiltBase = { beta: sBeta, gamma: sGamma }; return; } // calibrate "forward"
-      var dRoll = sGamma - tiltBase.gamma;  // left/right lean from neutral
-      var dPitch = sBeta - tiltBase.beta;   // up/down lean from neutral
-      var sx = TILT_SWAP ? dPitch : dRoll;
-      var sy = TILT_SWAP ? dRoll : dPitch;
-      var nx = tiltResponse(clamp(sx / TILT_RANGE, -1, 1)) * (TILT_INVERT_X ? -1 : 1);
-      var ny = tiltResponse(clamp(sy / TILT_RANGE, -1, 1)) * (TILT_INVERT_Y ? -1 : 1);
+      if (e.alpha === null && e.beta === null && e.gamma === null) return;
+      var R = orientationMatrix(e.alpha || 0, e.beta || 0, e.gamma || 0);
+      // Where the back of the phone points, in world axes (East, North, Up):
+      // device -Z mapped to world = -(m13, m23, m33).
+      var pE = -R[2], pN = -R[5], pU = -R[8];
+      var heading = Math.atan2(pE, pN) / DEG;                       // 0 = North, + = East (look right)
+      var elevation = Math.asin(Math.max(-1, Math.min(1, pU))) / DEG; // + = looking up
+      if (!tiltBase) { tiltBase = { h: heading, e: elevation }; return; } // calibrate "forward"
+
+      var dH = ((heading - tiltBase.h + 540) % 360) - 180;         // wrapped to [-180,180]
+      var dE = elevation - tiltBase.e;
+      sDH += TILT_SMOOTH * (dH - sDH);
+      sDE += TILT_SMOOTH * (dE - sDE);
+
+      // look right -> turn right (nx>0); look up -> go up (aim y is +down, so negate)
+      var nx = tiltResponse(clamp(sDH / YAW_RANGE, -1, 1)) * (TILT_INVERT_X ? -1 : 1);
+      var ny = tiltResponse(clamp(-sDE / PITCH_RANGE, -1, 1)) * (TILT_INVERT_Y ? -1 : 1);
       setAim(nx, ny);
     }
 
