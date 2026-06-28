@@ -1,0 +1,11 @@
+{
+  "name": "AST3ROIDS",
+  "short_name": "AST3ROIDS",
+  "description": "A 3D Asteroids / Star Fox-style game in C++ / WebGL2 / WebAssembly.",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#05060a",
+  "theme_color": "#05060a",
+  "start_url": "./index.html",
+  "scope": "./"
+}

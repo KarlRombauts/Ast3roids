@@ -3,6 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <!-- Installable / standalone so "Add to Home Screen" runs truly fullscreen
+       (the only way to hide Safari's chrome on iPhone). -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AST3ROIDS">
+  <meta name="theme-color" content="#05060a">
+  <link rel="manifest" href="manifest.json">
   <title>AST3ROIDS — WebGL / WebAssembly</title>
   <style>
     :root { --accent: #4aa3ff; --accent-dim: #2b6cb0; }
@@ -176,6 +184,8 @@
     var TILT_SMOOTH = 0.25;     // low-pass smoothing (0..1, higher = snappier/noisier)
     var TILT_INVERT_X = false;  // flip if looking right turns the ship left
     var TILT_INVERT_Y = false;  // flip if looking up makes the ship dive
+    var ROLL_RANGE = 35;        // deg of phone bank (tilt left/right) for a full-rate ship roll
+    var TILT_INVERT_ROLL = false; // flip if banking the phone rolls the ship the wrong way
     var ZOOM_SCALE = 0.06;      // slide pixels -> camera dolly (world units)
 
     function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
@@ -313,7 +323,21 @@
       ];
     }
 
-    var tiltBase = null, sDH = 0, sDE = 0; // calibrated start heading/elevation + smoothed deviations
+    var tiltBase = null, sDH = 0, sDE = 0, sDR = 0, lastBank = 0;
+    // Phone bank (roll about the direction it points): the signed angle of the
+    // screen-up vector away from "world up projected onto the screen plane".
+    function bankAngle(R, pE, pN, pU) {
+      var uE = R[1], uN = R[4], uU = R[7];                 // screen-up = device +Y in world
+      var rE = -pU * pE, rN = -pU * pN, rU = 1 - pU * pU;  // world-up perpendicular to pointing
+      var rl = Math.sqrt(rE * rE + rN * rN + rU * rU);
+      if (rl < 0.2) return lastBank;                       // pointing near vertical: bank ill-defined
+      rE /= rl; rN /= rl; rU /= rl;
+      var cosT = uE * rE + uN * rN + uU * rU;
+      var cE = pN * rU - pU * rN, cN = pU * rE - pE * rU, cU = pE * rN - pN * rE; // pointing x refUp
+      var sinT = uE * cE + uN * cN + uU * cU;
+      lastBank = Math.atan2(sinT, cosT) / DEG;
+      return lastBank;
+    }
     function onTilt(e) {
       if (e.alpha === null && e.beta === null && e.gamma === null) return;
       var R = orientationMatrix(e.alpha || 0, e.beta || 0, e.gamma || 0);
@@ -322,17 +346,24 @@
       var pE = -R[2], pN = -R[5], pU = -R[8];
       var heading = Math.atan2(pE, pN) / DEG;                       // 0 = North, + = East (look right)
       var elevation = Math.asin(Math.max(-1, Math.min(1, pU))) / DEG; // + = looking up
-      if (!tiltBase) { tiltBase = { h: heading, e: elevation }; return; } // calibrate "forward"
+      var bank = bankAngle(R, pE, pN, pU);
+      if (!tiltBase) { tiltBase = { h: heading, e: elevation, b: bank }; return; } // calibrate "forward"
 
       var dH = ((heading - tiltBase.h + 540) % 360) - 180;         // wrapped to [-180,180]
       var dE = elevation - tiltBase.e;
+      var dR = ((bank - tiltBase.b + 540) % 360) - 180;
       sDH += TILT_SMOOTH * (dH - sDH);
       sDE += TILT_SMOOTH * (dE - sDE);
+      sDR += TILT_SMOOTH * (dR - sDR);
 
       // look right -> turn right (nx>0); look up -> go up (aim y is +down, so negate)
       var nx = tiltResponse(clamp(sDH / YAW_RANGE, -1, 1)) * (TILT_INVERT_X ? -1 : 1);
       var ny = tiltResponse(clamp(-sDE / PITCH_RANGE, -1, 1)) * (TILT_INVERT_Y ? -1 : 1);
       setAim(nx, ny);
+
+      // bank the phone -> roll the ship
+      var roll = tiltResponse(clamp(sDR / ROLL_RANGE, -1, 1)) * (TILT_INVERT_ROLL ? -1 : 1);
+      if (Module._web_set_roll) Module._web_set_roll(roll);
     }
 
     // Touch: a stationary touch fires (tap or hold); a moving touch zooms the camera.

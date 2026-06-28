@@ -71,7 +71,7 @@ var ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIR
 
 // --pre-jses are emitted after the Module integration code, so that they can
 // refer to Module (if they choose; they can also define Module)
-// include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpatgvcjo0.js
+// include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpnl9rs6qe.js
 
   if (!Module['expectedDataFileDownloads']) Module['expectedDataFileDownloads'] = 0;
   Module['expectedDataFileDownloads']++;
@@ -206,21 +206,21 @@ Module['FS_createPath']("/", "Shaders", true, true);
 
   })();
 
-// end include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpatgvcjo0.js
-// include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpp3ywnak3.js
+// end include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpnl9rs6qe.js
+// include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpnehbcrrf.js
 
     // All the pre-js content up to here must remain later on, we need to run
     // it.
     if ((typeof ENVIRONMENT_IS_WASM_WORKER != 'undefined' && ENVIRONMENT_IS_WASM_WORKER) || (typeof ENVIRONMENT_IS_PTHREAD != 'undefined' && ENVIRONMENT_IS_PTHREAD) || (typeof ENVIRONMENT_IS_AUDIO_WORKLET != 'undefined' && ENVIRONMENT_IS_AUDIO_WORKLET)) Module['preRun'] = [];
     var necessaryPreJSTasks = Module['preRun'].slice();
-  // end include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpp3ywnak3.js
-// include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpftnwpr0d.js
+  // end include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpnehbcrrf.js
+// include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpo5kinvds.js
 
     if (!Module['preRun']) throw 'Module.preRun should exist because file support used it; did a pre-js delete it?';
     necessaryPreJSTasks.forEach((task) => {
       if (Module['preRun'].indexOf(task) < 0) throw 'All preRun tasks that exist before user pre-js code should remain after; did you replace Module or modify Module.preRun?';
     });
-  // end include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpftnwpr0d.js
+  // end include: /var/folders/c0/z7bhp42n6935d1z5dsgdv6xc0000gn/T/tmpo5kinvds.js
 
 
 var programArgs = [];
@@ -10393,6 +10393,7 @@ var ASM_CONSTS = {
 var _web_press_space = Module['_web_press_space'] = makeInvalidEarlyAccess('_web_press_space');
 var _web_set_aim = Module['_web_set_aim'] = makeInvalidEarlyAccess('_web_set_aim');
 var _web_set_thrust = Module['_web_set_thrust'] = makeInvalidEarlyAccess('_web_set_thrust');
+var _web_set_roll = Module['_web_set_roll'] = makeInvalidEarlyAccess('_web_set_roll');
 var _web_set_shooting = Module['_web_set_shooting'] = makeInvalidEarlyAccess('_web_set_shooting');
 var _web_zoom = Module['_web_zoom'] = makeInvalidEarlyAccess('_web_zoom');
 var _main = Module['_main'] = makeInvalidEarlyAccess('_main');
@@ -10416,6 +10417,7 @@ function assignWasmExports(wasmExports) {
   assert(typeof wasmExports['web_press_space'] != 'undefined', 'missing Wasm export: web_press_space');
   assert(typeof wasmExports['web_set_aim'] != 'undefined', 'missing Wasm export: web_set_aim');
   assert(typeof wasmExports['web_set_thrust'] != 'undefined', 'missing Wasm export: web_set_thrust');
+  assert(typeof wasmExports['web_set_roll'] != 'undefined', 'missing Wasm export: web_set_roll');
   assert(typeof wasmExports['web_set_shooting'] != 'undefined', 'missing Wasm export: web_set_shooting');
   assert(typeof wasmExports['web_zoom'] != 'undefined', 'missing Wasm export: web_zoom');
   assert(typeof wasmExports['__main_argc_argv'] != 'undefined', 'missing Wasm export: __main_argc_argv');
@@ -10435,6 +10437,7 @@ function assignWasmExports(wasmExports) {
   _web_press_space = Module['_web_press_space'] = createExportWrapper('web_press_space', 0);
   _web_set_aim = Module['_web_set_aim'] = createExportWrapper('web_set_aim', 2);
   _web_set_thrust = Module['_web_set_thrust'] = createExportWrapper('web_set_thrust', 1);
+  _web_set_roll = Module['_web_set_roll'] = createExportWrapper('web_set_roll', 1);
   _web_set_shooting = Module['_web_set_shooting'] = createExportWrapper('web_set_shooting', 1);
   _web_zoom = Module['_web_zoom'] = createExportWrapper('web_zoom', 1);
   _main = Module['_main'] = createExportWrapper('__main_argc_argv', 2);
