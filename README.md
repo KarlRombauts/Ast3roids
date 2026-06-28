@@ -5,6 +5,8 @@ blast asteroids that split as you hit them, and survive escalating waves.
 
 **▶ Play it in your browser: https://karlrombauts.github.io/Ast3roids/**
 
+![AST3ROIDS gameplay](media/screenshot.png)
+
 It began life as a desktop OpenGL game (fixed-function pipeline + GLUT). The
 renderer was then rewritten from scratch as a modern shader-based GLES3 / WebGL2
 pipeline and compiled to WebAssembly with Emscripten, so the whole game runs in
@@ -33,6 +35,8 @@ the browser while still building natively.
 | Mouse | Aim |
 | `Space` | Fire |
 | `I` / `K` | Camera distance |
+
+On a phone (landscape): **tilt** to steer, **tap/hold** to shoot, **slide** to zoom — the ship auto-thrusts.
 
 ## Tech stack
 
