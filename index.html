@@ -160,9 +160,10 @@
                   window.matchMedia('(hover: none)').matches;
     // The game needs WebGL2 (iOS 15+). Detect up front so we can say so instead
     // of showing a silent black canvas.
-    var hasWebGL2 = (function () {
-      try { return !!document.createElement('canvas').getContext('webgl2'); } catch (e) { return false; }
-    })();
+    // Feature-detect the WebGL2 interface (defined on iOS 15+ and every modern
+    // browser, absent on older iOS). This avoids creating a probe context, which
+    // is unreliable and can starve the game's context on single-context phones.
+    var hasWebGL2 = (typeof WebGL2RenderingContext !== 'undefined');
     var runtimeReady = false;
 
     // --- tilt steering tuning (tweak if an axis feels reversed/swapped) ---
@@ -201,6 +202,9 @@
     // Called every frame from C++ via EM_ASM.
     function gameUpdate(state, score, wave, timeMs) {
       if (!runtimeReady) { runtimeReady = true; setReadyUI(); } // loop is running -> ready
+      // Mobile auto-thrust: re-assert every playing frame, because starting a
+      // game clears all held keys (incl. the forward key) on the first frame.
+      if (isTouch && state === ST.PLAYING && Module._web_set_thrust) Module._web_set_thrust(1);
       var inMenu = (state === ST.START || state === ST.PLAY_AGAIN || state === ST.GAME_OVER);
       menuEl.classList.toggle('hidden', !inMenu);
       hudEl.classList.toggle('show', !inMenu);
@@ -228,7 +232,8 @@
       if (isTouch) {
         enterAppMode();
         if (!mobileInited) enableMobileControls(); // permission must be inside this gesture
-        if (Module._web_set_thrust) Module._web_set_thrust(1); // mobile auto-thrusts
+        // (auto-thrust is asserted each frame in gameUpdate, after the engine
+        // clears held keys on the starting frame)
       }
       if (Module._web_press_space) Module._web_press_space();
     }
@@ -338,7 +343,18 @@
 
     var Module = {
       canvas: canvas,
-      onRuntimeInitialized: function () { runtimeReady = true; setReadyUI(); },
+      onRuntimeInitialized: function () {
+        // Play is enabled by the first gameUpdate (which only fires once the
+        // game loop — and therefore the WebGL2 context — is actually up). If
+        // that never happens, the context failed: show an error, don't hang.
+        setTimeout(function () {
+          if (!runtimeReady && hasWebGL2) {
+            document.getElementById('menu-msg').innerHTML =
+              'Couldn’t start WebGL2.<br>Try an updated or different browser.';
+            playBtn.style.display = 'none';
+          }
+        }, 6000);
+      },
       print: function (t) { console.log(t); },
       printErr: function (t) { console.error(t); },
     };
