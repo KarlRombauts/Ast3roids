@@ -166,8 +166,11 @@
     var hasWebGL2 = (typeof WebGL2RenderingContext !== 'undefined');
     var runtimeReady = false;
 
-    // --- tilt steering tuning (tweak if an axis feels reversed/swapped) ---
-    var TILT_RANGE = 30;        // degrees of tilt for full steering deflection
+    // --- tilt steering tuning ---
+    var TILT_RANGE = 45;        // degrees of lean away from neutral for a full-strength turn
+    var TILT_DEADZONE = 0.12;   // fraction of the range near neutral that does nothing
+    var TILT_EXPONENT = 2.0;    // >1: gentle near neutral, progressively stronger as you lean further
+    var TILT_SMOOTH = 0.3;      // low-pass on the sensor (0..1, higher = snappier/noisier)
     var TILT_SWAP = false;      // swap which tilt axis drives left/right vs up/down
     var TILT_INVERT_X = false;  // flip left/right
     var TILT_INVERT_Y = false;  // flip up/down
@@ -282,18 +285,31 @@
       attachTouch();
     }
 
-    var tiltBase = null;
+    var tiltBase = null, sBeta = null, sGamma = null;
     function attachTilt() { window.addEventListener('deviceorientation', onTilt, true); }
+    // Map a normalized lean [-1,1] to a turn input: nothing inside the deadzone
+    // (so holding the start orientation flies straight), then a progressively
+    // stronger response the further you deviate.
+    function tiltResponse(v) {
+      var a = Math.abs(v);
+      if (a <= TILT_DEADZONE) return 0;
+      a = (a - TILT_DEADZONE) / (1 - TILT_DEADZONE); // rescale the live band to [0,1]
+      a = Math.pow(a, TILT_EXPONENT);
+      return v < 0 ? -a : a;
+    }
     function onTilt(e) {
       if (e.beta === null && e.gamma === null) return;
       var beta = e.beta || 0, gamma = e.gamma || 0;
-      if (!tiltBase) { tiltBase = { beta: beta, gamma: gamma }; return; } // calibrate neutral
-      var dRoll = gamma - tiltBase.gamma;  // left/right lean
-      var dPitch = beta - tiltBase.beta;   // forward/back lean
+      // low-pass the raw sensor to cut jitter
+      sBeta = (sBeta === null) ? beta : sBeta + TILT_SMOOTH * (beta - sBeta);
+      sGamma = (sGamma === null) ? gamma : sGamma + TILT_SMOOTH * (gamma - sGamma);
+      if (!tiltBase) { tiltBase = { beta: sBeta, gamma: sGamma }; return; } // calibrate "forward"
+      var dRoll = sGamma - tiltBase.gamma;  // left/right lean from neutral
+      var dPitch = sBeta - tiltBase.beta;   // up/down lean from neutral
       var sx = TILT_SWAP ? dPitch : dRoll;
       var sy = TILT_SWAP ? dRoll : dPitch;
-      var nx = clamp(sx / TILT_RANGE, -1, 1) * (TILT_INVERT_X ? -1 : 1);
-      var ny = clamp(sy / TILT_RANGE, -1, 1) * (TILT_INVERT_Y ? -1 : 1);
+      var nx = tiltResponse(clamp(sx / TILT_RANGE, -1, 1)) * (TILT_INVERT_X ? -1 : 1);
+      var ny = tiltResponse(clamp(sy / TILT_RANGE, -1, 1)) * (TILT_INVERT_Y ? -1 : 1);
       setAim(nx, ny);
     }
 
