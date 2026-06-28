@@ -93,6 +93,14 @@
     footer a:hover { color: var(--accent); border-bottom-color: var(--accent); }
 
     button.play[disabled] { opacity: 0.5; cursor: default; box-shadow: none; filter: grayscale(0.4); }
+
+    /* Loading bar (shown while the WASM + assets download) */
+    #loadbar { width: 220px; max-width: 60vw; height: 6px; margin-top: 2px;
+      background: rgba(74,163,255,0.15); border-radius: 3px; overflow: hidden; }
+    #loadbar-fill { height: 100%; width: 0%;
+      background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+      box-shadow: 0 0 10px rgba(74,163,255,0.6); transition: width .2s ease; }
+    #loadbar.hidden { display: none; }
     #canvas { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; }
 
     /* Rotate-to-landscape nudge (mobile, app mode only) */
@@ -133,6 +141,7 @@
     <div id="menu">
       <div class="title">AST3ROIDS</div>
       <div class="msg" id="menu-msg">Loading…</div>
+      <div id="loadbar"><div id="loadbar-fill"></div></div>
       <div class="score" id="menu-score"></div>
       <button class="play" id="play-btn" onclick="startGame()" disabled>Play</button>
     </div>
@@ -185,7 +194,7 @@
     var TILT_INVERT_X = false;  // flip if looking right turns the ship left
     var TILT_INVERT_Y = false;  // flip if looking up makes the ship dive
     var ROLL_RANGE = 35;        // deg of phone bank (tilt left/right) for a full-rate ship roll
-    var TILT_INVERT_ROLL = false; // flip if banking the phone rolls the ship the wrong way
+    var TILT_INVERT_ROLL = true;  // flip if banking the phone rolls the ship the wrong way
     var ZOOM_SCALE = 0.06;      // slide pixels -> camera dolly (world units)
 
     function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
@@ -203,15 +212,18 @@
 
     // Reflect load/support state on the menu before the game loop takes over.
     function setReadyUI() {
+      var loadbar = document.getElementById('loadbar');
       if (!hasWebGL2) {
         document.getElementById('menu-msg').innerHTML =
           'This game needs <b>WebGL2</b>.<br>Update to iOS&nbsp;15+ or use a current browser.';
         playBtn.style.display = 'none';
+        loadbar.classList.add('hidden');
         return;
       }
       if (!runtimeReady) return;
       playBtn.disabled = false;
       document.getElementById('menu-msg').innerHTML = startHint;
+      loadbar.classList.add('hidden');
     }
 
     // Called every frame from C++ via EM_ASM.
@@ -412,6 +424,17 @@
 
     var Module = {
       canvas: canvas,
+      // Emscripten calls this with download/prepare progress like "... (x/y)".
+      setStatus: function (text) {
+        if (runtimeReady) return;
+        var fill = document.getElementById('loadbar-fill');
+        var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+        if (m) {
+          fill.style.width = Math.max(3, Math.round(parseInt(m[2], 10) / parseInt(m[4], 10) * 100)) + '%';
+        } else if (!text) {
+          fill.style.width = '100%';
+        }
+      },
       onRuntimeInitialized: function () {
         // Play is enabled by the first gameUpdate (which only fires once the
         // game loop — and therefore the WebGL2 context — is actually up). If
