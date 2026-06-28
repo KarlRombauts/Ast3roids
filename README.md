@@ -36,7 +36,7 @@ the browser while still building natively.
 | `Space` | Fire |
 | `I` / `K` | Camera distance |
 
-On a phone (landscape): **tilt** to steer, **tap/hold** to shoot, **slide** to zoom — the ship auto-thrusts.
+On a phone (landscape): **aim the phone** to steer (look where you want to fly), **tap/hold** to shoot, **slide** to zoom — the ship auto-thrusts.
 
 ## Tech stack
 
