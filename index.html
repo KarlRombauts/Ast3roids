@@ -88,6 +88,10 @@
 
     .controls { font-size: 12px; color: #6b7690; letter-spacing: 0.06em; text-align: center; max-width: 600px; line-height: 1.7; }
     .controls kbd { color: #b9c6de; background: #161b28; border: 1px solid #29324a; border-radius: 4px; padding: 1px 6px; }
+    /* Show the touch/tilt legend on phones, the keyboard legend elsewhere. */
+    .controls.mobile { display: none; }
+    body.phone .controls.desktop { display: none; }
+    body.phone .controls.mobile { display: block; }
     footer { font-size: 11px; color: #424b5e; letter-spacing: 0.1em; text-align: center; }
     footer a { color: #6b7690; text-decoration: none; border-bottom: 1px solid #2a3346; }
     footer a:hover { color: var(--accent); border-bottom-color: var(--accent); }
@@ -154,9 +158,12 @@
     </div>
   </div>
 
-  <div class="controls">
+  <div class="controls desktop">
     <kbd>F</kbd> thrust &nbsp; <kbd>A</kbd>/<kbd>D</kbd> roll &nbsp; <kbd>Mouse</kbd> aim &nbsp;
     <kbd>Space</kbd> fire &nbsp; <kbd>I</kbd>/<kbd>K</kbd> camera
+  </div>
+  <div class="controls mobile">
+    📱 <kbd>Aim</kbd> steer &nbsp; 🔄 <kbd>Tilt</kbd> roll &nbsp; 👆 <kbd>Tap</kbd> shoot &nbsp; 🔎 <kbd>Slide</kbd> zoom
   </div>
   <footer>
     Originally a desktop OpenGL game — renderer rewritten to WebGL2 and compiled to WASM.
@@ -175,6 +182,9 @@
     // excludes touch-capable laptops, which still steer with the mouse.
     var isTouch = window.matchMedia('(pointer: coarse)').matches &&
                   window.matchMedia('(hover: none)').matches;
+    // A phone with motion sensors -> show the tilt/touch control legend.
+    var isPhone = isTouch && ('DeviceOrientationEvent' in window || 'DeviceMotionEvent' in window);
+    if (isPhone) document.body.classList.add('phone');
     // The game needs WebGL2 (iOS 15+). Detect up front so we can say so instead
     // of showing a silent black canvas.
     // Feature-detect the WebGL2 interface (defined on iOS 15+ and every modern
@@ -206,8 +216,8 @@
     // Game states (match GameState enum order in GameModel.h)
     var ST = { GAME_OVER: 0, WAVE_OVER: 1, PLAYING: 2, START: 3, PLAY_AGAIN: 4, GAME_OVER_TRANSITION: 5 };
 
-    var startHint = isTouch
-      ? 'Aim the phone to steer · tap to shoot · slide to zoom'
+    var startHint = isPhone
+      ? 'Aim to steer · tilt to roll · tap to shoot · slide to zoom'
       : 'Press <kbd>SPACE</kbd> to start';
 
     // Reflect load/support state on the menu before the game loop takes over.
