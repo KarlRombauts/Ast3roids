@@ -9,7 +9,11 @@ void MaterialLibrary::init() {
     ASTEROID->setDiffuse(0.8,0.8,0.8);
     ASTEROID->setAmbient(1,1,1);
     ASTEROID->setEmission(0, 0, 0);
-    ASTEROID->textureId = TextureLoader::load(gameConfig.TEXTURE_DIR + "/asteroid-2.jpg");
+    // TEMPORARY (debug): untextured, so the displaced geometry is visible on its
+    // own. textureId == 0 makes RenderSystem bind its white fallback and clear
+    // uHasTexture. Restore the line below to put the rock texture back.
+    ASTEROID->textureId = 0;
+    // ASTEROID->textureId = TextureLoader::load(gameConfig.TEXTURE_DIR + "/asteroid-2.jpg");
 
     BULLET = new Material();
     BULLET->setSpecular(0,0,0);

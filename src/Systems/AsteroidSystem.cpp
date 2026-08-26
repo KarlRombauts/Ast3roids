@@ -4,6 +4,12 @@
 #include "Factory/AsteroidFactory.h"
 
 void AsteroidSystem::startWave(EntityManager &entities, int waveCount) {
+    // Build the reusable meshes before the first asteroid needs one. Idempotent,
+    // so later waves cost nothing; it is here rather than at the first spawn so
+    // the one-off cost lands on a wave transition instead of mid-fight when a
+    // rock is split.
+    AsteroidFactory::warmGeometryPool();
+
     Entity *spaceShip = entities.getFirstEntityWith<SpaceShip>();
 
     for (int i = 0; i < waveCount; i++) {

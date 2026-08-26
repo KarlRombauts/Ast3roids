@@ -23,6 +23,39 @@ struct Material : public Component {
     GLfloat shininess;
     unsigned int textureId;
     unsigned int specTextureId = 0;   // map_Ks: per-pixel specular intensity
+
+    /**
+     * Procedural surface detail, computed in the fragment shader rather than
+     * sampled from a normal map. Off for every material that does not opt in.
+     *
+     * detailScale is features per unit of object space; detailStrength is how
+     * hard the field's gradient bends the shading normal.
+     */
+    bool detailNormals = false;
+    float detailScale = 14.0f;
+    float detailStrength = 0.06f;
+    float detailRidge = 0.0f;
+
+    float detailAlbedo = 1.0f;
+
+    /**
+     * Rock tone. Its own octave stack rather than the normals', because colour
+     * and relief want different frequencies, and driven where it matters by the
+     * crater height the mesh baked - see basic.frag's rockAlbedo.
+     */
+    float albedoScale = 5.0f;
+    float albedoGain = 0.75f;
+    float albedoContrast = 0.85f;
+    float craterTone = 0.45f;
+
+    /**
+     * Multiplies the finished rock colour. The weathered/fresh pair in the
+     * shader is one warm stone; asteroids are not one colour - carbonaceous
+     * bodies are near-black, stony ones tan, metallic ones a cool grey - and
+     * that difference reads from further away than any amount of relief.
+     */
+    float rockTint[3] = {1.0f, 1.0f, 1.0f};
+    int detailDebug = 0; // 1 = show the albedo unlit
     unsigned int normalTextureId = 0; // map_Bump: normal/height map (Stage 2)
 
     void setEmission(GLfloat r, GLfloat g, GLfloat b) {

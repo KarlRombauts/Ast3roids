@@ -43,6 +43,10 @@ struct Face {
     TriangleIndices uvIndices;
     Material *material;
     int shapeIndex;
+
+    /** Flat-shading normal for this triangle. Used only when Geometry::flatShaded. */
+    Vector3 normal = Vector3(0, 0, 0);
+
 };
 
 struct Shape {
@@ -59,10 +63,35 @@ struct Shape {
 };
 
 struct Geometry : public Component {
+    /**
+     * Shade from Face::normal rather than from the per-vertex normals.
+     *
+     * Faceting is usually done by splitting every triangle into its own three
+     * vertices so each can hold the face normal, which triples the vertex,
+     * normal and uv arrays. That is wasted here: Mesh::upload already walks
+     * faces and writes three vertices per triangle into a non-indexed buffer,
+     * so the split only ever existed to make the normal lookup land on a
+     * per-face value. Storing that value on the face instead gets identical
+     * output from the shared vertices.
+     */
+    bool flatShaded = false;
+
     std::vector<Face> faces;
     std::vector<Vector2> uvs;
     std::vector<Vector3> vertices;
     std::vector<Vector3> normals;
+
+    /**
+     * Per-vertex crater displacement, parallel to `vertices`. Empty for
+     * everything that is not an asteroid.
+     *
+     * Colour, not shape. Where a crater is, is a question the mesh has already
+     * answered - so the shader asks it rather than recomputing the field, which
+     * costs one interpolated float against a 27-cell lattice search per pixel
+     * and is exactly aligned with the geometry instead of approximately.
+     */
+    std::vector<float> craterHeights;
+
     std::vector<Material *> materials;
     std::vector<Shape> shapes;
 };

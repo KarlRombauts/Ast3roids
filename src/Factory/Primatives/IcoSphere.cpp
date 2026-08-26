@@ -4,6 +4,7 @@
 #include <Vector3.h>
 #include <cmath>
 #include <Helpers/Normals.h>
+#include <unordered_map>
 
 Geometry IcoSphere::create(int subdivisions, Material *material) {
     double t = (1.0 + sqrt(5.0)) / 2.0;
@@ -112,68 +113,47 @@ Geometry IcoSphere::create(int subdivisions, Material *material) {
 }
 
 void IcoSphere::subdivide(Geometry &geometry, int subdivision) {
-    std::vector<Vector3> tmpVertices;
     std::vector<Face> tmpFaces;
-    unsigned int index;
 
     for (int i = 1; i <= subdivision; ++i) {
-        // copy prev vertex/index arrays and clear
-//        tmpVertices = geometry.vertices;
+        // copy prev index array and clear
         tmpFaces = geometry.faces;
-//        geometry.vertices.clear();
         geometry.faces.clear();
 
+        // Each edge midpoint is shared by the two faces either side of it, so it
+        // is looked up by edge rather than searched for by position. The linear
+        // scan over every existing vertex that this replaces was O(faces x
+        // vertices) - about 50 million comparisons for one level-5 sphere, which
+        // made anything past level 4 too slow to build during play. Same
+        // vertices, same order, same faces; only the lookup changed.
+        std::unordered_map<unsigned long long, GLuint> midpoints;
+
+        auto midpoint = [&](GLuint a, GLuint b) {
+            unsigned long long key = a < b
+                                     ? ((unsigned long long) a << 32) | b
+                                     : ((unsigned long long) b << 32) | a;
+            auto found = midpoints.find(key);
+            if (found != midpoints.end()) {
+                return found->second;
+            }
+            Vector3 half = computeHalfVertex(geometry.vertices[a], geometry.vertices[b]);
+            geometry.vertices.push_back(half);
+            GLuint index = (GLuint) (geometry.vertices.size() - 1);
+            midpoints[key] = index;
+            return index;
+        };
 
         // perform subdivision for each triangle
         for (int j = 0; j < tmpFaces.size(); j++) {
             TriangleIndices &indices = tmpFaces[j].vertIndices;
-            // get 3 vertices of a triangle
-            index = geometry.vertices.size();
 
             GLuint i1 = indices.v1;
             GLuint i2 = indices.v2;
             GLuint i3 = indices.v3;
 
-            Vector3 &v1 = geometry.vertices[i1];
-            Vector3 &v2 = geometry.vertices[i2];
-            Vector3 &v3 = geometry.vertices[i3];
-
-            Vector3 v4 = computeHalfVertex(v1, v2);
-            Vector3 v5 = computeHalfVertex(v2, v3);
-            Vector3 v6 = computeHalfVertex(v1, v3);
-
-            GLuint i4 = -1;
-            GLuint i5 = -1;
-            GLuint i6 = -1;
-
-            for (int k = 0; k < geometry.vertices.size(); k++) {
-                Vector3 &currentVector = geometry.vertices[k];
-                if (currentVector.doubleEquals(v4)) {
-                    i4 = k;
-                } else if (currentVector.doubleEquals(v5)) {
-                    i5 = k;
-                } else if (currentVector.doubleEquals(v6)) {
-                    i6 = k;
-                }
-
-                if (i4 != -1 && i5 != -1 && i6 != -1) {
-                    break;
-                }
-            }
-
-            if (i4 == -1) {
-                geometry.vertices.push_back(v4);     // index + 0
-                i4 = index++;
-            }
-
-            if (i5 == -1) {
-                geometry.vertices.push_back(v5);     // index + 1
-                i5 = index++;
-            }
-            if (i6 == -1) {
-                geometry.vertices.push_back(v6);     // index + 2
-                i6 = index++;
-            }
+            GLuint i4 = midpoint(i1, i2);
+            GLuint i5 = midpoint(i2, i3);
+            GLuint i6 = midpoint(i1, i3);
 
 //               v1
 //               /\

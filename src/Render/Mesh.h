@@ -29,6 +29,10 @@ public:
 
     void upload(const Geometry &geometry);
 
+    /** True once upload() has run. Shared meshes are uploaded lazily by the
+     *  first entity that draws them, so the renderer has to ask. */
+    bool uploaded() const { return vao != 0; }
+
     // Draws the mesh one (shape, material) group at a time, calling setup(sub)
     // before each group so the caller can apply that shape's transform and bind
     // that material's texture.

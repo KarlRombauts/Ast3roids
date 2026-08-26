@@ -12,6 +12,14 @@ class RenderSystem : public System {
 public:
     void update(EntityManager &entities, double dt) override;
 
+    /**
+     * Scene-wide ambient - the shader's uGlobalAmbient. A variable rather than
+     * a literal only so the standalone asteroid lab can put it on a slider; the
+     * value here is the one the renderer has always used, and nothing in the
+     * game writes to it, so StarFox_run is unaffected.
+     */
+    static float globalAmbient[3];
+
 private:
     void ensureInitialised();
 

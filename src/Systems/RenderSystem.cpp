@@ -9,6 +9,7 @@
 #include <Components/Scale.h>
 #include <Components/Material.h>
 #include <Components/RenderMesh.h>
+#include <Components/SharedMesh.h>
 #include <Components/Light.h>
 #include <Components/Transparency.h>
 #include <Components/Additive.h>
@@ -26,6 +27,10 @@ static const int MAX_LIGHTS = 8;
 
 // Used when a face has no material assigned.
 static const Material DEFAULT_MATERIAL;
+
+// Directionless fill for the side facing away from the sun. Slightly cool to
+// suggest starlight/nebula bounce against the warm key light.
+float RenderSystem::globalAmbient[3] = {0.40f, 0.42f, 0.48f};
 
 void RenderSystem::ensureInitialised() {
     if (initialised) {
@@ -89,9 +94,7 @@ void RenderSystem::update(EntityManager &entities, double dt) {
     glBindTexture(GL_TEXTURE_2D, whiteTexture);
     glActiveTexture(GL_TEXTURE0);
     shader.setVec3("uViewPos", camPos.x, camPos.y, camPos.z);
-    // Directionless fill for the side facing away from the sun. Slightly cool to
-    // suggest starlight/nebula bounce against the warm key light.
-    shader.setVec3("uGlobalAmbient", 0.40f, 0.42f, 0.48f);
+    shader.setVec3("uGlobalAmbient", globalAmbient[0], globalAmbient[1], globalAmbient[2]);
 
     // Upload each light's data once per frame (positions/colours/attenuation).
     std::vector<Entity *> lights = entities.getEntitiesWith<Light, Position>();
@@ -172,11 +175,20 @@ void RenderSystem::drawEntity(Entity *entity) {
         shader.setVec2("uUvScale", 1.0f, 1.0f);
     }
 
-    // Upload the mesh to the GPU the first time we see this entity; it is
-    // owned by the entity and freed when the entity is destroyed.
-    if (!entity->has<RenderMesh>()) {
-        entity->assign<RenderMesh>();
-        entity->get<RenderMesh>()->mesh.upload(*geometry);
+    // Asteroids draw from a pooled mesh they share; everything else owns its
+    // own, uploaded the first time we see it and freed with the entity.
+    Mesh *mesh;
+    if (entity->has<SharedMesh>()) {
+        mesh = entity->get<SharedMesh>()->mesh;
+        if (!mesh->uploaded()) {
+            mesh->upload(*geometry);
+        }
+    } else {
+        if (!entity->has<RenderMesh>()) {
+            entity->assign<RenderMesh>();
+            entity->get<RenderMesh>()->mesh.upload(*geometry);
+        }
+        mesh = &entity->get<RenderMesh>()->mesh;
     }
 
     // Thrusting boosts the ship's emission. Only the engine-glow material has
@@ -188,7 +200,7 @@ void RenderSystem::drawEntity(Entity *entity) {
 
     // Draw each (shape, material) group. The shape transform is read fresh each
     // frame, so animating a shape (e.g. the X-Wing wings) moves it.
-    entity->get<RenderMesh>()->mesh.draw([&](const Mesh::SubMesh &sub) {
+    mesh->draw([&](const Mesh::SubMesh &sub) {
         Matrix4 model = entityModel;
         if (sub.shapeIndex >= 0 && sub.shapeIndex < (int) geometry->shapes.size()) {
             const Shape &shape = geometry->shapes[sub.shapeIndex];
@@ -216,6 +228,18 @@ void RenderSystem::drawEntity(Entity *entity) {
         shader.setInt("uHasSpecMap", m.specTextureId != 0 ? 1 : 0);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, m.specTextureId != 0 ? m.specTextureId : whiteTexture);
+
+        shader.setInt("uDetailNormals", m.detailNormals ? 1 : 0);
+        shader.setFloat("uDetailScale", m.detailScale);
+        shader.setFloat("uDetailStrength", m.detailStrength);
+        shader.setFloat("uDetailRidge", m.detailRidge);
+        shader.setFloat("uDetailAlbedo", m.detailAlbedo);
+        shader.setFloat("uAlbedoScale", m.albedoScale);
+        shader.setFloat("uAlbedoGain", m.albedoGain);
+        shader.setFloat("uAlbedoContrast", m.albedoContrast);
+        shader.setFloat("uCraterTone", m.craterTone);
+        shader.setVec3("uRockTint", m.rockTint[0], m.rockTint[1], m.rockTint[2]);
+        shader.setInt("uDetailDebug", m.detailDebug);
     });
 }
 
