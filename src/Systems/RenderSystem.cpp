@@ -57,17 +57,6 @@ void RenderSystem::ensureInitialised() {
     initialised = true;
 }
 
-Matrix4 RenderSystem::viewMatrix() const {
-    Vector3 &pos = gameModel.activeCamera->get<Position>()->position;
-    Quaternion &rot = gameModel.activeCamera->get<Rotation>()->rotation;
-
-    // Looking "from" the camera means transforming the world by the inverse of
-    // the camera's transform: undo its rotation (conjugate) then undo its
-    // translation. Right-to-left, the translation is applied first.
-    return Matrix4::fromQuaternion(rot.conjugate())
-           * Matrix4::translation(Vector3(-pos.x, -pos.y, -pos.z));
-}
-
 void RenderSystem::update(EntityManager &entities, double dt) {
     ensureInitialised();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -77,7 +66,7 @@ void RenderSystem::update(EntityManager &entities, double dt) {
         return;
     }
 
-    Matrix4 view = viewMatrix();
+    Matrix4 view = gameModel.viewMatrix();
     Matrix4 viewProj = gameModel.projection * view;
     Vector3 &camPos = gameModel.activeCamera->get<Position>()->position;
 

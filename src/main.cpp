@@ -15,6 +15,8 @@
 #include "GameModel.h"
 #include "ecs/EntityManager.h"
 #include "Systems/RenderSystem.h"
+#include "Systems/HudSystem.h"
+#include "Systems/MenuSystem.h"
 #include "Systems/PhysicsSystem.h"
 #include "Systems/PlayerInputSystem.h"
 #include "Systems/CollisionSystem.h"
@@ -37,6 +39,8 @@
 Window window;
 EntityManager entities;
 RenderSystem renderSystem;
+HudSystem hudSystem;
+MenuSystem menuSystem;
 CollisionSystem collisionSystem;
 PhysicsSystem physicsSystem;
 PlayerInputSystem playerInputSystem;
@@ -68,14 +72,17 @@ void handleGamePlay();
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     renderSystem.update(entities, 0);
+    hudSystem.update(entities, 0);
+    menuSystem.update(entities, 0);
     window.swap();
 
 #ifdef __EMSCRIPTEN__
-    // Push state to the HTML overlay (score/wave/time + menu visibility).
+    // The readouts and both menu screens are drawn in-engine now (HudSystem and
+    // MenuSystem), so all the page still needs from a frame is the state: it
+    // shows its Play button on the menus and hides it during a run.
     EM_ASM({
-        if (typeof gameUpdate === 'function') { gameUpdate($0, $1, $2, $3); }
-    }, (int) gameModel.state, gameModel.score, gameModel.waveCount,
-       gameModel.elapsedTime - gameModel.resetTime);
+        if (typeof gameUpdate === 'function') { gameUpdate($0); }
+    }, (int) gameModel.state);
 #endif
 }
 
@@ -150,7 +157,28 @@ void handleWaveOver() {
 }
 
 void handleMenu() {
+    // The menus sit over an attract-mode asteroid field, which runs on its own
+    // clock: gameModel.elapsedTime is the run timer, and the end screen is busy
+    // displaying it, so it must not move here.
+    static int lastMenuFrame = 0;
+    int thisTime = Time::millis();
+    int dt = thisTime - lastMenuFrame;
+    lastMenuFrame = thisTime;
+    if (dt < 0 || dt > 100) {
+        dt = 16; // first frame on the menu, or a hitch: don't jump the orbit
+    }
+
+    menuSystem.ensureScene(entities);
+    physicsSystem.update(entities, dt);   // the rocks tumble where they are
+    menuSystem.orbitScene(dt);
+
     if (keyboardState.isKeyPressed(' ')) {
+        // The attract field goes before the real one is built, or the run would
+        // start with scenery in it.
+        entities.destroyAll();
+        gameModel.activeCamera = nullptr;
+        menuSystem.sceneTornDown();
+
         entities.createWorld();
         gameModel.reset();
         gameModel.state = GameState::PLAYING;
@@ -187,6 +215,12 @@ extern "C" EMSCRIPTEN_KEEPALIVE void web_set_roll(float r) {
     mouseState.roll = (double) r;
 }
 
+// The page knows whether it is on a phone; the game does not. Told once, when
+// the runtime comes up, so the menus can list the touch controls.
+extern "C" EMSCRIPTEN_KEEPALIVE void web_set_touch(int on) {
+    gameModel.touchControls = on != 0;
+}
+
 // Mobile: tap/hold to fire.
 extern "C" EMSCRIPTEN_KEEPALIVE void web_set_shooting(int on) {
     if (on) {
@@ -216,8 +250,14 @@ extern "C" EMSCRIPTEN_KEEPALIVE void web_zoom(float delta) {
 
 void handleGameOver() {
     keyboardState.clearPressedKeys();
+
+    if (gameModel.score > gameModel.bestScore) {
+        gameModel.bestScore = gameModel.score;
+    }
+
     entities.destroyAll();
     gameModel.activeCamera = nullptr;
+    menuSystem.sceneTornDown();
     gameModel.timeSinceGameOver = 0;
     gameModel.state = GameState::PLAY_AGAIN;
 }

@@ -41,8 +41,10 @@
     #canvas { display: block; width: 100%; height: 100%; background: #000; outline: none; }
 
     /* Fullscreen */
+    /* Top centre: every corner belongs to the in-engine HUD (score, wave, speed,
+       clock) and the bottom centre is where the Play button sits. */
     #fs-btn {
-      position: absolute; bottom: 10px; right: 10px; z-index: 5;
+      position: absolute; top: 10px; left: 50%; transform: translateX(-50%); z-index: 5;
       pointer-events: auto; cursor: pointer; width: 32px; height: 32px; padding: 0;
       font-size: 15px; line-height: 1; color: #cdd6e6;
       background: rgba(10,14,22,0.55); border: 1px solid rgba(74,163,255,0.3); border-radius: 6px;
@@ -54,17 +56,6 @@
       width: 100%; height: 100%; max-width: none; max-height: none; border: none; border-radius: 0;
     }
 
-    /* HUD */
-    #hud {
-      position: absolute; inset: 0; pointer-events: none;
-      display: none; padding: 12px 14px; font-size: 13px; letter-spacing: 0.08em;
-      color: #dfe7f5; text-shadow: 0 1px 4px rgba(0,0,0,0.9);
-    }
-    #hud.show { display: block; }
-    #hud .row { display: flex; justify-content: space-between; }
-    #hud .center { position: absolute; left: 50%; top: 12px; transform: translateX(-50%); }
-    #hud b { color: var(--accent); font-weight: 700; }
-
     /* Menu overlay */
     #menu {
       position: absolute; inset: 0; display: flex; flex-direction: column;
@@ -73,9 +64,16 @@
       backdrop-filter: blur(2px);
     }
     #menu.hidden { display: none; }
+    /* Once the engine is up it draws the title, the prompt and the controls
+       itself, so the page's copy of them steps aside and only the Play button
+       (which a phone has no keyboard to replace) stays, down at the bottom. */
+    #menu.ready {
+      background: none; backdrop-filter: none;
+      justify-content: flex-end; padding-bottom: 26px;
+    }
+    #menu.ready .title, #menu.ready .msg { display: none; }
     #menu .title { font-size: 40px; letter-spacing: 0.18em; font-weight: 800; color: #fff; text-shadow: 0 0 24px rgba(74,163,255,0.6); }
     #menu .msg { font-size: 14px; color: #9fb0cc; }
-    #menu .score { font-size: 15px; color: #cdd6e6; }
     button.play {
       pointer-events: auto; cursor: pointer; margin-top: 6px;
       font: inherit; font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
@@ -134,19 +132,10 @@
   <div id="stage">
     <canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()" width="600" height="600"></canvas>
 
-    <div id="hud">
-      <div class="row">
-        <span>SCORE <b id="hud-score">0</b></span>
-        <span>TIME <b id="hud-time">0:00</b></span>
-      </div>
-      <div class="center">WAVE <b id="hud-wave">1</b></div>
-    </div>
-
     <div id="menu">
       <div class="title">AST3ROIDS</div>
       <div class="msg" id="menu-msg">Loading…</div>
       <div id="loadbar"><div id="loadbar-fill"></div></div>
-      <div class="score" id="menu-score"></div>
       <button class="play" id="play-btn" onclick="startGame()" disabled>Play</button>
     </div>
 
@@ -159,7 +148,7 @@
   </div>
 
   <div class="controls desktop">
-    <kbd>F</kbd> thrust &nbsp; <kbd>A</kbd>/<kbd>D</kbd> roll &nbsp; <kbd>Mouse</kbd> aim &nbsp;
+    <kbd>W</kbd> thrust &nbsp; <kbd>A</kbd>/<kbd>D</kbd> roll &nbsp; <kbd>Mouse</kbd> aim &nbsp;
     <kbd>Space</kbd> fire &nbsp; <kbd>I</kbd>/<kbd>K</kbd> camera
   </div>
   <div class="controls mobile">
@@ -169,12 +158,15 @@
     Originally a desktop OpenGL game — renderer rewritten to WebGL2 and compiled to WASM.
     &nbsp;·&nbsp;
     <a href="https://github.com/KarlRombauts/Ast3roids" target="_blank" rel="noopener">View source on GitHub&nbsp;&#8599;</a>
+    &nbsp;·&nbsp;
+    Type set in
+    <a href="https://github.com/JetBrains/JetBrainsMono" target="_blank" rel="noopener">JetBrains Mono</a>
+    (OFL&nbsp;1.1)
   </footer>
 
   <script>
     var canvas = document.getElementById('canvas');
     var menuEl = document.getElementById('menu');
-    var hudEl = document.getElementById('hud');
     var playBtn = document.getElementById('play-btn');
     var stageEl = document.getElementById('stage');
 
@@ -208,17 +200,9 @@
     var ZOOM_SCALE = 0.06;      // slide pixels -> camera dolly (world units)
 
     function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
-    function fmtTime(ms) {
-      var s = Math.max(0, Math.floor(ms / 1000));
-      return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
-    }
 
     // Game states (match GameState enum order in GameModel.h)
     var ST = { GAME_OVER: 0, WAVE_OVER: 1, PLAYING: 2, START: 3, PLAY_AGAIN: 4, GAME_OVER_TRANSITION: 5 };
-
-    var startHint = isPhone
-      ? 'Aim to steer · tilt to roll · tap to shoot · slide to zoom'
-      : 'Press <kbd>SPACE</kbd> to start';
 
     // Reflect load/support state on the menu before the game loop takes over.
     function setReadyUI() {
@@ -232,34 +216,23 @@
       }
       if (!runtimeReady) return;
       playBtn.disabled = false;
-      document.getElementById('menu-msg').innerHTML = startHint;
       loadbar.classList.add('hidden');
+      menuEl.classList.add('ready');
+      // The game cannot tell a phone from a desktop; the page can, and the
+      // menus list different controls for each.
+      if (isTouch && Module._web_set_touch) Module._web_set_touch(1);
     }
 
-    // Called every frame from C++ via EM_ASM.
-    function gameUpdate(state, score, wave, timeMs) {
+    // Called every frame from C++ via EM_ASM. The readouts and both menu
+    // screens are drawn in-engine, so all the page does with a frame is show
+    // its Play button on the menus and hide it during a run.
+    function gameUpdate(state) {
       if (!runtimeReady) { runtimeReady = true; setReadyUI(); } // loop is running -> ready
       // Mobile auto-thrust: re-assert every playing frame, because starting a
       // game clears all held keys (incl. the forward key) on the first frame.
       if (isTouch && state === ST.PLAYING && Module._web_set_thrust) Module._web_set_thrust(1);
       var inMenu = (state === ST.START || state === ST.PLAY_AGAIN || state === ST.GAME_OVER);
       menuEl.classList.toggle('hidden', !inMenu);
-      hudEl.classList.toggle('show', !inMenu);
-
-      if (state === ST.GAME_OVER) {
-        document.querySelector('#menu .title').textContent = 'GAME OVER';
-        document.getElementById('menu-msg').innerHTML =
-          isTouch ? 'Tap <b>Play</b> to play again' : 'Press <kbd>SPACE</kbd> to play again';
-        document.getElementById('menu-score').textContent = 'Final score: ' + score;
-      } else if (inMenu) {
-        document.querySelector('#menu .title').textContent = 'AST3ROIDS';
-        document.getElementById('menu-msg').innerHTML = startHint;
-        document.getElementById('menu-score').textContent = '';
-      }
-
-      document.getElementById('hud-score').textContent = score;
-      document.getElementById('hud-wave').textContent = wave;
-      document.getElementById('hud-time').textContent = fmtTime(timeMs);
     }
 
     // Play button.

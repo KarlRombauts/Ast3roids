@@ -34,6 +34,7 @@ struct GameConfig {
 
     std::string MODEL_DIR = "./Assets/Models";
     std::string TEXTURE_DIR = "./Assets/Textures";
+    std::string FONT_DIR = "./Assets/Fonts";
 
     // Camera Config
     int MOUSE_SENSITIVITY = 100;

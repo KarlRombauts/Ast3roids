@@ -2,6 +2,7 @@
 #include <string>
 #include "Helpers.h"
 #include <cctype>
+#include <cmath>
 #include <regex>
 
 double randf(double min, double max) {
@@ -20,6 +21,24 @@ int randInt(int min, int max) {
 
 double lerp(double a, double b, double f) {
     return a + f * (b - a);
+}
+
+bool rayHitsSphere(const Vector3 &origin, const Vector3 &direction,
+                   const Vector3 &centre, double radius) {
+    Vector3 toCentre(centre.x - origin.x, centre.y - origin.y, centre.z - origin.z);
+
+    // How far along the ray the sphere's centre lies. Behind the origin means
+    // the ray is pointing away from it.
+    double along = toCentre.dot(direction);
+    if (along <= 0) {
+        return false;
+    }
+
+    // Pythagoras on (distance to centre, distance along the ray) gives the
+    // ray's closest approach to the centre. Inside the radius is a hit.
+    double distanceSquared = toCentre.dot(toCentre);
+    double missSquared = distanceSquared - along * along;
+    return missSquared <= radius * radius;
 }
 
 std::string formatTime(int msElapsedTime) {

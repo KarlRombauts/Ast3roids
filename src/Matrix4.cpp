@@ -45,6 +45,19 @@ Matrix4 Matrix4::perspective(double fovYDegrees, double aspect, double near, dou
     return result;
 }
 
+Matrix4 Matrix4::orthographic(double left, double right, double bottom, double top,
+                              double near, double far) {
+    Matrix4 result;
+    result.m[0] = 2.0 / (right - left);
+    result.m[5] = 2.0 / (top - bottom);
+    result.m[10] = -2.0 / (far - near);
+    result.m[12] = -(right + left) / (right - left);
+    result.m[13] = -(top + bottom) / (top - bottom);
+    result.m[14] = -(far + near) / (far - near);
+    result.m[15] = 1;
+    return result;
+}
+
 Matrix4 Matrix4::fromQuaternion(const Quaternion &q) {
     double w = q.w, x = q.v.x, y = q.v.y, z = q.v.z;
     double sqw = w * w, sqx = x * x, sqy = y * y, sqz = z * z;

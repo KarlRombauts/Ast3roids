@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include "Vector3.h"
 
 double randf(double min, double max);
 
@@ -18,6 +19,15 @@ double lerp(double a, double b, double f);
 double map(double value, std::pair<double, double> input, std::pair<double, double> output);
 
 std::string formatTime(int msElapsedTime);
+
+/**
+ * True if the ray leaving `origin` along unit `direction` passes through the
+ * sphere at `centre`. A sphere whose centre is behind the origin never counts,
+ * however close the ray's line passes to it and however large it is. Used by
+ * the HUD to decide whether the guns are pointing at an asteroid.
+ */
+bool rayHitsSphere(const Vector3 &origin, const Vector3 &direction,
+                   const Vector3 &centre, double radius);
 
 int countWords(const std::string& strString);
 

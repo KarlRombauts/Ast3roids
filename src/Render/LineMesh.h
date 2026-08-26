@@ -6,7 +6,8 @@
 #include <vector>
 
 // A GPU mesh of GL_LINES (consecutive point pairs form line segments). Used for
-// the arena's wireframe walls.
+// the arena's wireframe walls, and for the HUD, which re-uploads its geometry
+// every frame.
 class LineMesh {
 public:
     LineMesh() = default;
@@ -14,6 +15,9 @@ public:
     LineMesh(const LineMesh &) = delete;
     LineMesh &operator=(const LineMesh &) = delete;
 
+    // Replaces the mesh's contents. The GL buffers are created on the first
+    // call and re-used after that, so a mesh that is rebuilt every frame (the
+    // HUD) costs one upload rather than a fresh VAO/VBO pair each time.
     void upload(const std::vector<Vector3> &points);
     void draw() const;
 

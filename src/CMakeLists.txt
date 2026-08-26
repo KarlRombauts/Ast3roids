@@ -6,7 +6,7 @@ set(GL_SILENCE_DEPRECATION)
 #file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
 
 # Shared sources go in both the executable and the test library.
-list(APPEND SOURCES Matrix4.cpp Matrix4.h Render/Shader.cpp Render/Shader.h Render/Mesh.cpp Render/Mesh.h Render/LineMesh.cpp Render/LineMesh.h Platform/Time.cpp Platform/Time.h Factory/Primatives/UVSphere.cpp Factory/Primatives/UVSphere.h)
+list(APPEND SOURCES Matrix4.cpp Matrix4.h Render/Shader.cpp Render/Shader.h Render/Mesh.cpp Render/Mesh.h Render/LineMesh.cpp Render/LineMesh.h Render/VectorFont.cpp Render/VectorFont.h Systems/HudSystem.cpp Systems/HudSystem.h Render/Font.cpp Render/Font.h Render/TextMesh.cpp Render/TextMesh.h Helpers/StbTrueType.h Render/Overlay.cpp Render/Overlay.h Systems/MenuSystem.cpp Systems/MenuSystem.h Platform/Time.cpp Platform/Time.h Factory/Primatives/UVSphere.cpp Factory/Primatives/UVSphere.h)
 
 set(SOURCES ${SOURCES})
 
@@ -20,7 +20,7 @@ if (EMSCRIPTEN)
     target_compile_options(${BINARY}_run PRIVATE -sUSE_SDL=2 -sFULL_ES3)
     target_link_options(${BINARY}_run PRIVATE
             -sUSE_SDL=2 -sFULL_ES3 -sMAX_WEBGL_VERSION=2 -sMIN_WEBGL_VERSION=2 -sALLOW_MEMORY_GROWTH=1
-            "SHELL:-sEXPORTED_FUNCTIONS=['_main','_web_press_space','_web_set_aim','_web_set_thrust','_web_set_shooting','_web_zoom','_web_set_roll']"
+            "SHELL:-sEXPORTED_FUNCTIONS=['_main','_web_press_space','_web_set_aim','_web_set_thrust','_web_set_shooting','_web_zoom','_web_set_roll','_web_set_touch']"
             "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/Assets@/Assets"
             "SHELL:--preload-file ${CMAKE_CURRENT_SOURCE_DIR}/Shaders@/Shaders"
             "SHELL:--shell-file ${CMAKE_SOURCE_DIR}/web/shell.html")

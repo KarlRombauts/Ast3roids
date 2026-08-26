@@ -19,20 +19,30 @@ void LineMesh::upload(const std::vector<Vector3> &points) {
     }
     vertexCount = (GLsizei) points.size();
 
-    glGenVertexArrays(1, &vao);
+    bool firstUpload = (vao == 0);
+    if (firstUpload) {
+        glGenVertexArrays(1, &vao);
+        glGenBuffers(1, &vbo);
+    }
+
     glBindVertexArray(vao);
-
-    glGenBuffers(1, &vbo);
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) (data.size() * sizeof(float)), data.data(), GL_STATIC_DRAW);
+    // DYNAMIC_DRAW because the HUD rewrites its mesh once a frame; the walls
+    // upload once and never come back, which this hint costs nothing.
+    glBufferData(GL_ARRAY_BUFFER, (GLsizeiptr) (data.size() * sizeof(float)), data.data(), GL_DYNAMIC_DRAW);
 
-    glEnableVertexAttribArray(0); // position only
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    if (firstUpload) {
+        glEnableVertexAttribArray(0); // position only
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void *) 0);
+    }
 
     glBindVertexArray(0);
 }
 
 void LineMesh::draw() const {
+    if (vertexCount == 0) {
+        return;
+    }
     glBindVertexArray(vao);
     glDrawArrays(GL_LINES, 0, vertexCount);
     glBindVertexArray(0);

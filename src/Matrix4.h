@@ -17,6 +17,12 @@ public:
     static Matrix4 translation(const Vector3 &t);
     static Matrix4 scale(const Vector3 &s);
     static Matrix4 perspective(double fovYDegrees, double aspect, double near, double far);
+
+    // Flat projection for 2D overlays (the HUD): maps the given box straight to
+    // clip space with no perspective divide, so z is ignored and a unit on
+    // screen stays a unit however far "into" the box it is drawn.
+    static Matrix4 orthographic(double left, double right, double bottom, double top,
+                                double near, double far);
     static Matrix4 fromQuaternion(const Quaternion &q);
 
     Matrix4 operator*(const Matrix4 &rhs) const;
