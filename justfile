@@ -46,3 +46,40 @@ wasm-smoke:
 # (the game is at /StarFox_run.html). Default serves the full game build.
 serve dir="build-web/src":
     cd {{dir}} && python3 -m http.server 8000
+
+# --- Deploy (GitHub Pages) ---
+
+release_dir := "build-web-release"
+
+# -O3 roughly halves both the wasm and the JS against a default build, so this
+# is what gets published.
+# Build the optimised WebAssembly bundle (output in build-web-release/src)
+wasm-release:
+    source {{emsdk_env}} && emcmake cmake -S . -B {{release_dir}} -DCMAKE_BUILD_TYPE=Release && \
+        cmake --build {{release_dir}} --target StarFox_run -j
+
+# The shell is renamed to index.html because that is what the manifest's
+# start_url points at, and .nojekyll stops Pages from processing the bundle.
+# Publish the optimised build to gh-pages (the live game)
+deploy message="Deploy the current build": wasm-release
+    #!/bin/bash
+    set -euo pipefail
+    out="{{release_dir}}/src"
+    for file in StarFox_run.html StarFox_run.js StarFox_run.wasm StarFox_run.data; do
+        test -f "$out/$file" || { echo "missing $out/$file - build first"; exit 1; }
+    done
+
+    tree="$(mktemp -d)/gh-pages"
+    git fetch origin gh-pages
+    git worktree add "$tree" -B gh-pages origin/gh-pages
+
+    cp "$out/StarFox_run.html" "$tree/index.html"
+    cp "$out/StarFox_run.js" "$out/StarFox_run.wasm" "$out/StarFox_run.data" "$tree/"
+    cp web/manifest.json "$tree/"
+    touch "$tree/.nojekyll"
+
+    git -C "$tree" add -A
+    git -C "$tree" status --short
+    git -C "$tree" commit -m "{{message}}"
+    git -C "$tree" push origin gh-pages
+    git worktree remove "$tree"
