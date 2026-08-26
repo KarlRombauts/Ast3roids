@@ -45,5 +45,30 @@ else()
     add_dependencies(${BINARY}_run copy_shaders)
 
     target_link_libraries(${BINARY}_run PUBLIC ${OPENGL_LIBRARIES} SDL2::SDL2)
+
+    # Dear ImGui, for the lab's live parameter panel. Vendored in lib/imgui (see
+    # the README there for provenance) and compiled straight into the one
+    # executable that wants it. Deliberately not a library target and not part
+    # of ${SOURCES}: ${BINARY}_run, ${BINARY}_lib and ${BINARY}_test must not
+    # compile or link a line of it, and the surest way to guarantee that is for
+    # there to be nothing they could link against.
+    set(IMGUI_DIR ${CMAKE_SOURCE_DIR}/lib/imgui)
+    set(IMGUI_SOURCES
+            ${IMGUI_DIR}/imgui.cpp
+            ${IMGUI_DIR}/imgui_draw.cpp
+            ${IMGUI_DIR}/imgui_tables.cpp
+            ${IMGUI_DIR}/imgui_widgets.cpp
+            ${IMGUI_DIR}/backends/imgui_impl_sdl2.cpp
+            ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp)
+
+    # Standalone asteroid viewer (src/asteroid_lab.cpp): one rock, centred, for
+    # iterating on the surface shading. Built exactly like ${BINARY}_run so it
+    # sees the same engine sources, and native-only - it has no web shell.
+    add_executable(${BINARY}_asteroid asteroid_lab.cpp ${SOURCES} Platform/Window.cpp Platform/Window.h ${IMGUI_SOURCES})
+    # PRIVATE, so the ImGui headers are on this target's include path and no
+    # other's.
+    target_include_directories(${BINARY}_asteroid PRIVATE ${IMGUI_DIR} ${IMGUI_DIR}/backends)
+    target_link_libraries(${BINARY}_asteroid PUBLIC ${OPENGL_LIBRARIES} SDL2::SDL2)
+    add_dependencies(${BINARY}_asteroid copy_assets copy_shaders)
 endif()
 
