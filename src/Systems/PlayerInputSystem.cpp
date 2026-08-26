@@ -50,8 +50,13 @@ void PlayerInputSystem::update(EntityManager &entities, double dt) {
 
         double &thrust = entity->get<SpaceShip>()->thrust;
         if (keyboardState.isKeyPressed(gameConfig.PLAYER_FORWARD)) {
-            Vector3 force = Vector3::back() * gameConfig.PLAYER_SPEED * dt / 1000;
-            acceleration += rotation * force;
+            // Thrust is an acceleration, not an impulse: PhysicsSystem is what
+            // integrates it over the frame time. Scaling it by dt here as well
+            // made the top speed depend on the frame rate - and backwards, so a
+            // machine drawing twice as many frames flew half as fast.
+            // (`thrust` above is the engine-glow ramp, not this.)
+            Vector3 engines = Vector3::back() * gameConfig.PLAYER_THRUST;
+            acceleration += rotation * engines;
 
             openWings(geometry);
             thrust = lerp(thrust, 1.0, 0.1); // ramp engines up

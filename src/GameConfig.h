@@ -10,7 +10,13 @@ struct GameConfig {
     char PLAYER_LEFT = 'a';
     char PLAYER_RIGHT = 'd';
     char PLAYER_SHOOT = ' ';
-    double PLAYER_SPEED = 1000;
+    /**
+     * Engine thrust, in world units per second squared. The ship's drag (set in
+     * SpaceShipFactory) is what turns this into a top speed: flat out,
+     * acceleration and drag cancel, so the ship settles at THRUST / drag.
+     * At drag = 1 that makes this number the top speed as well.
+     */
+    double PLAYER_THRUST = 30;
     double PLAYER_TURN_SPEED = 180; // Degrees per second
 
     int PLAYER_FIRING_RATE = 200; // Bullets per second

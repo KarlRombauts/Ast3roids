@@ -32,6 +32,10 @@ Entity *SpaceShipFactory::create(EntityManager &entities, const Position& positi
 
 void SpaceShipFactory::setKinematics(Entity *spaceShip) {
     spaceShip->assign<Kinematics>(Vector3(0, 0, 0), Vector3(0, 0, 0), 1);
+
+    // Drag per second. With thrust held down the ship settles at
+    // PLAYER_THRUST / drag; released, it sheds most of its speed in 1 / drag
+    // seconds. Both halves of the ship's feel come out of this one number.
     spaceShip->get<Kinematics>()->drag = 1;
 }
 
